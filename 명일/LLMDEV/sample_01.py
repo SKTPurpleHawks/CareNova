@@ -1,11 +1,11 @@
 import openai
 
-OPENAI_API_KEY = "61INBgCt2yzYb08p7eX6FkL6bH3A62m5Spn0CO6A3ULFeKODoJLpJQQJ99BBACfhMk5XJ3w3AAAAACOGfY3p"
-OPENAI_API_VERSION = "2023-05-15"
-OPENAI_API_TYPE = "azure"
-OPENAI_ENDPOINT = "https://labuser25-aiservice-001.openai.azure.com"
+OPENAI_API_KEY = ""
+OPENAI_API_VERSION = ""
+OPENAI_API_TYPE = ""
+OPENAI_ENDPOINT = ""
 
-MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = ""
 
 openai.api_key = OPENAI_API_KEY
 openai.api_type = OPENAI_API_TYPE
