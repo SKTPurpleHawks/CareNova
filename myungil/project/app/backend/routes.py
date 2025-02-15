@@ -6,9 +6,16 @@ from security import verify_password, create_access_token, get_current_user
 import models
 from datetime import datetime
 from fastapi.responses import JSONResponse
+import logging
 
 
 router = APIRouter()
+
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 @router.post("/signup/foreign")
 def signup_foreign(user: schemas.ForeignUserCreate, db: Session = Depends(get_db)):
@@ -20,16 +27,33 @@ def signup_protector(user: schemas.ProtectorUserCreate, db: Session = Depends(ge
     db_user = crud.create_protector_user(db, user)
     return {"message": "Protector user created successfully"}
 
+
+
 @router.post("/login")
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    logger.info(f"📌 [LOGIN ATTEMPT] Email: {user.email}")
+
+    # 이메일로 사용자 조회
     db_user = crud.get_user_by_email(db, user.email)
-    if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
     
+    if not db_user:
+        logger.warning(f"❌ [LOGIN FAILED] User not found: {user.email}")
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+
+    # 비밀번호 검증
+    if not verify_password(user.password, db_user.password):
+        logger.warning(f"❌ [LOGIN FAILED] Incorrect password for user: {user.email}")
+        raise HTTPException(status_code=400, detail="Incorrect email or password")
+
     # 사용자 유형 확인
     user_type = "foreign" if isinstance(db_user, models.ForeignUserInfo) else "protector"
-    
-    access_token = create_access_token(data={"sub": user.email, "user_type": user_type})
+    logger.info(f"✅ [LOGIN SUCCESS] User: {user.email}, Type: {user_type}")
+
+    # JWT 액세스 토큰 생성
+    access_token = create_access_token(
+        data={"sub": user.email, "user_type": user_type, "user_id": db_user.id}
+    )
+
     return {"access_token": access_token, "token_type": "bearer", "user_type": user_type}
 
 
@@ -89,3 +113,4 @@ def update_user_info(user_update: schemas.UserUpdate, db: Session = Depends(get_
     db.refresh(user)
     
     return {"message": "프로필이 성공적으로 업데이트되었습니다.", "user": user}
+

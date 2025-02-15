@@ -1,6 +1,12 @@
 from sqlalchemy.orm import Session
 import models, schemas
 from security import get_password_hash
+import logging
+
+
+# 로깅 설정
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def create_foreign_user(db: Session, user: schemas.ForeignUserCreate):
 
@@ -54,7 +60,20 @@ def create_protector_user(db: Session, user: schemas.ProtectorUserCreate):
 
 
 def get_user_by_email(db: Session, email: str):
+    logger.info(f" [SEARCH USER] Searching for email: {email}")
+
+    # 외국인 사용자 테이블에서 검색
     foreign_user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.email == email).first()
     if foreign_user:
+        logger.info(f" [USER FOUND] Foreign user found: {email}")
         return foreign_user
-    return db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.email == email).first()
+
+    # 보호자 사용자 테이블에서 검색
+    protector_user = db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.email == email).first()
+    if protector_user:
+        logger.info(f" [USER FOUND] Protector user found: {email}")
+        return protector_user
+
+    # 사용자가 없을 경우 로그 출력
+    logger.warning(f" [USER NOT FOUND] No user with email: {email}")
+    return None

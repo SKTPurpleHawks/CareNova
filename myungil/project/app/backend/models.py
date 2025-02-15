@@ -58,3 +58,28 @@ class ProtectorUserInfo(Base):
             new_id = "p_1"
 
         return new_id
+    
+
+class PatientUserInfo(Base):
+    __tablename__ = "patient_user_info"
+
+    id = Column(String, primary_key=True, index=True, unique=True)
+    email = Column(String, unique=True, index=True)
+    password = Column(String)
+    name = Column(String)
+    phonenumber = Column(String)
+    birthday = Column(DateTime)
+    sex = Column(String)
+
+
+    
+    @classmethod
+    def protector_generate_custom_id(cls, db: Session):
+        last_entry = db.query(ProtectorUserInfo).order_by(ProtectorUserInfo.id.desc()).first()
+        if last_entry:
+            last_number = int(last_entry.id.split("_")[1])
+            new_id = f"p_{last_number + 1}"
+        else:
+            new_id = "p_1"
+
+        return new_id

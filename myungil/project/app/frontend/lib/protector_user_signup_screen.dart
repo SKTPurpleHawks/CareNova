@@ -30,7 +30,7 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/signup/protector'),
+        Uri.parse('http://192.168.0.10:8000/signup/protector'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
@@ -72,96 +72,55 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("회원가입")),
+      backgroundColor: Color(0xFFF8E8EE), // 연한 핑크 배경색
+      appBar: AppBar(
+        title: const Text("보호자 회원가입"),
+        backgroundColor: Color(0xFFF8E8EE), // 앱바 색상 동일하게
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                TextFormField(
-                  controller: emailController,
-                  decoration: const InputDecoration(labelText: "이메일"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '이메일을 입력해주세요';
-                    }
-                    return null;
-                  },
+                _buildTextField(emailController, "이메일"),
+                _buildTextField(passwordController, "비밀번호", isPassword: true),
+                _buildTextField(confirmPasswordController, "비밀번호 확인", isPassword: true),
+                _buildTextField(nameController, "이름"),
+                _buildTextField(phoneNumberController, "전화번호", keyboardType: TextInputType.phone),
+                
+                const SizedBox(height: 10),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text("생년월일", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildDropdownYear(),
+                    _buildDropdownMonth(),
+                    _buildDropdownDay(),
+                  ],
                 ),
                 const SizedBox(height: 10),
-                TextFormField(
-                  controller: passwordController,
-                  decoration: const InputDecoration(labelText: "비밀번호"),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '비밀번호를 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: confirmPasswordController,
-                  decoration: const InputDecoration(labelText: "비밀번호 확인"),
-                  obscureText: true,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '비밀번호를 다시 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: nameController,
-                  decoration: const InputDecoration(labelText: "이름"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '이름을 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: phoneNumberController,
-                  decoration: const InputDecoration(labelText: "전화번호"),
-                  keyboardType: TextInputType.phone,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return '전화번호를 입력해주세요';
-                    }
-                    return null;
-                  },
-                ),
-                ListTile(
-                  title: Text("생년월일: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
-                  trailing: Icon(Icons.calendar_today),
-                  onTap: () => _selectDate(context),
-                ),
-                DropdownButtonFormField<String>(
-                  value: selectedGender,
-                  decoration: InputDecoration(labelText: '성별'),
-                  items: ['남성', '여성'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      selectedGender = newValue!;
-                    });
-                  },
-                ),
+
+                _buildDropdownGender(),
+
                 const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _signup,
-                  child: const Text("회원가입"),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton(
+                    onPressed: _signup,
+                    child: const Text("가입하기", style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(message, style: const TextStyle(color: Colors.red)),
@@ -170,6 +129,109 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, {bool isPassword = false, TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword,
+        keyboardType: keyboardType,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return '$label을 입력해주세요';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildDropdownGender() {
+    return DropdownButtonFormField<String>(
+      value: selectedGender,
+      decoration: InputDecoration(
+        labelText: '성별',
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+      ),
+      items: ['남성', '여성'].map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      onChanged: (String? newValue) {
+        setState(() {
+          selectedGender = newValue!;
+        });
+      },
+    );
+  }
+
+  Widget _buildDropdownYear() {
+    return DropdownButton<String>(
+      value: selectedDate.year.toString(),
+      items: List.generate(100, (index) {
+        int year = DateTime.now().year - index;
+        return DropdownMenuItem(
+          value: year.toString(),
+          child: Text("$year"),
+        );
+      }),
+      onChanged: (String? newValue) {
+        setState(() {
+          selectedDate = DateTime(int.parse(newValue!), selectedDate.month, selectedDate.day);
+        });
+      },
+    );
+  }
+
+  Widget _buildDropdownMonth() {
+    return DropdownButton<String>(
+      value: selectedDate.month.toString().padLeft(2, '0'),
+      items: List.generate(12, (index) {
+        int month = index + 1;
+        return DropdownMenuItem(
+          value: month.toString().padLeft(2, '0'),
+          child: Text("$month"),
+        );
+      }),
+      onChanged: (String? newValue) {
+        setState(() {
+          selectedDate = DateTime(selectedDate.year, int.parse(newValue!), selectedDate.day);
+        });
+      },
+    );
+  }
+
+  Widget _buildDropdownDay() {
+    return DropdownButton<String>(
+      value: selectedDate.day.toString().padLeft(2, '0'),
+      items: List.generate(31, (index) {
+        int day = index + 1;
+        return DropdownMenuItem(
+          value: day.toString().padLeft(2, '0'),
+          child: Text("$day"),
+        );
+      }),
+      onChanged: (String? newValue) {
+        setState(() {
+          selectedDate = DateTime(selectedDate.year, selectedDate.month, int.parse(newValue!));
+        });
+      },
     );
   }
 }

@@ -15,14 +15,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _login() async {
+    final String baseUrl = "http://192.168.0.10:8000"; // FastAPI 서버 IP 사용
+    final String url = "$baseUrl/login";
     final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/login'),
+      Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'email': _emailController.text,
         'password': _passwordController.text,
       }),
-    );  
+    );
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
@@ -33,12 +35,14 @@ class _LoginScreenState extends State<LoginScreen> {
       if (userType == 'foreign') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ForeignHomeScreen(token: token)),
+          MaterialPageRoute(
+              builder: (context) => ForeignHomeScreen(token: token)),
         );
       } else if (userType == 'protector') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProtectorUserHomeScreen(token: token)),
+          MaterialPageRoute(
+              builder: (context) => ProtectorUserHomeScreen(token: token)),
         );
       }
     } else {
@@ -76,7 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserTypeSelectionScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => UserTypeSelectionScreen()),
                 );
               },
             ),

@@ -39,6 +39,8 @@ class UserUpdate(BaseModel):
     birthday: datetime
     age: int
     sex: str
+    startdate: datetime
+    enddate: datetime
     region: str
     spot: str
     height: int
