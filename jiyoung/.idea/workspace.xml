@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="cef81590-8a54-4278-ad5b-079e52e2d364" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/netflix/images/poster1.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/netflix/images/poster2.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/netflix/images/poster3.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/netflix/lib/widget/carousel_slider.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/debug/AndroidManifest.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/AndroidManifest.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/kotlin/com/example/netflix/MainActivity.kt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/drawable-v21/launch_background.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/drawable/launch_background.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/mipmap-hdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/mipmap-mdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/values-night/styles.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/main/res/values/styles.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/app/src/profile/AndroidManifest.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/build.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/gradle.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/android/settings.gradle" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/lib/model/model_movie.dart" beforeDir="false" afterPath="$PROJECT_DIR$/netflix/lib/model/model_movie.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/lib/screen/home_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/netflix/lib/screen/home_screen.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/netflix/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/netflix/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/netflix/pubspec.yaml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/netflix" />
+  </component>
+  <component name="ProjectId" id="2spNkFRnhj9BvkC3AELgSGkOLoR" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="dart.analysis.tool.window.visible" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/netflix" />
+    <property name="show.migrate.to.gradle.popup" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cef81590-8a54-4278-ad5b-079e52e2d364" name="Default Changelist" comment="" />
+      <created>1739148697313</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1739148697313</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="94" y="94" width="1253" height="665" key="AVDManager" timestamp="1739148795632">
+      <screen x="0" y="0" width="1440" height="852" />
+    </state>
+    <state x="94" y="94" width="1253" height="665" key="AVDManager/0.0.1440.852@0.0.1440.852" timestamp="1739148795632" />
+    <state x="501" y="181" key="FileChooserDialogImpl" timestamp="1739148794492">
+      <screen x="0" y="0" width="1440" height="852" />
+    </state>
+    <state x="501" y="181" key="FileChooserDialogImpl/0.0.1440.852@0.0.1440.852" timestamp="1739148794492" />
+  </component>
+</project>
