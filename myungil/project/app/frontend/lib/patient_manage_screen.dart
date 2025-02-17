@@ -109,7 +109,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
             ),
           );
           if (result == true) {
-            _refreshPatients(); // ✅ 환자 추가 후 목록 갱신
+            _refreshPatients(); 
           }
         },
         child: Icon(Icons.add),
@@ -119,7 +119,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   }
 }
 
-/// 🔹 대화창 화면 (환자 ID를 받아 해당 환자와 보호자가 채팅할 수 있도록 설정)
+
 class ChatScreen extends StatelessWidget {
   final String patientId;
 
@@ -134,7 +134,7 @@ class ChatScreen extends StatelessWidget {
   }
 }
 
-/// 🔹 간병일지 화면 (환자의 케어 기록을 관리하는 화면)
+
 class CareLogScreen extends StatelessWidget {
   final String patientId;
 

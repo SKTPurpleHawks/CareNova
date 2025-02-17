@@ -121,7 +121,7 @@ def add_patient(
 
     new_patient = models.PatientUserInfo(
         id=new_patient_id,
-        protector_id=protector.id,  # ✅ protector_id 자동 설정
+        protector_id=protector.id,  
         name=patient.name,
         birthday=patient.birthday,
         age=patient.age,
@@ -148,9 +148,7 @@ def get_patients(
     db: Session = Depends(get_db), 
     current_user: models.ProtectorUserInfo = Depends(get_current_user)
 ):
-    """
-    현재 로그인된 보호자의 ID를 사용하여 보호자가 등록한 환자 리스트를 가져옴.
-    """
+
     patients = db.query(models.PatientUserInfo).filter(
         models.PatientUserInfo.protector_id == current_user.id
     ).all()
@@ -159,3 +157,25 @@ def get_patients(
         raise HTTPException(status_code=404, detail="등록된 환자가 없습니다.")
 
     return patients
+
+
+
+@router.get("/caregivers")
+def get_caregivers(db: Session = Depends(get_db)):
+    caregivers = db.query(models.ForeignUserInfo).all()
+    if not caregivers:
+        raise HTTPException(status_code=404, detail="등록된 간병인이 없습니다.")
+
+    return [
+        {
+            "id": c.id,
+            "name": c.name,
+            "age": c.age,
+            "sex": c.sex,
+            # "experience": c.experience,
+            # "rating": c.rating,
+            # "salary": c.salary,
+            "region": c.region,
+        }
+        for c in caregivers
+    ]
