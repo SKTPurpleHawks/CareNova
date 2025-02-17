@@ -28,7 +28,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 🔹 사용자 정보를 가져오는 함수
   Future<void> fetchUserInfo() async {
-    final url = Uri.parse('http://192.168.0.10:8000/user-info'); // 백엔드 API 엔드포인트
+    final url = Uri.parse('http://192.168.0.12:8000/user-info'); // 백엔드 API 엔드포인트
 
     try {
       final response = await http.get(

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 import schemas, crud
-from security import verify_password, create_access_token, get_current_user
+from security import verify_password, create_access_token, get_current_user, get_password_hash
 import models
 from datetime import datetime
 from fastapi.responses import JSONResponse
@@ -90,7 +90,7 @@ def update_user_info(user_update: schemas.UserUpdate, db: Session = Depends(get_
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
 
     if user_update.new_password:
-        user.password = hash_password(user_update.new_password)  # 비밀번호 암호화
+        user.password = get_password_hash(user_update.new_password)  # 비밀번호 암호화
 
     user.email = user_update.email
     user.name = user_update.name

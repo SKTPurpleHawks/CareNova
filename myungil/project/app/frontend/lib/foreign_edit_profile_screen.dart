@@ -7,10 +7,13 @@ class ForeignEditProfileScreen extends StatefulWidget {
   final String token;
   final Map<String, dynamic> userData;
 
-  const ForeignEditProfileScreen({Key? key, required this.token, required this.userData}) : super(key: key);
+  const ForeignEditProfileScreen(
+      {Key? key, required this.token, required this.userData})
+      : super(key: key);
 
   @override
-  _ForeignEditProfileScreenState createState() => _ForeignEditProfileScreenState();
+  _ForeignEditProfileScreenState createState() =>
+      _ForeignEditProfileScreenState();
 }
 
 class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
@@ -34,32 +37,84 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   String? _preferSex;
   late List<String> _selectedSymptoms;
   String? _smoking;
+  bool _canCareForImmobile = false;
 
-  final List<String> _regions = ['서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기남부', '경기북부', '강원영서', '강원영동', '충북', '충남', '전북', '전남', '경북', '경남', '제주'];
-  final List<String> _symptoms = ['치매', '섬망', '욕창', '하반신마비', '상반신마비', '전신마비', '와상환자', '기저귀케어', '의식없음', '석션', '피딩', '소변줄', '장루', '야간집중돌봄', '전염성', '파킨슨', '정신질환', '투석', '재활'];
+  final List<String> _regions = [
+    '서울',
+    '부산',
+    '대구',
+    '인천',
+    '광주',
+    '대전',
+    '울산',
+    '세종',
+    '경기남부',
+    '경기북부',
+    '강원영서',
+    '강원영동',
+    '충북',
+    '충남',
+    '전북',
+    '전남',
+    '경북',
+    '경남',
+    '제주'
+  ];
+  final List<String> _symptoms = [
+    '치매',
+    '섬망',
+    '욕창',
+    '하반신마비',
+    '상반신마비',
+    '전신마비',
+    '와상환자',
+    '기저귀케어',
+    '의식없음',
+    '석션',
+    '피딩',
+    '소변줄',
+    '장루',
+    '야간집중돌봄',
+    '전염성',
+    '파킨슨',
+    '정신질환',
+    '투석',
+    '재활'
+  ];
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.userData['name'] ?? '');
-    _phoneNumberController = TextEditingController(text: widget.userData['phonenumber'] ?? '');
-    _heightController = TextEditingController(text: widget.userData['height']?.toString() ?? '');
-    _weightController = TextEditingController(text: widget.userData['weight']?.toString() ?? '');
+    _nameController =
+        TextEditingController(text: widget.userData['name'] ?? '');
+    _phoneNumberController =
+        TextEditingController(text: widget.userData['phonenumber'] ?? '');
+    _heightController = TextEditingController(
+        text: widget.userData['height']?.toString() ?? '');
+    _weightController = TextEditingController(
+        text: widget.userData['weight']?.toString() ?? '');
     _currentPasswordController = TextEditingController();
     _newPasswordController = TextEditingController();
     _confirmPasswordController = TextEditingController();
 
-    _birthday = DateTime.tryParse(widget.userData['birthday'] ?? '') ?? DateTime.now();
-    _startDate = DateTime.tryParse(widget.userData['startdate'] ?? '') ?? DateTime.now();
-    _endDate = DateTime.tryParse(widget.userData['enddate'] ?? '') ?? DateTime.now();
+    _birthday = _parseDate(widget.userData['birthday']);
+    _startDate = _parseDate(widget.userData['startdate']);
+    _endDate = _parseDate(widget.userData['enddate']);
     _age = widget.userData['age'] ?? 0;
-    _sex = widget.userData['sex'];
-    _spot = widget.userData['spot'];
+    _sex = widget.userData['sex'] ?? '남성';
+    _spot = widget.userData['spot'] ?? '병원';
     _selectedRegions = (widget.userData['region'] as String?)?.split(',') ?? [];
-    _canWalkPatient = widget.userData['canwalkpatient'];
-    _preferSex = widget.userData['prefersex'];
-    _selectedSymptoms = (widget.userData['symptoms'] as String?)?.split(',') ?? [];
-    _smoking = widget.userData['smoking'];
+    _canWalkPatient = widget.userData['canwalkpatient'] ?? '걸을 수 없음';
+    _preferSex = widget.userData['prefersex'] ?? '남성';
+    _selectedSymptoms =
+        (widget.userData['symptoms'] as String?)?.split(',') ?? [];
+    _smoking = widget.userData['smoking'] ?? '비흡연';
+    _canCareForImmobile = widget.userData['can_care_for_immobile'] ?? false;
+  }
+
+  DateTime _parseDate(dynamic date) {
+    if (date == null || date.toString().isEmpty) return DateTime.now();
+    return DateTime.tryParse(date.toString()) ?? DateTime.now();
   }
 
   Future<void> _updateProfile() async {
@@ -72,7 +127,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         return;
       }
 
-      final url = Uri.parse('http://192.168.0.10:8000/user-info');
+      final url = Uri.parse('http://192.168.0.12:8000/user-info');
 
       try {
         final response = await http.put(
@@ -85,9 +140,9 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
             'email': widget.userData['email'],
             'name': _nameController.text,
             'phonenumber': _phoneNumberController.text,
-            'birthday': _birthday.toIso8601String().split('T')[0],
-            'startdate': _startDate.toIso8601String().split('T')[0],
-            'enddate': _endDate.toIso8601String().split('T')[0],
+            'birthday': DateFormat('yyyy-MM-dd').format(_birthday),
+            'startdate': DateFormat('yyyy-MM-dd').format(_startDate),
+            'enddate': DateFormat('yyyy-MM-dd').format(_endDate),
             'age': _age,
             'sex': _sex,
             'region': _selectedRegions.join(','),
@@ -99,7 +154,10 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
             'prefersex': _preferSex,
             'smoking': _smoking,
             'current_password': _currentPasswordController.text,
-            'new_password': _newPasswordController.text.isNotEmpty ? _newPasswordController.text : null,
+            'new_password': _newPasswordController.text.isNotEmpty
+                ? _newPasswordController.text
+                : null,
+            'can_care_for_immobile': _canCareForImmobile,
           }),
         );
 
@@ -119,7 +177,8 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
     }
   }
 
-  Future<void> _selectDate(BuildContext context, DateTime initialDate, Function(DateTime) onSelect) async {
+  Future<void> _selectDate(BuildContext context, DateTime initialDate,
+      Function(DateTime) onSelect) async {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -139,177 +198,233 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('프로필 수정')),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(16.0),
-          children: <Widget>[
-            TextFormField(
-              decoration: InputDecoration(labelText: '이메일'),
-              initialValue: widget.userData['email'],
-              readOnly: true,
-            ),
-            TextFormField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: '이름'),
-              validator: (value) => value!.isEmpty ? '이름을 입력해주세요' : null,
-            ),
-            TextFormField(
-              controller: _phoneNumberController,
-              decoration: InputDecoration(labelText: '전화번호'),
-              validator: (value) => value!.isEmpty ? '전화번호를 입력해주세요' : null,
-            ),
-            ListTile(
-              title: Text("생년월일: ${DateFormat('yyyy-MM-dd').format(_birthday)}"),
-              trailing: Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context, _birthday, (date) => setState(() => _birthday = date)),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
-              child: Text('나이(만나이): $_age', style: TextStyle(fontSize: 16)),
-            ),
-            DropdownButtonFormField<String>(
-              value: _sex,
-              decoration: InputDecoration(labelText: '성별'),
-              items: ['남성', '여성'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _sex = newValue;
-                });
-              },
-            ),
-            ListTile(
-              title: Text("간병 시작일: ${DateFormat('yyyy-MM-dd').format(_startDate)}"),
-              trailing: Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context, _startDate, (date) => setState(() => _startDate = date)),
-            ),
-            ListTile(
-              title: Text("마지막 간병일: ${DateFormat('yyyy-MM-dd').format(_endDate)}"),
-              trailing: Icon(Icons.calendar_today),
-              onTap: () => _selectDate(context, _endDate, (date) => setState(() => _endDate = date)),
-            ),
-            DropdownButtonFormField<String>(
-              value: _spot,
-              decoration: InputDecoration(labelText: '간병 가능 장소'),
-              items: ['집', '병원', '둘 다'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _spot = newValue;
-                });
-              },
-            ),
-            TextFormField(
-              controller: _heightController,
-              decoration: InputDecoration(labelText: '키 (cm)'),
-              keyboardType: TextInputType.number,
-              validator: (value) => value!.isEmpty ? '키를 입력해주세요' : null,
-            ),
-            TextFormField(
-              controller: _weightController,
-              decoration: InputDecoration(labelText: '몸무게 (kg)'),
-              keyboardType: TextInputType.number,
-              validator: (value) => value!.isEmpty ? '몸무게를 입력해주세요' : null,
-            ),
-            ExpansionTile(
-              title: Text('간병 가능 지역'),
-              children: _regions.map((region) {
-                return CheckboxListTile(
-                  title: Text(region),
-                  value: _selectedRegions.contains(region),
+      backgroundColor: Color(0xFFF8E8EE),
+      appBar: AppBar(
+        title: Text("프로필 수정"),
+        backgroundColor: Color(0xFFF8E8EE),
+        elevation: 0,
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTextField(_nameController, "이름"),
+                _buildTextField(_phoneNumberController, "전화번호",
+                    keyboardType: TextInputType.phone),
+                _buildDateField(
+                    "생년월일",
+                    _birthday,
+                    (date) => setState(() {
+                          _birthday = date;
+                          _age = DateTime.now().year - date.year;
+                        })),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child:
+                      Text('나이(만 나이) : $_age', style: TextStyle(fontSize: 16)),
+                ),
+                _buildDateField("간병 시작일", _startDate,
+                    (date) => setState(() => _startDate = date)),
+                _buildDateField("간병 종료일", _endDate,
+                    (date) => setState(() => _endDate = date)),
+                SizedBox(height: 10),
+                _buildDropdown("성별", _sex, ['남성', '여성'],
+                    (value) => setState(() => _sex = value)),
+                _buildTextField(_heightController, "키 (cm)",
+                    keyboardType: TextInputType.number),
+                _buildTextField(_weightController, "몸무게 (kg)",
+                    keyboardType: TextInputType.number),
+                _buildDropdown("간병 가능 장소", _spot, ['병원', '집', '둘 다'],
+                    (value) => setState(() => _spot = value)),
+                _buildMultiSelect("간병 가능 지역", _regions, _selectedRegions),
+                _buildMultiSelect("간병 가능 질환", _symptoms, _selectedSymptoms),
+                CheckboxListTile(
+                  title: Text("🚶 못 걷는 사람도 간병 가능"),
+                  value: _canCareForImmobile,
                   onChanged: (bool? value) {
                     setState(() {
-                      if (value!) {
-                        _selectedRegions.add(region);
-                      } else {
-                        _selectedRegions.remove(region);
-                      }
+                      _canCareForImmobile = value!;
                     });
                   },
-                );
-              }).toList(),
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+                _buildDropdown("선호하는 환자 성별", _preferSex, ['남성', '여성', '상관없음'],
+                    (value) => setState(() => _preferSex = value)),
+                _buildDropdown("흡연 여부", _smoking, ['비흡연', '흡연'],
+                    (value) => setState(() => _smoking = value)),
+                SizedBox(height: 20),
+                _buildTextField(_currentPasswordController, "현재 비밀번호",
+                    isPassword: true),
+                _buildTextField(_newPasswordController, "새 비밀번호",
+                    isPassword: true),
+                _buildTextField(_confirmPasswordController, "새 비밀번호 확인",
+                    isPassword: true),
+                SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton(
+                    onPressed: _updateProfile,
+                    child: Text("프로필 업데이트",
+                        style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
+                ),
+                SizedBox(height: 10),
+              ],
             ),
-            ExpansionTile(
-              title: Text('간병 가능 증상'),
-              children: _symptoms.map((symptom) {
-                return CheckboxListTile(
-                  title: Text(symptom),
-                  value: _selectedSymptoms.contains(symptom),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value!) {
-                        _selectedSymptoms.add(symptom);
-                      } else {
-                        _selectedSymptoms.remove(symptom);
-                      }
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            DropdownButtonFormField<String>(
-              value: _canWalkPatient,
-              decoration: InputDecoration(labelText: '환자 보행 여부'),
-              items: ['걸을 수 없음', '걸을 수 있음', '둘 다 케어 가능'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _canWalkPatient = newValue;
-                });
-              },
-            ),
-            DropdownButtonFormField<String>(
-              value: _preferSex,
-              decoration: InputDecoration(labelText: '선호하는 환자 성별'),
-              items: ['남성', '여성', '상관없음'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _preferSex = newValue;
-                });
-              },
-            ),
-            DropdownButtonFormField<String>(
-              value: _smoking,
-              decoration: InputDecoration(labelText: '흡연 여부'),
-              items: ['비흡연', '흡연'].map((String value) {
-                return DropdownMenuItem<String>(value: value, child: Text(value));
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  _smoking = newValue;
-                });
-              },
-            ),
-            SizedBox(height: 20),
-            TextFormField(
-              controller: _currentPasswordController,
-              decoration: InputDecoration(labelText: '현재 비밀번호'),
-              obscureText: true,
-            ),
-            TextFormField(
-              controller: _newPasswordController,
-              decoration: InputDecoration(labelText: '새 비밀번호'),
-              obscureText: true,
-            ),
-            TextFormField(
-              controller: _confirmPasswordController,
-              decoration: InputDecoration(labelText: '새 비밀번호 확인'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('프로필 업데이트'),
-              onPressed: _updateProfile,
-            ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool isPassword = false,
+      TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 16)),
+          SizedBox(height: 5),
+          TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            keyboardType: keyboardType,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return '$label을 입력해주세요';
+              }
+              return null;
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateField(
+      String label, DateTime date, Function(DateTime) onSelect) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 16)),
+          SizedBox(height: 5),
+          GestureDetector(
+            onTap: () => _selectDate(context, date, onSelect),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(DateFormat('yyyy-MM-dd').format(date),
+                      style: TextStyle(fontSize: 16)),
+                  Icon(Icons.calendar_today),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown(String label, String? value, List<String> items,
+      Function(String?) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 16)),
+          SizedBox(height: 5),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: value,
+              items: items.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: onChanged,
+              underline: SizedBox(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiSelect(
+      String label, List<String> allItems, List<String> selectedItems) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 16)),
+          SizedBox(height: 5),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ExpansionTile(
+              title: Text('${selectedItems.length} 선택됨',
+                  style: TextStyle(fontSize: 16)),
+              children: allItems.map((item) {
+                return CheckboxListTile(
+                  title: Text(item),
+                  value: selectedItems.contains(item),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value!) {
+                        selectedItems.add(item);
+                      } else {
+                        selectedItems.remove(item);
+                      }
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }

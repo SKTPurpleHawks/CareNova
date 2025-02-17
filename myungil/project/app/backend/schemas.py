@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
+from typing import Optional
 
 class ForeignUserCreate(BaseModel):
     email: str
@@ -34,6 +35,7 @@ class UserLogin(BaseModel):
 
 class UserUpdate(BaseModel):
     email: str
+    new_password: Optional[str] = None
     name: str
     phonenumber: str
     birthday: datetime
