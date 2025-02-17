@@ -72,10 +72,8 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8E8EE), // 연한 핑크 배경색
       appBar: AppBar(
         title: const Text("보호자 회원가입"),
-        backgroundColor: Color(0xFFF8E8EE), // 앱바 색상 동일하게
         elevation: 0,
         iconTheme: IconThemeData(color: Colors.black),
       ),
@@ -123,7 +121,7 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(message, style: const TextStyle(color: Colors.red)),
+                Text(message, style: const TextStyle(color: Colors.white)),
               ],
             ),
           ),
@@ -145,7 +143,6 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
           fillColor: Colors.white,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide.none,
           ),
         ),
         validator: (value) {
@@ -165,7 +162,7 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
         labelText: '성별',
         filled: true,
         fillColor: Colors.white,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
       ),
       items: ['남성', '여성'].map((String value) {
         return DropdownMenuItem<String>(

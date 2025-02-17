@@ -55,39 +55,52 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFFFFFFF),
       appBar: AppBar(title: Text('로그인')),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: '이메일'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: '비밀번호'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              child: Text('로그인'),
-              onPressed: _login,
-            ),
-            TextButton(
-              child: Text('회원가입'),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => UserTypeSelectionScreen()),
-                );
-              },
-            ),
-          ],
+      body: SingleChildScrollView( 
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start, 
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Image.asset('assets/images/carenova2.png', width: 120, height: 120),
+              ),
+              SizedBox(height: 80),
+              TextField(
+                controller: _emailController,
+                decoration: InputDecoration(labelText: '이메일'),
+              ),
+              SizedBox(height: 10),
+              TextField(
+                controller: _passwordController,
+                decoration: InputDecoration(labelText: '비밀번호'),
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+              TextButton(
+                child: Text('로그인', style: Theme.of(context).textTheme.bodyMedium),
+                onPressed: _login,
+              ),
+              SizedBox(height: 10),
+              TextButton(
+                child: Text('회원가입', style: Theme.of(context).textTheme.bodyMedium),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => UserTypeSelectionScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
+
 }

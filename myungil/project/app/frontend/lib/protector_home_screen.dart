@@ -48,26 +48,45 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
     });
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Widget> _screens = [
       _buildCaregiverList(),
       PatientManageScreen(token: widget.token), 
-      Center(child: Text("마이 페이지 화면 구현 예정")),
     ];
 
-    List<String> _titles = ["간병인 찾기", "환자 관리", "마이 페이지"];
+    List<String> _titles = ["간병인 찾기", "환자 관리"];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications),
+            onPressed: () {
+              _showSnackBar('알림 기능은 준비 중입니다.');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              // 로그아웃 → 로그인 화면으로 이동
+              Navigator.pushReplacementNamed(context, "/");
+            },
+          ),
+        ],
       ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.person), label: '간병인 찾기'),
           BottomNavigationBarItem(icon: Icon(Icons.list), label: '환자 관리'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '마이 페이지'),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
