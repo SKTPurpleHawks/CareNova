@@ -4,10 +4,11 @@ import jwt
 import os
 from dotenv import load_dotenv
 import models
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, status  # ✅ status 추가
 from sqlalchemy.orm import Session
 from database import get_db
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError  # ✅ JWTError 추가
 
 load_dotenv()  # .env 파일에서 환경 변수 로드
 
@@ -24,29 +25,31 @@ def verify_password(plain_password, hashed_password):
 def get_password_hash(password):
     return pwd_context.hash(password)
 
-# 추가: 액세스 토큰 생성 함수
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.utcnow() + timedelta(days=7)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
- 
+
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         email: str = payload.get("sub")
-        if email is None:
+        user_id: str = payload.get("user_id")
+
+        if email is None or user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid authentication credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-        user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.email == email).first()
+
+        user = db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.id == user_id).first()
         if user is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -54,6 +57,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
                 headers={"WWW-Authenticate": "Bearer"},
             )
         return user
+
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

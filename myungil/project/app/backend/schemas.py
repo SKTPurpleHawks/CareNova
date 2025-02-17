@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 class ForeignUserCreate(BaseModel):
     email: str
@@ -51,3 +51,23 @@ class UserUpdate(BaseModel):
     canwalkpatient: str
     prefersex: str
     smoking: str
+
+class PatientBase(BaseModel):
+    name: str
+    birthday: datetime
+    age: int
+    sex: str
+    height: int
+    weight: int
+    symptoms: str
+    canwalk: str
+    prefersex: str
+    smoking: str
+
+
+class PatientResponse(PatientBase):
+    id: str
+    protector_id: str
+
+    class Config:
+        from_attributes = True

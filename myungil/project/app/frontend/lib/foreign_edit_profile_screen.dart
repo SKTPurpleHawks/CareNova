@@ -127,7 +127,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         return;
       }
 
-      final url = Uri.parse('http://192.168.0.12:8000/user-info');
+      final url = Uri.parse('http://172.23.250.30:8000/user-info');
 
       try {
         final response = await http.put(

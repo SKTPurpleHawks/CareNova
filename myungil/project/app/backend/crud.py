@@ -58,6 +58,34 @@ def create_protector_user(db: Session, user: schemas.ProtectorUserCreate):
     db.refresh(db_user)
     return db_user
 
+def create_patient(db: Session, patient: schemas.PatientBase):
+    new_id = models.PatientUserInfo.patient_generate_custom_id(db)
+    
+    db_patient = models.PatientUserInfo(
+        id=new_id,
+        protector_id=patient.protector_id,
+        name=patient.name,
+        birthday=patient.birthday,
+        age=patient.age,
+        sex=patient.sex,
+        height=patient.height,
+        weight=patient.weight,
+        symptoms=patient.symptoms,
+        canwalk=patient.canwalk,
+        prefersex=patient.prefersex,
+        smoking=patient.smoking,
+    )
+    
+    db.add(db_patient)  
+    db.commit()
+    db.refresh(db_patient)
+    
+    return db_patient
+
+
+def get_patients_by_protector(db: Session, protector_id: str):
+    return db.query(models.PatientUserInfo).filter(models.PatientUserInfo.protector_id == protector_id).all()
+
 
 def get_user_by_email(db: Session, email: str):
     logger.info(f" [SEARCH USER] Searching for email: {email}")

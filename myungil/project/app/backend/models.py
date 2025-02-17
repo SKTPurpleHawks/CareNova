@@ -88,3 +88,5 @@ class PatientUserInfo(Base):
             new_id = "p_1"
 
         return new_id
+
+        
