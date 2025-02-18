@@ -24,7 +24,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
 
   Future<void> _fetchCaregivers() async {
     final response = await http.get(
-      Uri.parse('http://172.23.250.30:8000/caregivers'),
+      Uri.parse('http://172.30.1.53:8000/caregivers'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -139,7 +139,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
   }
 }
 
-/// 🔹 간병인 상세 정보 화면
+
 class CaregiverDetailScreen extends StatelessWidget {
   final Map<String, dynamic> caregiver;
 

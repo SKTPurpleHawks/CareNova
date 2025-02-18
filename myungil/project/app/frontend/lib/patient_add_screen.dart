@@ -50,7 +50,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   Future<void> _addPatient() async {
   if (_formKey.currentState!.validate()) {
     final response = await http.post(
-      Uri.parse('http://172.23.250.30:8000/add_patient'),
+      Uri.parse('http://172.30.1.53:8000/add_patient'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',
