@@ -149,24 +149,6 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   }
 
 
-  Future<void> _selectDate(BuildContext context, DateTime initialDate,
-      Function(DateTime) onSelect) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: initialDate,
-      firstDate: DateTime(1900),
-      lastDate: DateTime(2101),
-    );
-    if (picked != null) {
-      setState(() {
-        onSelect(picked);
-        if (onSelect == (date) => _birthday = date) {
-          _age = DateTime.now().year - picked.year;
-        }
-      });
-    }
-  }
-
   int _calculateAge(DateTime birthDate) {
     DateTime currentDate = DateTime.now();
     int age = currentDate.year - birthDate.year;
@@ -285,7 +267,6 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
               fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide.none,
               ),
             ),
             validator: (value) {

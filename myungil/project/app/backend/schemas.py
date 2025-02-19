@@ -76,3 +76,13 @@ class PatientResponse(PatientBase):
 
 class JobInfoUpdate(BaseModel):
     showyn: int
+
+class CareRequestCreate(BaseModel):
+    caregiver_id: str 
+
+class CareRequestUpdate(BaseModel):
+    status: str  
+
+class PatientAssignmentCreate(BaseModel):
+    caregiver_id: str
+    patient_id: str

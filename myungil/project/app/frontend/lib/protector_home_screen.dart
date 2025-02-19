@@ -134,7 +134,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
                       context,
                       MaterialPageRoute(
                           builder: (context) =>
-                              CaregiverDetailScreen(caregiver: caregiver)),
+                              CaregiverDetailScreen(caregiver: caregiver, token: widget.token,)),
                     );
                   },
                 ),
@@ -145,10 +145,33 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
 }
 
 class CaregiverDetailScreen extends StatelessWidget {
-  final Map<String, dynamic> caregiver;
+final Map<String, dynamic> caregiver;
+  final String token; // 로그인 토큰 추가
 
-  const CaregiverDetailScreen({Key? key, required this.caregiver})
-      : super(key: key);
+  const CaregiverDetailScreen({Key? key, required this.caregiver, required this.token}) : super(key: key);
+
+
+  Future<void> _sendCareRequest(BuildContext context) async {
+    final url = Uri.parse("http://192.168.91.218:8000/care-request");
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'caregiver_id': caregiver['id']}),
+    );
+
+    if (response.statusCode == 200) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("간병 신청이 성공적으로 전송되었습니다.")),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("간병 신청에 실패했습니다.")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +191,7 @@ class CaregiverDetailScreen extends StatelessWidget {
             // Text("급여: ${caregiver['salary']}만원"),
             SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () => _sendCareRequest(context),
               child: Text("간병 신청 보내기"),
             ),
           ],

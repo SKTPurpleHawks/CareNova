@@ -74,6 +74,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                           builder: (context) => PatientDetailScreen(
                             patient: _patients[index],
                             token: widget.token,
+                            isCaregiver: false
                           ),
                         ),
                       );

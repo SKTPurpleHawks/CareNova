@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'foreign_edit_profile_screen.dart';
+import 'foreign_manage_patient_screen.dart';
 
 class ForeignHomeScreen extends StatefulWidget {
   final String token;
@@ -16,9 +17,11 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
   String email = '';
   String name = '';
   String phonenumber = '';
-  DateTime startdate = DateTime.now();
+  DateTime birthday = DateTime.now();
   int age = 0;
   String sex = '';
+  DateTime startdate = DateTime.now();
+  DateTime enddate = DateTime.now();
   String spot = '';
   int height = 0;
   int weight = 0;
@@ -27,7 +30,9 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
   bool isLoading = true;
   int showJobInfo = 1;
   int _selectedIndex = 0;
+  List<dynamic> careRequests = []; // 간병 신청 요청 리스트
 
+  /// 사용자 정보 불러오기
   Future<void> fetchUserInfo() async {
     final url = Uri.parse('http://192.168.91.218:8000/user-info');
 
@@ -45,9 +50,12 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
         setState(() {
           email = data['email'] ?? '알 수 없음';
           name = data['name'] ?? '알 수 없음';
+          birthday =
+              DateTime.tryParse(data['birthday'] ?? '') ?? DateTime.now();
           phonenumber = data['phonenumber'] ?? '알 수 없음';
           startdate =
               DateTime.tryParse(data['startdate'] ?? '') ?? DateTime.now();
+          enddate = DateTime.tryParse(data['enddate'] ?? '') ?? DateTime.now();
           age = data['age'] ?? 0;
           sex = data['sex'] ?? '알 수 없음';
           region = data['region'] ?? '알 수 없음';
@@ -67,6 +75,66 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
     }
   }
 
+  /// 보호자가 신청한 간병 요청 가져오기
+  Future<void> fetchCareRequests() async {
+    final url = Uri.parse('http://192.168.91.218:8000/care-requests');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        List<dynamic> requests = jsonDecode(utf8.decode(response.bodyBytes));
+        setState(() {
+          careRequests = requests
+              .map((r) => {
+                    "id": r["id"].toString(),
+                    "protector_name": r["protector_name"] ?? "알 수 없는 보호자",
+                    "status": r["status"]
+                  })
+              .toList();
+        });
+      } else {
+        _showSnackBar('간병 요청을 불러오는 데 실패했습니다.');
+      }
+    } catch (e) {
+      _showSnackBar('서버에 연결할 수 없습니다.');
+    }
+  }
+
+
+
+  /// 간병 요청 수락 또는 거절
+  Future<void> _respondToCareRequest(bool accept, dynamic requestId) async {
+    final url = Uri.parse('http://192.168.91.218:8000/care-request/$requestId');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'status': accept ? 'accepted' : 'rejected'}),
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackBar(accept ? '간병 요청을 수락했습니다.' : '간병 요청을 거절했습니다.');
+        fetchCareRequests(); // ✅ 요청 목록 업데이트
+      } else {
+        _showSnackBar('요청 응답에 실패했습니다.');
+      }
+    } catch (e) {
+      _showSnackBar('서버에 연결할 수 없습니다.');
+    }
+  }
+
+  /// 구인 정보 업데이트
   Future<void> _updateJobInfo(bool value) async {
     final url = Uri.parse('http://192.168.91.218:8000/update-job-info');
 
@@ -102,12 +170,64 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
     setState(() {
       _selectedIndex = index;
     });
+
+    if (index == 1) {
+      // ✅ "환자 관리"를 클릭했을 때
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ForeignManagePatientScreen(token: widget.token),
+        ),
+      );
+    }
   }
 
   @override
   void initState() {
     super.initState();
     fetchUserInfo();
+    fetchCareRequests();
+  }
+
+
+  void _showCareRequestDialog(
+      BuildContext context, Map<String, dynamic> request){
+    final pendingRequests = careRequests
+        .where((request) => request['status'] == 'pending')
+        .toList();
+
+    if (pendingRequests.isEmpty) {
+      _showSnackBar('새로운 간병 요청이 없습니다.');
+      return;
+    }
+
+    final request = pendingRequests.first; 
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('간병 요청'),
+          content: Text('${request['protector_name']}님이 간병을 요청했습니다.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _respondToCareRequest(true, request['id'].toString());
+                Navigator.pop(context);
+              },
+              child: Text('거절'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _respondToCareRequest(true, request['id'].toString());
+                Navigator.pop(context);
+              },
+              child: Text('수락'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -119,19 +239,21 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
           IconButton(
             icon: Icon(Icons.notifications),
             onPressed: () {
-              _showSnackBar('알림 기능은 준비 중입니다.');
+              if (careRequests.isEmpty) {
+                _showSnackBar('새로운 간병 요청이 없습니다.');
+              } else {
+                _showCareRequestDialog(context, careRequests[0]);
+              }
             },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              // 로그아웃 → 로그인 화면으로 이동
               Navigator.pushReplacementNamed(context, "/");
             },
           ),
         ],
       ),
-      
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
@@ -219,11 +341,11 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                     children: [
                       Text('구인 정보 띄우기'),
                       Switch(
-                        value: showJobInfo == 1, // ✅ showJobInfo가 1일 때만 true
+                        value: showJobInfo == 1,
                         onChanged: (value) async {
                           await _updateJobInfo(value);
                           setState(() {
-                            showJobInfo = value ? 1 : 0; // ✅ UI 즉시 반영
+                            showJobInfo = value ? 1 : 0;
                           });
                         },
                       ),
@@ -245,7 +367,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.list), label: '환자 관리'),
         ],
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped, // 탭 변경 이벤트 추가
+        onTap: _onItemTapped,
       ),
     );
   }

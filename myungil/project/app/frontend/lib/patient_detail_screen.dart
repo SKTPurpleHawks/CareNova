@@ -3,8 +3,14 @@ import 'package:flutter/material.dart';
 class PatientDetailScreen extends StatelessWidget {
   final Map<String, dynamic> patient;
   final String token;
+  final bool isCaregiver; // ✅ 간병인 여부 확인 변수 추가
 
-  const PatientDetailScreen({Key? key, required this.patient, required this.token}) : super(key: key);
+  const PatientDetailScreen({
+    Key? key,
+    required this.patient,
+    required this.token,
+    required this.isCaregiver, // ✅ 간병인 여부 추가
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,12 +37,14 @@ class PatientDetailScreen extends StatelessWidget {
             Divider(),
             SizedBox(height: 20),
 
-            // 버튼 UI
-            ElevatedButton(
-              onPressed: () {
-              },
-              child: Text("환자 정보 수정"),
-            ),
+            // ✅ 보호자만 환자 정보 수정 가능
+            if (!isCaregiver)
+              ElevatedButton(
+                onPressed: () {
+                },
+                child: Text("환자 정보 수정"),
+              ),
+
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
@@ -44,11 +52,12 @@ class PatientDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("간병인과의 대화"),
+                  Text(isCaregiver ? "환자와의 대화" : "간병인과의 대화"), // ✅ 간병인 UI 적용
                   SizedBox(width: 5),
                 ],
               ),
             ),
+
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: () {
@@ -56,7 +65,7 @@ class PatientDetailScreen extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("간병일지 확인하기"),
+                  Text(isCaregiver ? "간병일지 작성하기" : "간병일지 확인하기"), // ✅ 간병인 UI 적용
                   SizedBox(width: 5),
                 ],
               ),

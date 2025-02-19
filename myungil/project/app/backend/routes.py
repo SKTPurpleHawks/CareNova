@@ -7,6 +7,8 @@ from datetime import datetime
 from fastapi.responses import JSONResponse
 import logging
 from typing import List
+import uuid
+
 
 router = APIRouter()
 
@@ -190,3 +192,139 @@ def get_caregivers(db: Session = Depends(get_db)):
         }
         for c in caregivers
     ]
+
+
+@router.post("/care-request")
+def send_care_request(
+    request_data: schemas.CareRequestCreate, 
+    db: Session = Depends(get_db), 
+    current_user: models.ProtectorUserInfo = Depends(get_current_user)
+):
+    
+    caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == request_data.caregiver_id).first()
+    
+    if not caregiver:
+        raise HTTPException(status_code=404, detail="Caregiver not found")
+
+    new_request = models.CareRequest(
+        protector_id=current_user.id,
+        caregiver_id=request_data.caregiver_id,
+        status="pending"
+    )
+
+    db.add(new_request)
+    db.commit()
+    db.refresh(new_request)
+
+    return {"message": "Care request sent successfully"}
+
+
+
+
+@router.put("/care-request/{request_id}")
+def update_care_request_status(
+    request_id: int,
+    status_update: schemas.CareRequestUpdate,
+    db: Session = Depends(get_db),
+    current_user: models.ForeignUserInfo = Depends(get_current_user)
+):
+    # 간병 요청 조회
+    care_request = db.query(models.CareRequest).filter(models.CareRequest.id == request_id).first()
+
+    # 존재하지 않는 간병 요청 예외 처리
+    if not care_request:
+        raise HTTPException(status_code=404, detail="Care request not found")
+
+    # 요청된 caregiver_id가 None일 경우 예외 처리
+    if care_request.caregiver_id is None:
+        raise HTTPException(status_code=400, detail="This care request has no assigned caregiver.")
+
+    # 현재 로그인한 사용자가 해당 요청을 처리할 권한이 있는지 확인
+    if care_request.caregiver_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You are not authorized to update this request")
+
+    # 요청 상태 변경
+    care_request.status = status_update.status  
+    db.commit()
+    db.refresh(care_request)
+
+    # 'accepted' 상태일 경우만 환자 추가 로직 실행
+    if status_update.status == "accepted":
+        # 보호자가 등록한 환자 조회
+        patient = db.query(models.PatientUserInfo).filter(
+            models.PatientUserInfo.protector_id == care_request.protector_id
+        ).first()
+
+        # 환자가 없을 경우 404 오류 반환
+        if not patient:
+            raise HTTPException(status_code=404, detail="No patient found for this protector.")
+
+        # caregiver_id와 patient_id 중복 검사
+        existing_assignment = db.query(models.CaregiverPatient).filter(
+            models.CaregiverPatient.patient_id == patient.id
+        ).first()
+
+        if existing_assignment:
+            db.delete(care_request)
+            db.commit()
+            raise {"message" : "Patient already assigned to caregiver.Request deleted."}
+
+        # 환자-간병인 연결 추가
+        new_assignment = models.CaregiverPatient(
+            caregiver_id=care_request.caregiver_id,
+            patient_id=patient.id
+        )
+
+        db.add(new_assignment)
+        db.commit()
+        db.refresh(new_assignment)
+
+    return {"message": f"Care request {status_update.status}"}
+
+
+
+
+
+
+@router.get("/care-requests")
+def get_care_requests(
+    db: Session = Depends(get_db),
+    current_user: models.ForeignUserInfo = Depends(get_current_user)
+):
+    
+    requests = db.query(models.CareRequest).filter(
+        models.CareRequest.caregiver_id == current_user.id,  
+        models.CareRequest.status == "pending"  
+    ).all()
+
+    return [
+        {
+            "id": r.id,
+            "protector_name": r.protector.name if r.protector else "알 수 없는 보호자",
+            "status": r.status
+        }
+        for r in requests
+    ]
+
+
+
+
+@router.get("/caregiver/patients")
+def get_caregiver_patients(
+    db: Session = Depends(get_db),
+    current_user: models.ForeignUserInfo = Depends(get_current_user)
+):
+    assignments = db.query(models.CaregiverPatient).filter(models.CaregiverPatient.caregiver_id == current_user.id).all()
+
+    patients = []
+    for assignment in assignments:
+        patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == assignment.patient_id).first()
+        if patient:
+            patients.append({
+                "id": patient.id,
+                "name": patient.name,
+                "birthday": patient.birthday,
+                "age": patient.age
+            })
+
+    return patients
