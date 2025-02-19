@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'foreign_edit_profile_screen.dart'; // 프로필 수정 화면 추가
+import 'foreign_edit_profile_screen.dart';
 
 class ForeignHomeScreen extends StatefulWidget {
-  final String token; // 로그인 후 전달된 토큰
+  final String token;
 
   const ForeignHomeScreen({Key? key, required this.token}) : super(key: key);
 
@@ -22,19 +22,20 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
   String spot = '';
   int height = 0;
   int weight = 0;
+  String symptoms = '';
+  String region = '';
   bool isLoading = true;
-  bool showJobInfo = false; // 구인 정보 띄우기 상태 관리
-  int _selectedIndex = 0; // BottomNavigationBar의 선택된 탭
+  int showJobInfo = 1;
+  int _selectedIndex = 0;
 
-  /// 🔹 사용자 정보를 가져오는 함수
   Future<void> fetchUserInfo() async {
-    final url = Uri.parse('http://172.30.1.53:8000/user-info'); // 백엔드 API 엔드포인트
+    final url = Uri.parse('http://192.168.91.218:8000/user-info');
 
     try {
       final response = await http.get(
         url,
         headers: {
-          'Authorization': 'Bearer ${widget.token}', // 토큰을 헤더에 포함
+          'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json'
         },
       );
@@ -45,32 +46,58 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
           email = data['email'] ?? '알 수 없음';
           name = data['name'] ?? '알 수 없음';
           phonenumber = data['phonenumber'] ?? '알 수 없음';
-          startdate = DateTime.tryParse(data['start_date'] ?? '') ?? DateTime.now();
+          startdate =
+              DateTime.tryParse(data['startdate'] ?? '') ?? DateTime.now();
           age = data['age'] ?? 0;
           sex = data['sex'] ?? '알 수 없음';
+          region = data['region'] ?? '알 수 없음';
           spot = data['spot'] ?? '알 수 없음';
           height = data['height'] ?? 0;
           weight = data['weight'] ?? 0;
+          symptoms = data['symptoms'] ?? '알 수 없음';
+          showJobInfo =
+              data.containsKey('showyn') ? (data['showyn'] == 1 ? 1 : 0) : 0;
           isLoading = false;
         });
       } else {
         _showSnackBar('사용자 정보를 불러올 수 없습니다.');
-        print('사용자 정보 로드 실패: ${response.body}');
       }
     } catch (e) {
       _showSnackBar('서버에 연결할 수 없습니다.');
-      print('서버 연결 오류: $e');
     }
   }
 
-  /// 🔹 Snackbar 메시지 표시 함수
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
+  Future<void> _updateJobInfo(bool value) async {
+    final url = Uri.parse('http://192.168.91.218:8000/update-job-info');
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'showyn': value ? 1 : 0}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          showJobInfo = value ? 1 : 0;
+        });
+        _showSnackBar('구인 정보가 업데이트되었습니다.');
+      } else {
+        _showSnackBar('업데이트 실패');
+      }
+    } catch (e) {
+      _showSnackBar('서버에 연결할 수 없습니다.');
+    }
   }
 
-  /// 🔹 BottomNavigationBar 탭 변경 함수
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -80,7 +107,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
   @override
   void initState() {
     super.initState();
-    fetchUserInfo(); // 화면 초기화 시 사용자 정보 가져오기
+    fetchUserInfo();
   }
 
   @override
@@ -104,12 +131,14 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
           ),
         ],
       ),
+      
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // 로딩 중 표시
+          ? Center(child: CircularProgressIndicator())
           : Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
+                  SizedBox(height: 20),
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -140,7 +169,9 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                                 SizedBox(height: 8),
                                 Text('나이: $age'),
                                 Text('성별: $sex'),
-                                Text('키: $height cm'),
+                                Text('지역: $region'),
+                                // Text('간병 가능 증상'),
+                                // Text('   - $symptoms'),
                               ],
                             ),
                           ],
@@ -148,7 +179,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  SizedBox(height: 150),
                   ElevatedButton(
                     onPressed: () async {
                       final updatedData = await Navigator.push(
@@ -165,7 +196,10 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                               'sex': sex,
                               'height': height,
                               'weight': weight,
+                              'region': region,
                               'spot': spot,
+                              'symptoms': symptoms,
+                              'showyn': showJobInfo,
                             },
                           ),
                         ),
@@ -173,29 +207,29 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
                       if (updatedData != null) {
                         setState(() {
-                          name = updatedData['name'];
-                          age = updatedData['age'];
-                          sex = updatedData['sex'];
-                          height = updatedData['height'];
+                          showJobInfo = (updatedData['showyn'] == 1) ? 1 : 0;
                         });
                       }
                     },
                     child: Text('프로필 수정'),
                   ),
+                  SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('구인 정보 띄우기'),
                       Switch(
-                        value: showJobInfo,
-                        onChanged: (value) {
+                        value: showJobInfo == 1, // ✅ showJobInfo가 1일 때만 true
+                        onChanged: (value) async {
+                          await _updateJobInfo(value);
                           setState(() {
-                            showJobInfo = value;
+                            showJobInfo = value ? 1 : 0; // ✅ UI 즉시 반영
                           });
                         },
                       ),
                     ],
                   ),
+                  SizedBox(height: 30),
                   ElevatedButton(
                     onPressed: () {
                       _showSnackBar('구인 관리 기능은 준비 중입니다.');

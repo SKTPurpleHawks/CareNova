@@ -20,6 +20,7 @@ class ForeignUserCreate(BaseModel):
     canwalkpatient: str
     prefersex: str
     smoking: str
+    showyn: int
 
 class ProtectorUserCreate(BaseModel):
     email: str
@@ -73,3 +74,5 @@ class PatientResponse(PatientBase):
         from_attributes = True
 
 
+class JobInfoUpdate(BaseModel):
+    showyn: int

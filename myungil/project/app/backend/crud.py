@@ -30,7 +30,7 @@ def create_foreign_user(db: Session, user: schemas.ForeignUserCreate):
         symptoms=user.symptoms,
         canwalkpatient=user.canwalkpatient,
         prefersex=user.prefersex,
-        smoking=user.smoking,
+        smoking=user.smoking
     )
 
     db.add(db_user)
@@ -105,3 +105,18 @@ def get_user_by_email(db: Session, email: str):
     # 사용자가 없을 경우 로그 출력
     logger.warning(f" [USER NOT FOUND] No user with email: {email}")
     return None
+
+
+def update_job_info(db: Session, user_id: str, job_info_update: schemas.JobInfoUpdate):
+    user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == user_id).first()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.showyn = 1 if job_info_update.showyn else 0 
+
+    db.commit()
+    db.refresh(user)
+
+    return user
+

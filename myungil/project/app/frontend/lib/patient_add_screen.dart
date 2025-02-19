@@ -50,7 +50,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   Future<void> _addPatient() async {
   if (_formKey.currentState!.validate()) {
     final response = await http.post(
-      Uri.parse('http://172.30.1.53:8000/add_patient'),
+      Uri.parse('http://192.168.91.218:8000/add_patient'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',
@@ -102,10 +102,18 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               _buildDropdown("선호하는 간병인 성별", _preferSex, ['남성', '여성', '상관없음'], (value) => setState(() => _preferSex = value)),
               _buildDropdown("흡연 여부", _smoking, ['비흡연', '흡연'], (value) => setState(() => _smoking = value)),
               const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _addPatient,
-                child: const Text("환자 추가"),
-              ),
+              Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton(
+                    onPressed: _addPatient,
+                    child: const Text("환자 추가가", style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
+                ),
             ],
           ),
         ),

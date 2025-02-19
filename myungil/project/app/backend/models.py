@@ -23,6 +23,7 @@ class ForeignUserInfo(Base):
     canwalkpatient = Column(String)
     prefersex = Column(String)
     smoking = Column(String)
+    showyn = Column(Integer)
 
     @classmethod
     def foreign_generate_custom_id(cls, db: Session):

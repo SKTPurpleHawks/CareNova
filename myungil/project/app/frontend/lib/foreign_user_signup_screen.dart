@@ -34,6 +34,19 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   bool _canCareForImmobile = false;
   String _smoking = '비흡연';
 
+
+  final List<String> _regions = [
+    '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
+    '경기남부', '경기북부', '강원영서', '강원영동', '충북', '충남', 
+    '전북', '전남', '경북', '경남', '제주'
+  ];
+  
+  final List<String> _symptoms = [
+    '치매', '섬망', '욕창', '하반신마비', '상반신마비', '전신마비',
+    '와상환자', '기저귀케어', '의식없음', '석션', '피딩', '소변줄', 
+    '장루', '야간집중돌봄', '전염성', '파킨슨', '정신질환', '투석', '재활'
+  ];
+
   Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
       if (_passwordController.text != _confirmPasswordController.text) {
@@ -44,7 +57,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://172.30.1.53:8000/signup/foreign'),
+        Uri.parse('http://192.168.91.218:8000/signup/foreign'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,
@@ -129,14 +142,12 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                   readOnly: true,
                 ),
 
-                // 📌 간병 시작일 선택
                 _buildDateSelection("간병 시작일", _startDate, (date) {
                   setState(() {
                     _startDate = date;
                   });
                 }),
 
-                // 📌 간병 종료일 선택
                 _buildDateSelection("간병 종료일", _endDate, (date) {
                   setState(() {
                     _endDate = date;
@@ -151,6 +162,12 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                     keyboardType: TextInputType.number),
                 _buildDropdown("간병 가능 장소", _spot, ['병원', '집', '둘 다'],
                     (value) => setState(() => _spot = value)),
+                _buildMultiSelect("간병 가능 지역", _regions, _selectedRegions),
+                _buildMultiSelect("간병 가능 질환", _symptoms, _selectedSymptoms),
+                _buildDropdown("환자의 보행 가능 여부", _canWalkPatient, ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                    (value) => setState(() => _canWalkPatient = value)),
+                _buildDropdown("선호하는 환자 성별", _preferSex, ['남성', '여성', '상관없음'],
+                    (value) => setState(() => _preferSex = value)),
                 _buildDropdown("흡연 여부", _smoking, ['비흡연', '흡연'],
                     (value) => setState(() => _smoking = value)),
 
@@ -282,6 +299,48 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
         onChanged: (String? newValue) {
           if (newValue != null) onChanged(newValue);
         },
+      ),
+    );
+  }
+
+
+  Widget _buildMultiSelect(
+      String label, List<String> allItems, List<String> selectedItems) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontSize: 16)),
+          SizedBox(height: 5),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ExpansionTile(
+              title: Text('${selectedItems.length} 선택됨',
+                  style: TextStyle(fontSize: 16)),
+              children: allItems.map((item) {
+                return CheckboxListTile(
+                  title: Text(item),
+                  value: selectedItems.contains(item),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value!) {
+                        selectedItems.add(item);
+                      } else {
+                        selectedItems.remove(item);
+                      }
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }

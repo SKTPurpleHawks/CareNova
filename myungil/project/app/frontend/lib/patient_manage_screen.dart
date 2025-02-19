@@ -26,7 +26,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   Future<void> _fetchPatients() async {
     try {
       final response = await http.get(
-        Uri.parse('http://172.30.1.53:8000/patients'),
+        Uri.parse('http://192.168.91.218:8000/patients'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json; charset=UTF-8',

@@ -73,6 +73,7 @@ def get_user_info(token_data=Depends(get_current_user), db=Depends(get_db)):
         "canwalkpatient": user.canwalkpatient,
         "prefersex": user.prefersex,
         "smoking": user.smoking,
+        "showyn": user.showyn
     }
 
 @router.put("/user-info")
@@ -107,11 +108,21 @@ def update_user_info(user_update: schemas.UserUpdate, db: Session = Depends(get_
     
     return {"message": "프로필이 성공적으로 업데이트되었습니다.", "user": user}
 
+
+@router.put("/update-job-info")
+def update_job_info(job_info_update: schemas.JobInfoUpdate, token_data=Depends(get_current_user), db: Session = Depends(get_db)):
+    updated_user = crud.update_job_info(db, token_data.id, job_info_update)
+    if not updated_user:
+        raise HTTPException(status_code=404, detail="업데이트 실패")
+    return {"message": "구인 정보 상태가 업데이트되었습니다.", "showyn": updated_user.showyn}
+
+
+
 @router.post("/add_patient")
 def add_patient(
     patient: schemas.PatientBase, 
     db: Session = Depends(get_db), 
-    current_user: models.ProtectorUserInfo = Depends(get_current_user)  # ✅ 유저 인증 수정
+    current_user: models.ProtectorUserInfo = Depends(get_current_user)  
 ):
     protector = db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.id == current_user.id).first()
     if not protector:
@@ -162,7 +173,7 @@ def get_patients(
 
 @router.get("/caregivers")
 def get_caregivers(db: Session = Depends(get_db)):
-    caregivers = db.query(models.ForeignUserInfo).all()
+    caregivers = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.showyn == 1).all()
     if not caregivers:
         raise HTTPException(status_code=404, detail="등록된 간병인이 없습니다.")
 
