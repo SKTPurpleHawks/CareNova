@@ -50,7 +50,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   Future<void> _addPatient() async {
   if (_formKey.currentState!.validate()) {
     final response = await http.post(
-      Uri.parse('http://192.168.91.218:8000/add_patient'),
+      Uri.parse('http://10.0.2.2:8000/add_patient'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
                   ),
                   child: TextButton(
                     onPressed: _addPatient,
-                    child: const Text("환자 추가가", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    child: const Text("환자 추가", style: TextStyle(color: Colors.white, fontSize: 18)),
                   ),
                 ),
             ],

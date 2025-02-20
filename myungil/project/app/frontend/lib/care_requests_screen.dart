@@ -23,7 +23,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
 
   Future<void> fetchCareRequests() async {
     final response = await http.get(
-      Uri.parse('http://192.168.91.218:8000/care-requests'),
+      Uri.parse('http://10.0.2.2:8000/care-requests'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',
@@ -41,24 +41,25 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
   }
 
   Future<void> respondToRequest(int requestId, bool accept) async {
-    final response = await http.put(
-      Uri.parse('http://192.168.91.218:8000/care-requests/$requestId'),
-      headers: {
-        'Authorization': 'Bearer ${widget.token}',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({'accept': accept}),
-    );
+  final response = await http.put(
+    Uri.parse('http://10.0.2.2:8000/care-requests/$requestId'),
+    headers: {
+      'Authorization': 'Bearer ${widget.token}',
+      'Content-Type': 'application/json',
+    },
+    body: jsonEncode({'status': accept ? 'accepted' : 'rejected'}),
+  );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        _requests.removeWhere((r) => r['id'] == requestId);
-      });
-      _showSnackBar('요청이 ${accept ? '수락' : '거절'}되었습니다.');
-    } else {
-      _showSnackBar('처리 중 오류가 발생했습니다.');
-    }
+  if (response.statusCode == 200) {
+    setState(() {
+      _requests.removeWhere((r) => r['id'] == requestId);
+    });
+    _showSnackBar('요청이 ${accept ? '수락' : '거절'}되었습니다.');
+  } else {
+    _showSnackBar('처리 중 오류가 발생했습니다.');
   }
+}
+
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -26,7 +26,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
 
   Future<void> _fetchCaregivers() async {
     final response = await http.get(
-      Uri.parse('http://192.168.91.218:8000/caregivers'),
+      Uri.parse('http://10.0.2.2:8000/caregivers'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -133,8 +133,10 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) =>
-                              CaregiverDetailScreen(caregiver: caregiver, token: widget.token,)),
+                          builder: (context) => CaregiverDetailScreen(
+                                caregiver: caregiver,
+                                token: widget.token,
+                              )),
                     );
                   },
                 ),
@@ -144,52 +146,143 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
   }
 }
 
-class CaregiverDetailScreen extends StatelessWidget {
-final Map<String, dynamic> caregiver;
+class CaregiverDetailScreen extends StatefulWidget {
+  final Map<String, dynamic> caregiver;
   final String token; // 로그인 토큰 추가
 
-  const CaregiverDetailScreen({Key? key, required this.caregiver, required this.token}) : super(key: key);
+  const CaregiverDetailScreen({Key? key, required this.caregiver, required this.token})
+      : super(key: key);
 
+  @override
+  _CaregiverDetailScreenState createState() => _CaregiverDetailScreenState();
+}
 
+class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
+  List<dynamic> _patients = [];
+  String? _selectedPatientId; // 선택된 환자의 ID
+  String? _selectedPatientName; // 선택된 환자의 이름
+
+  @override
+  void initState() {
+    super.initState();
+    fetchPatients();
+  }
+
+  /// 보호자가 등록한 환자 리스트 가져오기
+  Future<void> fetchPatients() async {
+    final url = Uri.parse('http://10.0.2.2:8000/patients');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _patients = jsonDecode(utf8.decode(response.bodyBytes));
+        });
+      } else {
+        _showSnackBar('환자 정보를 불러오는 데 실패했습니다.');
+      }
+    } catch (e) {
+      _showSnackBar('서버에 연결할 수 없습니다.');
+    }
+  }
+
+  /// 간병 신청 보내기 (환자 선택 후)
   Future<void> _sendCareRequest(BuildContext context) async {
-    final url = Uri.parse("http://192.168.91.218:8000/care-request");
+    if (_selectedPatientId == null) {
+      _showSnackBar("환자를 선택하세요.");
+      return;
+    }
+
+    final url = Uri.parse("http://10.0.2.2:8000/care-request");
     final response = await http.post(
       url,
       headers: {
-        'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'caregiver_id': caregiver['id']}),
+      body: jsonEncode({
+        'caregiver_id': widget.caregiver['id'],
+        'patient_id': _selectedPatientId, // 선택한 환자의 ID 포함
+      }),
     );
 
     if (response.statusCode == 200) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("간병 신청이 성공적으로 전송되었습니다.")),
-      );
+      _showSnackBar("간병 신청이 성공적으로 전송되었습니다.");
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("간병 신청에 실패했습니다.")),
-      );
+      _showSnackBar("간병 신청에 실패했습니다.");
     }
+  }
+
+  /// 환자 선택 다이얼로그 표시
+  void _showPatientSelectionDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("환자 선택"),
+          content: SingleChildScrollView(
+            child: Column(
+              children: _patients.map((patient) {
+                return RadioListTile<String>(
+                  title: Text(patient['name']),
+                  subtitle: Text("나이: ${patient['age']}세"),
+                  value: patient['id'],
+                  groupValue: _selectedPatientId,
+                  onChanged: (String? value) {
+                    setState(() {
+                      _selectedPatientId = value;
+                      _selectedPatientName = patient['name']; // 환자 이름 저장
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(caregiver['name'])),
+      appBar: AppBar(title: Text(widget.caregiver['name'])),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("이름: ${caregiver['name']}",
+            Text("이름: ${widget.caregiver['name']}",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text("나이: ${caregiver['age']}세"),
-            Text("성별: ${caregiver['sex']}"),
-            // Text("경력: ${caregiver['experience']}년"),
-            Text("근무 가능 지역: ${caregiver['region']}"),
-            // Text("급여: ${caregiver['salary']}만원"),
+            Text("나이: ${widget.caregiver['age']}세"),
+            Text("성별: ${widget.caregiver['sex']}"),
+            Text("근무 가능 지역: ${widget.caregiver['region']}"),
             SizedBox(height: 20),
+
+            /// 환자 선택 버튼
+            ElevatedButton(
+              onPressed: () => _showPatientSelectionDialog(context),
+              child: Text(_selectedPatientId == null
+                  ? "환자 선택하기"
+                  : "선택된 환자: $_selectedPatientName"), // 환자 이름 표시
+            ),
+            SizedBox(height: 10),
+
+            /// 간병 신청 버튼
             ElevatedButton(
               onPressed: () => _sendCareRequest(context),
               child: Text("간병 신청 보내기"),

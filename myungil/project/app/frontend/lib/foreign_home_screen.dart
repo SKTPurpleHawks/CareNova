@@ -34,7 +34,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 사용자 정보 불러오기
   Future<void> fetchUserInfo() async {
-    final url = Uri.parse('http://192.168.91.218:8000/user-info');
+    final url = Uri.parse('http://10.0.2.2:8000/user-info');
 
     try {
       final response = await http.get(
@@ -77,7 +77,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 보호자가 신청한 간병 요청 가져오기
   Future<void> fetchCareRequests() async {
-    final url = Uri.parse('http://192.168.91.218:8000/care-requests');
+    final url = Uri.parse('http://10.0.2.2:8000/care-requests');
 
     try {
       final response = await http.get(
@@ -107,11 +107,9 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
     }
   }
 
-
-
   /// 간병 요청 수락 또는 거절
   Future<void> _respondToCareRequest(bool accept, dynamic requestId) async {
-    final url = Uri.parse('http://192.168.91.218:8000/care-request/$requestId');
+    final url = Uri.parse('http://10.0.2.2:8000/care-request/$requestId');
 
     try {
       final response = await http.put(
@@ -136,7 +134,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 구인 정보 업데이트
   Future<void> _updateJobInfo(bool value) async {
-    final url = Uri.parse('http://192.168.91.218:8000/update-job-info');
+    final url = Uri.parse('http://10.0.2.2:8000/update-job-info');
 
     try {
       final response = await http.put(
@@ -172,7 +170,6 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
     });
 
     if (index == 1) {
-      // ✅ "환자 관리"를 클릭했을 때
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -189,9 +186,8 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
     fetchCareRequests();
   }
 
-
   void _showCareRequestDialog(
-      BuildContext context, Map<String, dynamic> request){
+      BuildContext context, Map<String, dynamic> request) {
     final pendingRequests = careRequests
         .where((request) => request['status'] == 'pending')
         .toList();
@@ -201,7 +197,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
       return;
     }
 
-    final request = pendingRequests.first; 
+    final request = pendingRequests.first;
 
     showDialog(
       context: context,
@@ -215,14 +211,15 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                 _respondToCareRequest(true, request['id'].toString());
                 Navigator.pop(context);
               },
-              child: Text('거절'),
+              child: Text('수락'),
             ),
-            ElevatedButton(
+            TextButton(
               onPressed: () {
-                _respondToCareRequest(true, request['id'].toString());
+                _respondToCareRequest(
+                    false, request['id'].toString()); 
                 Navigator.pop(context);
               },
-              child: Text('수락'),
+              child: Text('거절'),
             ),
           ],
         );

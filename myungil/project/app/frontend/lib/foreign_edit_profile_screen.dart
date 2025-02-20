@@ -95,7 +95,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         return;
       }
 
-      final url = Uri.parse('http://192.168.91.218:8000/user-info');
+      final url = Uri.parse('http://10.0.2.2:8000/user-info');
       Map<String, dynamic> data = {
         'email': widget.userData['email'],
         'name': _nameController.text,

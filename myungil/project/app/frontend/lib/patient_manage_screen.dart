@@ -16,17 +16,43 @@ class PatientManageScreen extends StatefulWidget {
 
 class _PatientManageScreenState extends State<PatientManageScreen> {
   List<dynamic> _patients = []; // 환자 리스트
+  List<dynamic> _caregiverpatients = []; // 환자 리스트
 
   @override
   void initState() {
     super.initState();
-    _fetchPatients();
+    _fetchProtectorPatients();
+    _fetchCaregiverPatients();
   }
 
-  Future<void> _fetchPatients() async {
+  Future<void> _fetchCaregiverPatients() async {
+    final url = Uri.parse('http://10.0.2.2:8000/caregiver/patients');
+
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.91.218:8000/patients'),
+        url,
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _caregiverpatients = jsonDecode(utf8.decode(response.bodyBytes));
+        });
+      } else {
+        _showSnackBar('간병인과 연결된 환자 정보를 불러오는 데 실패했습니다.');
+      }
+    } catch (e) {
+      _showSnackBar('서버에 연결할 수 없습니다.');
+    }
+  }
+
+  Future<void> _fetchProtectorPatients() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://10.0.2.2:8000/patients'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json; charset=UTF-8',
@@ -39,18 +65,19 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
         });
       }
     } on SocketException {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('인터넷 연결을 확인해주세요.')),
-      );
+      _showSnackBar('인터넷 연결을 확인해주세요.');
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('데이터를 불러오는 중 오류 발생: $e')),
-      );
+      _showSnackBar('데이터를 불러오는 중 오류 발생: $e');
     }
   }
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
+
   void _refreshPatients() {
-    _fetchPatients();
+    _fetchProtectorPatients();
   }
 
   @override
@@ -68,13 +95,43 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                     title: Text(_patients[index]['name']),
                     subtitle: Text("나이: ${_patients[index]['age']}세"),
                     onTap: () {
+                      final patientId = _patients[index]['id'];
+
+                      bool hasCaregiver = _caregiverpatients.any(
+                          (caregiverPatient) =>
+                              caregiverPatient['id'] == patientId &&
+                              caregiverPatient.containsKey('caregiver_id') &&
+                              caregiverPatient['caregiver_id'] != null &&
+                              caregiverPatient['caregiver_id']
+                                  .toString()
+                                  .isNotEmpty);
+
+                      String caregiverId = (_caregiverpatients.firstWhere(
+                                  (caregiverPatient) =>
+                                      caregiverPatient['id'] == patientId &&
+                                      caregiverPatient.containsKey('caregiver_id'),
+                                  orElse: () =>
+                                      {'caregiver_id': null})['caregiver_id'] ?? "").toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
+
+                      String caregiverName = (_caregiverpatients.firstWhere(
+                                  (caregiverPatient) =>
+                                      caregiverPatient['id'] == patientId &&
+                                      caregiverPatient
+                                          .containsKey('caregiver_name'),
+                                  orElse: () => {
+                                        'caregiver_name': null
+                                      })['caregiver_name'] ?? "정보 없음").toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
+
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => PatientDetailScreen(
                             patient: _patients[index],
                             token: widget.token,
-                            isCaregiver: false
+                            isCaregiver: false,
+                            hasCaregiver: hasCaregiver,
+                            caregiverName: caregiverName,
+                            caregiverId: caregiverId,
                           ),
                         ),
                       );
