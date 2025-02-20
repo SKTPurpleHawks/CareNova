@@ -120,3 +120,38 @@ def update_job_info(db: Session, user_id: str, job_info_update: schemas.JobInfoU
 
     return user
 
+
+def create_care_request(db: Session, request_data: schemas.CareRequestCreate, protector_id: str):
+    """
+    간병 요청 생성
+    """
+    caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == request_data.caregiver_id).first()
+    if not caregiver:
+        raise HTTPException(status_code=404, detail="Caregiver not found")
+
+    patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == request_data.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # 중복 요청 방지
+    existing_request = db.query(models.CareRequest).filter(
+        models.CareRequest.caregiver_id == request_data.caregiver_id,
+        models.CareRequest.patient_id == request_data.patient_id,
+        models.CareRequest.status == "pending"
+    ).first()
+    
+    if existing_request:
+        raise HTTPException(status_code=400, detail="Care request already exists for this patient.")
+
+    new_request = models.CareRequest(
+        protector_id=protector_id,
+        caregiver_id=request_data.caregiver_id,
+        patient_id=request_data.patient_id,
+        status="pending"
+    )
+
+    db.add(new_request)
+    db.commit()
+    db.refresh(new_request)
+
+    return new_request

@@ -2,12 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 import schemas, crud, models
+from models import ProtectorUserInfo, ForeignUserInfo
 from security import verify_password, create_access_token, get_current_user, get_password_hash
 from datetime import datetime
 from fastapi.responses import JSONResponse
 import logging
 from typing import List
 import uuid
+from typing import Union
 
 
 router = APIRouter()
@@ -200,26 +202,7 @@ def send_care_request(
     db: Session = Depends(get_db), 
     current_user: models.ProtectorUserInfo = Depends(get_current_user)
 ):
-    
-    caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == request_data.caregiver_id).first()
-    
-    if not caregiver:
-        raise HTTPException(status_code=404, detail="Caregiver not found")
-
-    new_request = models.CareRequest(
-        protector_id=current_user.id,
-        caregiver_id=request_data.caregiver_id,
-        status="pending"
-    )
-
-    db.add(new_request)
-    db.commit()
-    db.refresh(new_request)
-
-    return {"message": "Care request sent successfully"}
-
-
-
+    return crud.create_care_request(db, request_data, current_user.id)
 
 @router.put("/care-request/{request_id}")
 def update_care_request_status(
@@ -228,56 +211,21 @@ def update_care_request_status(
     db: Session = Depends(get_db),
     current_user: models.ForeignUserInfo = Depends(get_current_user)
 ):
-    # 간병 요청 조회
+    logging.info(f"📥 Care request update received: {status_update.dict()}")  # ✅ 로그 추가
+
     care_request = db.query(models.CareRequest).filter(models.CareRequest.id == request_id).first()
 
-    # 존재하지 않는 간병 요청 예외 처리
     if not care_request:
         raise HTTPException(status_code=404, detail="Care request not found")
 
-    # 요청된 caregiver_id가 None일 경우 예외 처리
-    if care_request.caregiver_id is None:
-        raise HTTPException(status_code=400, detail="This care request has no assigned caregiver.")
-
-    # 현재 로그인한 사용자가 해당 요청을 처리할 권한이 있는지 확인
     if care_request.caregiver_id != current_user.id:
-        raise HTTPException(status_code=403, detail="You are not authorized to update this request")
+        raise HTTPException(status_code=403, detail="Unauthorized request update")
 
-    # 요청 상태 변경
     care_request.status = status_update.status  
     db.commit()
     db.refresh(care_request)
 
-    # 'accepted' 상태일 경우만 환자 추가 로직 실행
-    if status_update.status == "accepted":
-        # 보호자가 등록한 환자 조회
-        patient = db.query(models.PatientUserInfo).filter(
-            models.PatientUserInfo.protector_id == care_request.protector_id
-        ).first()
-
-        # 환자가 없을 경우 404 오류 반환
-        if not patient:
-            raise HTTPException(status_code=404, detail="No patient found for this protector.")
-
-        # caregiver_id와 patient_id 중복 검사
-        existing_assignment = db.query(models.CaregiverPatient).filter(
-            models.CaregiverPatient.patient_id == patient.id
-        ).first()
-
-        if existing_assignment:
-            db.delete(care_request)
-            db.commit()
-            raise {"message" : "Patient already assigned to caregiver.Request deleted."}
-
-        # 환자-간병인 연결 추가
-        new_assignment = models.CaregiverPatient(
-            caregiver_id=care_request.caregiver_id,
-            patient_id=patient.id
-        )
-
-        db.add(new_assignment)
-        db.commit()
-        db.refresh(new_assignment)
+    logging.info(f"✅ Care request {request_id} updated to {care_request.status}")  # ✅ 로그 추가
 
     return {"message": f"Care request {status_update.status}"}
 
@@ -291,7 +239,6 @@ def get_care_requests(
     db: Session = Depends(get_db),
     current_user: models.ForeignUserInfo = Depends(get_current_user)
 ):
-    
     requests = db.query(models.CareRequest).filter(
         models.CareRequest.caregiver_id == current_user.id,  
         models.CareRequest.status == "pending"  
@@ -301,7 +248,8 @@ def get_care_requests(
         {
             "id": r.id,
             "protector_name": r.protector.name if r.protector else "알 수 없는 보호자",
-            "status": r.status
+            "status": r.status,
+            "patient_name": r.patient.name if r.patient else "알 수 없는 환자",
         }
         for r in requests
     ]
@@ -309,22 +257,96 @@ def get_care_requests(
 
 
 
+
 @router.get("/caregiver/patients")
 def get_caregiver_patients(
     db: Session = Depends(get_db),
-    current_user: models.ForeignUserInfo = Depends(get_current_user)
+    current_user: Union[ProtectorUserInfo, ForeignUserInfo] = Depends(get_current_user)  # ✅ Union 적용
 ):
-    assignments = db.query(models.CaregiverPatient).filter(models.CaregiverPatient.caregiver_id == current_user.id).all()
-
     patients = []
-    for assignment in assignments:
-        patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == assignment.patient_id).first()
-        if patient:
+
+    if isinstance(current_user, ForeignUserInfo):
+        # ✅ 간병인 로직
+        requests = db.query(models.CareRequest).filter(
+            models.CareRequest.caregiver_id == current_user.id,
+            models.CareRequest.status == "accepted"
+        ).all()
+
+        for request in requests:
+            patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == request.patient_id).first()
+
+            if patient:
+
+                patients.append({
+                    "id": patient.id,
+                    "name": patient.name,
+                    "birthday": patient.birthday,
+                    "age": patient.age,
+                    "sex": patient.sex,
+                    "height": patient.height,
+                    "weight": patient.weight,
+                    "symptoms": patient.symptoms,
+                })
+
+    elif isinstance(current_user, ProtectorUserInfo):
+        # ✅ 보호자 로직
+        protector_patients = db.query(models.PatientUserInfo).filter(
+            models.PatientUserInfo.protector_id == current_user.id
+        ).all()
+
+        for patient in protector_patients:
+            care_request = db.query(models.CareRequest).filter(
+                models.CareRequest.patient_id == patient.id,
+                models.CareRequest.status == "accepted"
+            ).first()
+
+            caregiver_id = care_request.caregiver_id if care_request else None
+            caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == caregiver_id).first()
+            caregiver_name = caregiver.name if caregiver else "알 수 없음"
+
             patients.append({
                 "id": patient.id,
                 "name": patient.name,
                 "birthday": patient.birthday,
-                "age": patient.age
+                "age": patient.age,
+                "sex": patient.sex,
+                "height": patient.height,
+                "weight": patient.weight,
+                "symptoms": patient.symptoms,
+                "caregiver_id": caregiver_id,
+                "caregiver_name": caregiver_name
             })
 
     return patients
+
+
+
+@router.post("/reviews")
+def submit_review(
+    review_data: schemas.ReviewCreate,
+    db: Session = Depends(get_db)
+):
+    """
+    보호자가 간병인을 평가하고 리뷰를 저장한 후, 연결을 해제함
+    """
+    # 리뷰 저장
+    review = models.Review(
+        caregiver_id=review_data.caregiver_id,
+        protector_id=review_data.protector_id,
+        sincerity=review_data.sincerity,
+        hygiene=review_data.hygiene,
+        communication=review_data.communication,
+        total_score=review_data.total_score,
+        review_content=review_data.review_content,
+    )
+    db.add(review)
+    db.commit()
+
+    # CareRequest에서 보호자-환자-간병인 연결 해제
+    db.query(models.CareRequest).filter(
+        models.CareRequest.caregiver_id == review_data.caregiver_id,
+        models.CareRequest.protector_id == review_data.protector_id
+    ).delete()
+    db.commit()
+
+    return {"message": "리뷰가 저장되었으며, 간병인 연결이 해제되었습니다."}

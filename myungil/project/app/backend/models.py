@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float
 from database import Base
 from sqlalchemy.orm import Session, relationship
 from datetime import datetime
@@ -28,8 +28,8 @@ class ForeignUserInfo(Base):
     smoking = Column(String)
     showyn = Column(Integer)
 
-    patients = relationship("CaregiverPatient", back_populates="caregiver")
     requests_received = relationship("CareRequest", back_populates="caregiver")
+    reviews_received = relationship("Review", back_populates="caregiver")
 
     @classmethod
     def foreign_generate_custom_id(cls, db: Session):
@@ -55,6 +55,7 @@ class ProtectorUserInfo(Base):
 
     patients = relationship("PatientUserInfo", back_populates="protector")
     requests_sent = relationship("CareRequest", back_populates="protector")
+    reviews_written = relationship("Review", back_populates="protector")
 
     @classmethod
     def protector_generate_custom_id(cls, db: Session):
@@ -85,7 +86,7 @@ class PatientUserInfo(Base):
     smoking = Column(String)
 
     protector = relationship("ProtectorUserInfo", back_populates="patients")
-    caregiver = relationship("CaregiverPatient", back_populates="patient")
+    caregiver = relationship("CareRequest", back_populates="patient")
     
     @classmethod
     def patient_generate_custom_id(cls, db: Session):
@@ -98,26 +99,33 @@ class PatientUserInfo(Base):
 
         return new_id
 
+
 class CareRequest(Base):
     __tablename__ = "care_requests"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     protector_id = Column(String, ForeignKey("protector_user_info.id"), nullable=False)
     caregiver_id = Column(String, ForeignKey("foreign_user_info.id"), nullable=False)
+    patient_id = Column(String, ForeignKey("patient_user_info.id"), nullable=False) 
     status = Column(String, default="pending")  
     created_at = Column(DateTime, default=datetime.utcnow)
 
     protector = relationship("ProtectorUserInfo", back_populates="requests_sent")
     caregiver = relationship("ForeignUserInfo", back_populates="requests_received")
-
-
-    
-class CaregiverPatient(Base):
-    __tablename__ = "caregiver_patient"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    caregiver_id = Column(String, ForeignKey("foreign_user_info.id"))
-    patient_id = Column(String, ForeignKey("patient_user_info.id"))
-
-    caregiver = relationship("ForeignUserInfo", back_populates="patients")
     patient = relationship("PatientUserInfo", back_populates="caregiver")
+
+class Review(Base):
+    __tablename__ = "reviews_info"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    caregiver_id = Column(String, ForeignKey("foreign_user_info.id"), nullable=False)
+    protector_id = Column(String, ForeignKey("protector_user_info.id"), nullable=False)
+    sincerity = Column(Float, nullable=False)  # 성실도
+    hygiene = Column(Float, nullable=False)  # 위생
+    communication = Column(Float, nullable=False)  # 의사소통
+    total_score = Column(Float, nullable=False)
+    review_content = Column(String, nullable=True)  # 리뷰 내용
+    created_at = Column(DateTime, default=datetime.utcnow)  # 리뷰 작성 시간
+
+    caregiver = relationship("ForeignUserInfo", back_populates="reviews_received")
+    protector = relationship("ProtectorUserInfo", back_populates="reviews_written")

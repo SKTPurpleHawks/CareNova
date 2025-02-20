@@ -79,6 +79,8 @@ class JobInfoUpdate(BaseModel):
 
 class CareRequestCreate(BaseModel):
     caregiver_id: str 
+    patient_id: str 
+ 
 
 class CareRequestUpdate(BaseModel):
     status: str  
@@ -86,3 +88,13 @@ class CareRequestUpdate(BaseModel):
 class PatientAssignmentCreate(BaseModel):
     caregiver_id: str
     patient_id: str
+    
+    
+class ReviewCreate(BaseModel):
+    caregiver_id: str
+    protector_id: str
+    sincerity: float
+    hygiene: float
+    communication: float
+    total_score: float
+    review_content: Optional[str] = None  # 선택적 리뷰 내용
