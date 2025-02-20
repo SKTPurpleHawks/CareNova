@@ -4,10 +4,12 @@ class GuardianPatientRegisterScreen extends StatefulWidget {
   const GuardianPatientRegisterScreen({super.key});
 
   @override
-  State<GuardianPatientRegisterScreen> createState() => _GuardianPatientRegisterScreenState();
+  State<GuardianPatientRegisterScreen> createState() =>
+      _GuardianPatientRegisterScreenState();
 }
 
-class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterScreen> {
+class _GuardianPatientRegisterScreenState
+    extends State<GuardianPatientRegisterScreen> {
   final TextEditingController nameController = TextEditingController();
   String? selectedSpot;
   String? selectedGender;
@@ -20,9 +22,25 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
 
   final List<String> spots = ['집', '병원', '둘다'];
   final List<String> symptoms = [
-    '치매', '섬망', '욕창', '하반신 마비', '상반신 마비', '전신 마비',
-    '와상환자', '기저귀케어', '의식X', '석션', '피딩', '소변줄', '장루',
-    '야간 집중돌봄', '전염성', '파킨슨', '정신질환', '투석', '재활'
+    '치매',
+    '섬망',
+    '욕창',
+    '하반신 마비',
+    '상반신 마비',
+    '전신 마비',
+    '와상환자',
+    '기저귀케어',
+    '의식X',
+    '석션',
+    '피딩',
+    '소변줄',
+    '장루',
+    '야간 집중돌봄',
+    '전염성',
+    '파킨슨',
+    '정신질환',
+    '투석',
+    '재활'
   ];
   List<String> selectedSymptoms = [];
 
@@ -37,17 +55,27 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildTextField('이름', controller: nameController), // ✅ 이름 입력칸 추가
-              _buildTextField('간병 기간 (일 단위)', onChanged: (value) => selectedAge = value),
-              _buildTextField('간병 지역', onChanged: (value) => selectedHeight = value),
-              _buildDropdownField('간병 장소', spots, selectedSpot, (value) => setState(() => selectedSpot = value)),
-              _buildGenderSelector('환자 성별', (value) => setState(() => selectedGender = value)),
-              _buildTextField('환자 나이', onChanged: (value) => selectedAge = value),
-              _buildTextField('환자 키', onChanged: (value) => selectedHeight = value),
-              _buildTextField('환자 몸무게', onChanged: (value) => selectedWeight = value),
-              _buildTextField('진단명', onChanged: (value) => selectedDisease = value),
+              _buildTextField('간병 기간 (일 단위)',
+                  onChanged: (value) => selectedAge = value),
+              _buildTextField('간병 지역',
+                  onChanged: (value) => selectedHeight = value),
+              _buildDropdownField('간병 장소', spots, selectedSpot,
+                  (value) => setState(() => selectedSpot = value)),
+              _buildGenderSelector(
+                  '환자 성별', (value) => setState(() => selectedGender = value)),
+              _buildTextField('환자 나이',
+                  onChanged: (value) => selectedAge = value),
+              _buildTextField('환자 키',
+                  onChanged: (value) => selectedHeight = value),
+              _buildTextField('환자 몸무게',
+                  onChanged: (value) => selectedWeight = value),
+              _buildTextField('진단명',
+                  onChanged: (value) => selectedDisease = value),
               _buildMultiSelectField('증상', symptoms, selectedSymptoms),
-              _buildCheckboxField('걸을 수 없는 환자입니까?', canWalk, (value) => setState(() => canWalk = value ?? false)),
-              _buildGenderSelector('선호하는 간병인 성별', (value) => setState(() => selectedPreferredGender = value)),
+              _buildCheckboxField('걸을 수 없는 환자입니까?', canWalk,
+                  (value) => setState(() => canWalk = value ?? false)),
+              _buildGenderSelector('선호하는 간병인 성별',
+                  (value) => setState(() => selectedPreferredGender = value)),
               const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
@@ -81,7 +109,8 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
     Navigator.pop(context, nameController.text);
   }
 
-  Widget _buildTextField(String label, {TextEditingController? controller, ValueChanged<String>? onChanged}) {
+  Widget _buildTextField(String label,
+      {TextEditingController? controller, ValueChanged<String>? onChanged}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: TextField(
@@ -95,7 +124,8 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
     );
   }
 
-  Widget _buildDropdownField(String label, List<String> items, String? selectedItem, ValueChanged<String?> onChanged) {
+  Widget _buildDropdownField(String label, List<String> items,
+      String? selectedItem, ValueChanged<String?> onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: DropdownButtonFormField<String>(
@@ -104,7 +134,10 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
           border: const OutlineInputBorder(),
         ),
         value: selectedItem ?? items.first,
-        items: items.map((String value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
+        items: items
+            .map((String value) =>
+                DropdownMenuItem(value: value, child: Text(value)))
+            .toList(),
         onChanged: onChanged,
       ),
     );
@@ -114,7 +147,8 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Row(
           children: [
             Expanded(child: _buildGenderButton('남', selectedGender, onChanged)),
@@ -127,7 +161,8 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
     );
   }
 
-  Widget _buildGenderButton(String gender, String? selected, ValueChanged<String?> onChanged) {
+  Widget _buildGenderButton(
+      String gender, String? selected, ValueChanged<String?> onChanged) {
     return ElevatedButton(
       onPressed: () => onChanged(gender),
       style: ElevatedButton.styleFrom(
@@ -139,11 +174,13 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
     );
   }
 
-  Widget _buildMultiSelectField(String label, List<String> options, List<String> selectedOptions) {
+  Widget _buildMultiSelectField(
+      String label, List<String> options, List<String> selectedOptions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         Wrap(
           children: options.map((option) {
             bool isSelected = selectedOptions.contains(option);
@@ -154,7 +191,9 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
                 selected: isSelected,
                 onSelected: (selected) {
                   setState(() {
-                    selected ? selectedOptions.add(option) : selectedOptions.remove(option);
+                    selected
+                        ? selectedOptions.add(option)
+                        : selectedOptions.remove(option);
                   });
                 },
               ),
@@ -166,7 +205,8 @@ class _GuardianPatientRegisterScreenState extends State<GuardianPatientRegisterS
     );
   }
 
-  Widget _buildCheckboxField(String label, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildCheckboxField(
+      String label, bool value, ValueChanged<bool> onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
