@@ -36,6 +36,13 @@ class _LanguageScreenState extends State<LanguageScreen> {
             onPressed: _goToCaregiverSearchScreen,
             child: const Text('Next'),
           ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, '/recorder_screen');
+            },
+            child: const Text('record'),
+          ),
+
         ],
       ),
     );

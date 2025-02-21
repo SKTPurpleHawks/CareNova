@@ -19,6 +19,7 @@ import 'Caregiver/caregiver_patient_log_detail_screen.dart';
 import 'Caregiver/caregiver_patient_log_create_screen.dart';
 import 'Caregiver/caregiver_patient_info_screen.dart';
 import 'Caregiver/caregiver_patient_detail_screen.dart';
+import 'recorder_screen.dart'; // ✅ RecorderScreen 추가
 
 void main() {
   runApp(const MyApp());
@@ -72,6 +73,11 @@ class MyApp extends StatelessWidget {
               builder: (context) => CaregiverListScreen2(patientName: args),
             );
 
+          case '/recorder_screen': // ✅ RecorderScreen 추가
+            return MaterialPageRoute(
+              builder: (context) => const RecorderScreen(),
+            );
+
           default:
             return MaterialPageRoute(
               builder: (context) => const LanguageScreen(),
@@ -93,12 +99,11 @@ class MyApp extends StatelessWidget {
         '/caregiver_profile': (context) => const profile.CaregiverProfileScreen(),
         '/caregiver_patient_list': (context) => const CaregiverPatientListScreen(),
         '/caregiver_patient_log_detail': (context) => const CaregiverPatientLogDetailScreen(),
+        '/recorder_screen': (context) => const RecorderScreen(), // ✅ 추가된 화면 이동
       },
     );
   }
 }
-
-
 
 
 
