@@ -1,13 +1,19 @@
 import torch
 import os
 import librosa
+import openai
+from dotenv import load_dotenv
 import numpy as np
 import soundfile as sf
 from faster_whisper import WhisperModel
 import ctranslate2
-from transformers import AutoTokenizer, AutoModelForCausalLM
+
+
 
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+
+load_dotenv()  # .env 파일 로드
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # GPU 확인
 device = "cuda"
@@ -47,66 +53,57 @@ def save_transcription_to_txt(segments, transcription_file):
 
     print(f"✅ 텍스트 변환 완료! '{transcription_file}'에 저장되었습니다.")
 
-# huggingface-cli login
-# GPT 기반 문장 다듬기 모델 불러오기
-gpt_model_name = "distilbert/distilgpt2" 
-gpt_tokenizer = AutoTokenizer.from_pretrained(gpt_model_name)
-gpt_model = AutoModelForCausalLM.from_pretrained(gpt_model_name, max_memory={0: "3GB"}).to(device)
-
-
+def read_text_from_file(file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read().strip()  # 파일에서 텍스트 읽기
+        return text
+    except FileNotFoundError:
+        print(f"❌ 오류: '{file_path}' 파일을 찾을 수 없습니다.")
+        return None
+    except Exception as e:
+        print(f"❌ 파일 읽기 중 오류 발생: {e}")
+        return None
 
 def refine_text(text):
-    """입력된 텍스트를 GPT 모델을 사용하여 더 자연스럽게 변환"""
     if not text:
         print("❌ 오류: 입력된 텍스트가 없습니다.")
         return None
 
-    prompt = f"다음 문장을 더 자연스럽게 수정해 주세요:\n{text}\n\n자연스러운 문장:"
+    print("3. GPT-4o-mini로 문장 다듬기 시작... (API 호출 5회)")
 
-    # 🔹 패딩 토큰이 없으면 설정 (GPT-2는 기본적으로 pad_token이 없음)
-    if gpt_tokenizer.pad_token is None:
-        gpt_tokenizer.add_special_tokens({'pad_token': '[PAD]'})  # '[PAD]' 토큰 추가
-        gpt_tokenizer.pad_token = gpt_tokenizer.eos_token  # 패딩을 EOS 토큰으로 설정
+    prompt = f"{text}\n\n 문맥을 파악해 자연스럽게 바꿔줘:"
 
-    if gpt_tokenizer.pad_token_id is None:
-        gpt_tokenizer.pad_token_id = gpt_tokenizer.eos_token_id  # 패딩을 EOS 토큰으로 설정
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.6
+        )
 
-    # 🔹 padding을 활성화하여 input_ids를 얻음
-    encoded_inputs = gpt_tokenizer(prompt, return_tensors="pt", padding=True, truncation=True, max_length=512)
-    input_ids = encoded_inputs.input_ids.to(device)
-    attention_mask = encoded_inputs.attention_mask.to(device)
+        refined_text = response["choices"][0]["message"]["content"].strip()
+        
+        if not refined_text:
+            print("⚠️ 경고: OpenAI API가 빈 응답을 반환했습니다.")
+            return None
+        
+        try:
+            with open(refined_file, "w", encoding="utf-8") as f:
+                f.write(refined_text)
+            print(f"✅ '{refined_file}' 파일로 다듬어진 텍스트 저장 완료!")
 
-    output = gpt_model.generate(
-        input_ids,
-        attention_mask=attention_mask,
-        max_new_tokens=100,  # 🔹 새로 생성할 최대 토큰 개수 설정
-        do_sample=True,
-        temperature=0.7,
-        top_p=0.9,
-        pad_token_id=gpt_tokenizer.pad_token_id  # 패딩 토큰 명확히 지정
-    )
+        except Exception as e:
+            print(f"❌ 파일 저장 중 오류 발생: {e}")
 
-    refined_text = gpt_tokenizer.decode(output[0], skip_special_tokens=True)
-    return refined_text
+    except Exception as e:
+        print(f"❌ OpenAI API 요청 중 오류 발생: {e}")
+        return None
 
-
-
-'''
-def refine_text(text):
-    prompt = f"다음 문장을 더 자연스럽게 수정해 주세요:\n{text}\n\n자연스러운 문장:"  
-    input_ids = gpt_tokenizer(prompt, return_tensors="pt").input_ids.to(device)
-    if gpt_tokenizer.pad_token_id is None:
-        gpt_tokenizer.pad_token_id = gpt_tokenizer.eos_token_id
-    attention_mask = (input_ids != gpt_tokenizer.pad_token_id).long().to(device)
-    output = gpt_model.generate(input_ids, max_length=1024, temperature=0.7, pad_token_id=gpt_tokenizer)
-    refined_text = gpt_tokenizer.decode(output[0], skip_special_tokens=True)
-    return refined_text
-'''
 
 input_audio = "interview1.wav"  # 원본 오디오 파일
 output_audio = "interview1.wav"  # 무음 제거 후 저장될 파일
 transcription_file = "interview1.txt"
-refined_file = "interview1_r.txt"
+refined_file = "interview1_4omini.txt"
 
 
 # 무음 제거 실행
@@ -130,17 +127,6 @@ else:
     print("오류: 변환된 오디오 파일이 존재하지 않아 텍스트 변환을 수행할 수 없습니다!")
 '''
 
-def read_text_from_file(file_path):
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            text = f.read().strip()  # 파일에서 텍스트 읽기
-        return text
-    except FileNotFoundError:
-        print(f"❌ 오류: '{file_path}' 파일을 찾을 수 없습니다.")
-        return None
-
 text = read_text_from_file(transcription_file)
 refine_text(text)
-
-with open(refined_file, "w", encoding="utf-8") as f:
-    f.write(refined_file)
+    
