@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white, // 버튼 배경색
             foregroundColor: Colors.black, // 버튼 글씨색
-            padding: EdgeInsets.symmetric(horizontal: 100, vertical: 10),
+            padding: EdgeInsets.symmetric(horizontal: 100, vertical: 5),
             textStyle: TextStyle(fontSize: 18),
           ),
         ),

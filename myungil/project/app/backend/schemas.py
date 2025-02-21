@@ -98,3 +98,41 @@ class ReviewCreate(BaseModel):
     communication: float
     total_score: float
     review_content: Optional[str] = None  # 선택적 리뷰 내용
+
+
+class DailyRecordBase(BaseModel):
+    caregiver_id: int
+    protector_id: int
+    patient_id: int
+    location: str
+    mood: str
+    sleep_quality: str
+    breakfast_type: Optional[str] = None
+    breakfast_amount: Optional[float] = None
+    lunch_type: Optional[str] = None
+    lunch_amount: Optional[float] = None
+    dinner_type: Optional[str] = None
+    dinner_amount: Optional[float] = None
+    urine_amount: Optional[str] = None
+    urine_color: Optional[str] = None
+    urine_smell: Optional[str] = None
+    urine_foam: Optional[bool] = False
+    stool_amount: Optional[str] = None
+    stool_condition: Optional[str] = None
+    position_change: Optional[bool] = False
+    wheelchair_transfer: Optional[bool] = False
+    walking_assistance: Optional[bool] = False
+    outdoor_walk: Optional[bool] = False
+    notes: Optional[str] = None
+
+class DailyRecordCreate(DailyRecordBase):
+    caregiver_id: int
+    protector_id: int
+    patient_id: int
+
+class DailyRecordResponse(DailyRecordBase):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

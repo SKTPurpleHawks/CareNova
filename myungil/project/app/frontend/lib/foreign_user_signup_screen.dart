@@ -19,12 +19,12 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   final _phoneNumberController = TextEditingController();
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
-  final _ageController = TextEditingController(); // 🔹 추가됨 (나이 입력)
+  final _ageController = TextEditingController();
 
-  DateTime _birthday = DateTime.now();
+  DateTime? _birthday;
   int _age = 0;
-  DateTime _startDate = DateTime.now();
-  DateTime _endDate = DateTime.now();
+  DateTime? _startDate;
+  DateTime? _endDate;
   String _sex = '남성';
   String _spot = '병원';
   List<String> _selectedRegions = [];
@@ -34,17 +34,48 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   bool _canCareForImmobile = false;
   String _smoking = '비흡연';
 
-
   final List<String> _regions = [
-    '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종',
-    '경기남부', '경기북부', '강원영서', '강원영동', '충북', '충남', 
-    '전북', '전남', '경북', '경남', '제주'
+    '서울',
+    '부산',
+    '대구',
+    '인천',
+    '광주',
+    '대전',
+    '울산',
+    '세종',
+    '경기남부',
+    '경기북부',
+    '강원영서',
+    '강원영동',
+    '충북',
+    '충남',
+    '전북',
+    '전남',
+    '경북',
+    '경남',
+    '제주'
   ];
-  
+
   final List<String> _symptoms = [
-    '치매', '섬망', '욕창', '하반신마비', '상반신마비', '전신마비',
-    '와상환자', '기저귀케어', '의식없음', '석션', '피딩', '소변줄', 
-    '장루', '야간집중돌봄', '전염성', '파킨슨', '정신질환', '투석', '재활'
+    '치매',
+    '섬망',
+    '욕창',
+    '하반신마비',
+    '상반신마비',
+    '전신마비',
+    '와상환자',
+    '기저귀케어',
+    '의식없음',
+    '석션',
+    '피딩',
+    '소변줄',
+    '장루',
+    '야간집중돌봄',
+    '전염성',
+    '파킨슨',
+    '정신질환',
+    '투석',
+    '재활'
   ];
 
   Future<void> _signup() async {
@@ -64,11 +95,11 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
           'password': _passwordController.text,
           'name': _nameController.text,
           'phonenumber': _phoneNumberController.text,
-          'birthday': _birthday.toIso8601String().split('T')[0],
-          'age': int.parse(_ageController.text), // 🔹 수정됨
+          'birthday': _birthday?.toIso8601String().split('T')[0] ?? '',
+          'age': int.parse(_ageController.text),
           'sex': _sex,
-          'startdate': _startDate.toIso8601String().split('T')[0],
-          'enddate': _endDate.toIso8601String().split('T')[0],
+          'startdate': _startDate?.toIso8601String().split('T')[0] ?? '',
+          'enddate': _endDate?.toIso8601String().split('T')[0] ?? '',
           'region': _selectedRegions.join(','),
           'spot': _spot,
           'height': int.parse(_heightController.text),
@@ -94,7 +125,8 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
     }
   }
 
-  int _calculateAge(DateTime birthDate) {
+  int _calculateAge(DateTime? birthDate) {
+    if (birthDate == null) return 0;
     DateTime currentDate = DateTime.now();
     int age = currentDate.year - birthDate.year;
     if (currentDate.month < birthDate.month ||
@@ -108,82 +140,116 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("간병인 회원가입")),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildTextField(_emailController, "이메일"),
-                _buildTextField(_passwordController, "비밀번호", isPassword: true),
-                _buildTextField(_confirmPasswordController, "비밀번호 확인",
+                SizedBox(height: 50),
+                Center(
+                  child: Text(
+                    "SBJNMCCARE",
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF94d0cc),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 30),
+                Text("간병인 회원가입",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(height: 20),
+                _buildTextFieldWithLabel(_emailController, "이메일"),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_passwordController, "비밀번호",
                     isPassword: true),
-                _buildTextField(_nameController, "이름"),
-                _buildTextField(_phoneNumberController, "전화번호",
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_confirmPasswordController, "비밀번호 확인",
+                    isPassword: true),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_nameController, "이름"),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_phoneNumberController, "전화번호",
                     keyboardType: TextInputType.phone),
-
-
-                _buildDateSelection("생년월일", _birthday, (date) {
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel("생년월일", _birthday, (date) {
                   setState(() {
                     _birthday = date;
-                    _age = _calculateAge(date);
+                    _age = _calculateAge(date ?? DateTime.now());
                     _ageController.text = _age.toString(); // 🔹 나이 필드 자동 업데이트
                   });
                 }),
-
-                
-                _buildTextField(
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(
                   _ageController,
                   "나이",
                   keyboardType: TextInputType.number,
                   readOnly: true,
                 ),
-
-                _buildDateSelection("간병 시작일", _startDate, (date) {
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel("간병 시작일", _startDate, (date) {
                   setState(() {
                     _startDate = date;
                   });
                 }),
-
-                _buildDateSelection("간병 종료일", _endDate, (date) {
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel("간병 종료일", _endDate, (date) {
                   setState(() {
                     _endDate = date;
                   });
                 }),
-
-                _buildDropdown("성별", _sex, ['남성', '여성'],
-                    (value) => setState(() => _sex = value)),
-                _buildTextField(_heightController, "키 (cm)",
+                SizedBox(height: 10),
+                _buildGenderSelectionWithLabel(),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_heightController, "키 (cm)",
                     keyboardType: TextInputType.number),
-                _buildTextField(_weightController, "몸무게 (kg)",
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_weightController, "몸무게 (kg)",
                     keyboardType: TextInputType.number),
-                _buildDropdown("간병 가능 장소", _spot, ['병원', '집', '둘 다'],
+                SizedBox(height: 10),
+                _buildDropdownWithLabel("간병 가능 장소", _spot, ['병원', '집', '둘 다'],
                     (value) => setState(() => _spot = value)),
-                _buildMultiSelect("간병 가능 지역", _regions, _selectedRegions),
-                _buildMultiSelect("간병 가능 질환", _symptoms, _selectedSymptoms),
-                _buildDropdown("환자의 보행 가능 여부", _canWalkPatient, ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                SizedBox(height: 10),
+                _buildMultiSelectWithLabel(
+                    "간병 가능 지역", _regions, _selectedRegions),
+                SizedBox(height: 10),
+                _buildMultiSelectWithLabel(
+                    "간병 가능 질환", _symptoms, _selectedSymptoms),
+                SizedBox(height: 10),
+                _buildDropdownWithLabel(
+                    "환자의 보행 가능 여부",
+                    _canWalkPatient,
+                    ['걸을 수 있음', '걸을 수 없음', '상관없음'],
                     (value) => setState(() => _canWalkPatient = value)),
-                _buildDropdown("선호하는 환자 성별", _preferSex, ['남성', '여성', '상관없음'],
+                SizedBox(height: 10),
+                _buildDropdownWithLabel(
+                    "선호하는 환자 성별",
+                    _preferSex,
+                    ['남성', '여성', '상관없음'],
                     (value) => setState(() => _preferSex = value)),
-                _buildDropdown("흡연 여부", _smoking, ['비흡연', '흡연'],
+                SizedBox(height: 10),
+                _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
                     (value) => setState(() => _smoking = value)),
-
-                SizedBox(height: 20),
+                SizedBox(height: 30),
                 Container(
                   width: double.infinity,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Colors.black,
+                    color: Color(0xFF94d0cc),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextButton(
                     onPressed: _signup,
-                    child: const Text("가입하기", style: TextStyle(color: Colors.white, fontSize: 18)),
+                    child: const Text("가입하기",
+                        style: TextStyle(color: Colors.white, fontSize: 18)),
                   ),
                 ),
+                SizedBox(height: 30),
               ],
             ),
           ),
@@ -192,20 +258,89 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
     );
   }
 
-  Widget _buildDateSelection(
-      String label, DateTime selectedDate, Function(DateTime) onDateChanged) {
+  Widget _buildGenderSelectionWithLabel() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodyLarge),
+          Text("성별",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildDropdownYear(selectedDate, onDateChanged),
-              _buildDropdownMonth(selectedDate, onDateChanged),
-              _buildDropdownDay(selectedDate, onDateChanged),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _sex = '남성'),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      color: _sex == '남성' ? Color(0xFF94d0cc) : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFF94d0cc)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "남성",
+                        style: TextStyle(
+                          color:
+                              _sex == '남성' ? Colors.white : Color(0xFF94d0cc),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _sex = '여성'),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      color: _sex == '여성' ? Color(0xFF94d0cc) : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFF94d0cc)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "여성",
+                        style: TextStyle(
+                          color:
+                              _sex == '여성' ? Colors.white : Color(0xFF94d0cc),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateSelectionWithLabel(
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildDropdownYear(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownMonth(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownDay(selectedDate, onDateChanged)),
             ],
           ),
         ],
@@ -214,109 +349,189 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   }
 
   Widget _buildDropdownYear(
-      DateTime selectedDate, Function(DateTime) onDateChanged) {
-    return DropdownButton<String>(
-      value: selectedDate.year.toString(),
-      items: List.generate(100, (index) {
-        int year = DateTime.now().year - index;
-        return DropdownMenuItem(value: year.toString(), child: Text("$year"));
-      }),
-      onChanged: (String? newValue) {
-        setState(() {
-          onDateChanged(DateTime(
-              int.parse(newValue!), selectedDate.month, selectedDate.day));
-        });
-      },
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int?>(
+          value: selectedDate?.year != null ? selectedDate!.year : null, //
+          hint: Text("년도", style: TextStyle(color: Colors.grey)),
+          items: List.generate(100, (index) {
+            int year = DateTime.now().year - index;
+            return DropdownMenuItem(value: year, child: Text(year.toString()));
+          }),
+          onChanged: (int? newValue) {
+            if (newValue != null) {
+              onDateChanged(DateTime(
+                  newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
+            }
+          },
+          isExpanded: true,
+        ),
+      ),
     );
   }
 
   Widget _buildDropdownMonth(
-      DateTime selectedDate, Function(DateTime) onDateChanged) {
-    return DropdownButton<String>(
-      value: selectedDate.month.toString().padLeft(2, '0'),
-      items: List.generate(12, (index) {
-        int month = index + 1;
-        return DropdownMenuItem(
-            value: month.toString().padLeft(2, '0'), child: Text("$month"));
-      }),
-      onChanged: (String? newValue) {
-        setState(() {
-          onDateChanged(DateTime(
-              selectedDate.year, int.parse(newValue!), selectedDate.day));
-        });
-      },
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: selectedDate?.month,
+          hint: Text('월', style: TextStyle(color: Colors.grey)),
+          items: List.generate(12, (index) {
+            int month = index + 1;
+            return DropdownMenuItem(
+                value: month, child: Text(month.toString()));
+          }),
+          onChanged: (int? newValue) {
+            if (newValue != null) {
+              onDateChanged(DateTime(selectedDate?.year ?? DateTime.now().year,
+                  newValue, selectedDate?.day ?? 1));
+            }
+          },
+          isExpanded: true,
+        ),
+      ),
     );
   }
 
   Widget _buildDropdownDay(
-      DateTime selectedDate, Function(DateTime) onDateChanged) {
-    return DropdownButton<String>(
-      value: selectedDate.day.toString().padLeft(2, '0'),
-      items: List.generate(31, (index) {
-        int day = index + 1;
-        return DropdownMenuItem(
-            value: day.toString().padLeft(2, '0'), child: Text("$day"));
-      }),
-      onChanged: (String? newValue) {
-        setState(() {
-          onDateChanged(DateTime(
-              selectedDate.year, selectedDate.month, int.parse(newValue!)));
-        });
-      },
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: selectedDate?.day,
+          hint: Text('일', style: TextStyle(color: Colors.grey)),
+          items: List.generate(31, (index) {
+            int day = index + 1;
+            return DropdownMenuItem(value: day, child: Text(day.toString()));
+          }),
+          onChanged: (int? newValue) {
+            if (newValue != null) {
+              onDateChanged(DateTime(selectedDate?.year ?? DateTime.now().year,
+                  selectedDate?.month ?? 1, newValue));
+            }
+          },
+          isExpanded: true,
+        ),
+      ),
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label,
-      {bool isPassword = false, bool readOnly = false,
+  Widget _buildTextFieldWithLabel(
+      TextEditingController controller, String label,
+      {bool isPassword = false,
+      bool readOnly = false,
       TextInputType keyboardType = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
-      child: TextFormField(
-        controller: controller,
-        obscureText: isPassword,
-        keyboardType: keyboardType,
-        readOnly: readOnly,
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
-        validator: (value) =>
-            value == null || value.isEmpty ? '$label을 입력해주세요' : null,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            keyboardType: keyboardType,
+            readOnly: readOnly,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300), 
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: Colors.grey.shade300), 
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                    color: const Color(0xFF94d0cc), width: 2.0), 
+              ),
+              filled: true,
+              fillColor: Colors.white,
+            ),
+            validator: (value) =>
+                value == null || value.isEmpty ? '$label을 입력해주세요' : null,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items,
+  Widget _buildDropdownWithLabel(String label, String value, List<String> items,
       void Function(String) onChanged) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
-        items: items
-            .map((String item) =>
-                DropdownMenuItem(value: item, child: Text(item)))
-            .toList(),
-        onChanged: (String? newValue) {
-          if (newValue != null) onChanged(newValue);
-        },
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: value,
+              decoration: InputDecoration(
+                hintText: label,
+                border: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              ),
+              items: items
+                  .map((String item) =>
+                      DropdownMenuItem(value: item, child: Text(item)))
+                  .toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) onChanged(newValue);
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-
-  Widget _buildMultiSelect(
+  Widget _buildMultiSelectWithLabel(
       String label, List<String> allItems, List<String> selectedItems) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: TextStyle(fontSize: 16)),
-          SizedBox(height: 5),
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: ExpansionTile(

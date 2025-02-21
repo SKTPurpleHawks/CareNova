@@ -7,16 +7,19 @@ import 'foreign_home_screen.dart';
 class ForeignManagePatientScreen extends StatefulWidget {
   final String token;
 
-  const ForeignManagePatientScreen({Key? key, required this.token}) : super(key: key);
+  const ForeignManagePatientScreen({Key? key, required this.token})
+      : super(key: key);
 
   @override
-  _ForeignManagePatientScreenState createState() => _ForeignManagePatientScreenState();
+  _ForeignManagePatientScreenState createState() =>
+      _ForeignManagePatientScreenState();
 }
 
-class _ForeignManagePatientScreenState extends State<ForeignManagePatientScreen> {
+class _ForeignManagePatientScreenState
+    extends State<ForeignManagePatientScreen> {
   List<dynamic> _patients = [];
-  List<dynamic> careRequests = []; 
-  int _selectedIndex = 1; 
+  List<dynamic> careRequests = [];
+  int _selectedIndex = 1;
 
   @override
   void initState() {
@@ -41,7 +44,8 @@ class _ForeignManagePatientScreenState extends State<ForeignManagePatientScreen>
       if (response.statusCode == 200) {
         List<dynamic> requests = jsonDecode(utf8.decode(response.bodyBytes));
         setState(() {
-          careRequests = requests.where((r) => r['status'] == 'pending').toList();
+          careRequests =
+              requests.where((r) => r['status'] == 'pending').toList();
         });
       } else {
         _showSnackBar('간병 요청을 불러오는 데 실패했습니다.');
@@ -78,12 +82,13 @@ class _ForeignManagePatientScreenState extends State<ForeignManagePatientScreen>
 
   /// 스낵바 표시
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   /// 네비게이션 바 클릭 시 화면 전환
   void _onItemTapped(int index) {
-    if (_selectedIndex == index) return; 
+    if (_selectedIndex == index) return;
 
     setState(() {
       _selectedIndex = index;
@@ -100,13 +105,15 @@ class _ForeignManagePatientScreenState extends State<ForeignManagePatientScreen>
   }
 
   /// 간병 요청 알림 팝업
-  void _showCareRequestDialog(BuildContext context, Map<String, dynamic> request) {
+  void _showCareRequestDialog(
+      BuildContext context, Map<String, dynamic> request) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('간병 요청'),
-          content: Text('${request['protector_name'] ?? "알 수 없는 보호자"}님이 간병을 요청했습니다.'),
+          content: Text(
+              '${request['protector_name'] ?? "알 수 없는 보호자"}님이 간병을 요청했습니다.'),
           actions: [
             TextButton(
               onPressed: () {
@@ -160,8 +167,8 @@ class _ForeignManagePatientScreenState extends State<ForeignManagePatientScreen>
                 final patient = _patients[index];
 
                 bool hasCaregiver = patient.containsKey('caregiver_id') &&
-                                    patient['caregiver_id'] != null &&
-                                    patient['caregiver_id'].toString().isNotEmpty;
+                    patient['caregiver_id'] != null &&
+                    patient['caregiver_id'].toString().isNotEmpty;
                 return Card(
                   elevation: 3,
                   margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -178,7 +185,8 @@ class _ForeignManagePatientScreenState extends State<ForeignManagePatientScreen>
                             isCaregiver: true,
                             hasCaregiver: hasCaregiver,
                             caregiverName: '',
-                            caregiverId:'',
+                            caregiverId: '',
+                            protectorId: (_patients[index]['protector_id'] ?? "").toString(), // ✅ Null 방지
                           ),
                         ),
                       );

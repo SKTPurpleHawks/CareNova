@@ -350,3 +350,41 @@ def submit_review(
     db.commit()
 
     return {"message": "리뷰가 저장되었으며, 간병인 연결이 해제되었습니다."}
+
+
+@router.post("/dailyrecord", response_model=schemas.DailyRecordResponse)
+def create_daily_record(
+    record: schemas.DailyRecordCreate,
+    db: Session = Depends(get_db)
+):
+    """새로운 간병일지를 작성하는 API"""
+    new_record = models.DailyRecordInfo(**record.dict())
+    db.add(new_record)
+    db.commit()
+    db.refresh(new_record)
+    return new_record
+
+@router.get("/dailyrecord/{record_id}", response_model=schemas.DailyRecordResponse)
+def get_daily_record(record_id: int, db: Session = Depends(get_db)):
+    """특정 간병일지 조회 API"""
+    record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    return record
+
+@router.get("/dailyrecords/{patient_id}", response_model=list[schemas.DailyRecordResponse])
+def get_patient_records(patient_id: int, db: Session = Depends(get_db)):
+    """특정 환자의 간병일지를 조회하는 API"""
+    records = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.patient_id == patient_id).all()
+    return records
+
+@router.delete("/dailyrecord/{record_id}")
+def delete_daily_record(record_id: int, db: Session = Depends(get_db)):
+    """간병일지 삭제 API"""
+    record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    db.delete(record)
+    db.commit()
+    return {"message": "Record deleted successfully"}

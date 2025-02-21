@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'caregiver_patient_log_create_screen.dart';
 import 'review_edit_screen.dart'; // 리뷰 화면 import
 
 class PatientDetailScreen extends StatelessWidget {
@@ -8,6 +9,7 @@ class PatientDetailScreen extends StatelessWidget {
   final bool hasCaregiver;
   final String caregiverName;
   final String caregiverId;
+  final String? protectorId;
 
   const PatientDetailScreen({
     Key? key,
@@ -17,6 +19,7 @@ class PatientDetailScreen extends StatelessWidget {
     required this.hasCaregiver,
     required this.caregiverName,
     required this.caregiverId,
+    this.protectorId,
   }) : super(key: key);
 
   @override
@@ -62,15 +65,30 @@ class PatientDetailScreen extends StatelessWidget {
             ),
 
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {},
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(isCaregiver ? "간병일지 작성하기" : "간병일지 확인하기"),
-                ],
+            // ✅ 간병일지 작성하기 버튼 - 간병인이 눌렀을 때만 동작
+            if (isCaregiver)
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CaregiverPatientLogCreateScreen(
+                        patientName: patient['name'],
+                        caregiverId: caregiverId, 
+                        protectorId: protectorId ?? "0",
+                        patientId: patient['id'],
+                        token: token,
+                      ),
+                    ),
+                  );
+                },
+                child: Text("간병일지 작성하기"),
+              )
+            else
+              ElevatedButton(
+                onPressed: () {},
+                child: Text("간병일지 확인하기"),
               ),
-            ),
 
             SizedBox(height: 10),
 
@@ -92,7 +110,7 @@ class PatientDetailScreen extends StatelessWidget {
                           builder: (context) => ReviewScreen(
                               token: token,
                               caregiverId: caregiverId,
-                              protectorId: patient['protector_id'] ?? ""),
+                              protectorId: protectorId ?? ""),
                         ),
                       );
                     },

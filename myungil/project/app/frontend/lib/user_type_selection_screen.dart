@@ -23,7 +23,7 @@ class UserTypeSelectionScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 5),
             ),
             onPressed: () {
               Navigator.push(
@@ -41,7 +41,7 @@ class UserTypeSelectionScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             style: ElevatedButton.styleFrom(
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 5),
             ),
             onPressed: () {
               Navigator.push(

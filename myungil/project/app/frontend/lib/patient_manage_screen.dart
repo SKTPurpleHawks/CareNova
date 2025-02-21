@@ -109,9 +109,12 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                       String caregiverId = (_caregiverpatients.firstWhere(
                                   (caregiverPatient) =>
                                       caregiverPatient['id'] == patientId &&
-                                      caregiverPatient.containsKey('caregiver_id'),
+                                      caregiverPatient
+                                          .containsKey('caregiver_id'),
                                   orElse: () =>
-                                      {'caregiver_id': null})['caregiver_id'] ?? "").toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
+                                      {'caregiver_id': null})['caregiver_id'] ??
+                              "")
+                          .toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
 
                       String caregiverName = (_caregiverpatients.firstWhere(
                                   (caregiverPatient) =>
@@ -120,7 +123,9 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                           .containsKey('caregiver_name'),
                                   orElse: () => {
                                         'caregiver_name': null
-                                      })['caregiver_name'] ?? "정보 없음").toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
+                                      })['caregiver_name'] ??
+                              "정보 없음")
+                          .toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
 
                       Navigator.push(
                         context,
@@ -128,10 +133,11 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                           builder: (context) => PatientDetailScreen(
                             patient: _patients[index],
                             token: widget.token,
-                            isCaregiver: false,
+                            isCaregiver: true,
                             hasCaregiver: hasCaregiver,
                             caregiverName: caregiverName,
                             caregiverId: caregiverId,
+                            protectorId: (_patients[index]['protector_id'] ?? "").toString(),
                           ),
                         ),
                       );
