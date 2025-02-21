@@ -8,8 +8,6 @@ import soundfile as sf
 from faster_whisper import WhisperModel
 import ctranslate2
 
-
-
 os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 load_dotenv()  # .env 파일 로드
