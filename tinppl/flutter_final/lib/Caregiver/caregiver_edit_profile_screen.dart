@@ -27,6 +27,15 @@ class _CaregiverEditProfileScreenState
   String? _canWalkPatient;
   String? _preferSex;
   String? _smoking;
+  bool _canWalk = false; // 못 걷는 사람 간병 가능 여부
+  String? _selectedSpot = '집'; // 간병 가능 장소 기본값
+  String? _selectedSex;
+  String? _preferredSex;
+
+  // 생년월일 관련 변수
+  String? _selectedYear;
+  String? _selectedMonth;
+  String? _selectedDay;
 
   final List<String> _regions = [
     '서울특별시',
@@ -70,6 +79,13 @@ class _CaregiverEditProfileScreenState
     '재활'
   ];
 
+  final List<String> years =
+      List.generate(100, (index) => (2024 - index).toString());
+  final List<String> months =
+      List.generate(12, (index) => (index + 1).toString().padLeft(2, '0'));
+  final List<String> days =
+      List.generate(31, (index) => (index + 1).toString().padLeft(2, '0'));
+
   @override
   void initState() {
     super.initState();
@@ -91,15 +107,6 @@ class _CaregiverEditProfileScreenState
     _smoking = widget.userData['smoking'] ?? '비흡연';
   }
 
-  void _updateProfile() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("프로필이 업데이트되었습니다!")),
-      );
-      Navigator.pop(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,57 +116,96 @@ class _CaregiverEditProfileScreenState
         title: const Text("프로필 수정"),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Form(
-          key: _formKey,
-          child: ListView(
+          key: _formKey, // ✅ Form과 _formKey 연결
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(_nameController, "이름"),
-              _buildTextField(_phoneController, "전화번호",
-                  keyboardType: TextInputType.phone),
-              _buildTextField(_heightController, "키 (cm)",
-                  keyboardType: TextInputType.number),
-              _buildTextField(_weightController, "몸무게 (kg)",
-                  keyboardType: TextInputType.number),
-              const SizedBox(height: 10),
-              _buildDropdownField(
-                "간병 가능 장소",
-                value: _spot, // ✅ 현재 선택된 값을 유지하도록 추가
-                options: ['병원', '집', '둘 다'],
-                onChanged: (value) => setState(() => _spot = value),
+              _buildTextField('이메일 수정', hintText: '0000@flyai.com'),
+              const SizedBox(height: 25),
+              _buildTextField('비밀번호 수정', obscureText: true),
+              const SizedBox(height: 25),
+
+              _buildTextField('이름'),
+              _buildTextField('나이'),
+              _buildTextField('키'),
+              _buildTextField('몸무게'),
+              _buildTextField('전화번호', hintText: '010-0000-0000'),
+              const SizedBox(height: 25),
+
+              _buildDropdownField('성별',
+                  options: ['남성', '여성'],
+                  onChanged: (value) => setState(() => _selectedSex = value)),
+              const SizedBox(height: 25),
+
+              _buildBirthdateSelector(),
+              const SizedBox(height: 25),
+
+              _buildTextField('간병 가능 지역'),
+              _buildTextField('간병 가능한 질환'),
+
+              _buildDropdownField('간병 가능 장소',
+                  options: ['집', '병원', '둘다'],
+                  onChanged: (value) => setState(() => _selectedSpot = value)),
+              const SizedBox(height: 15),
+
+              _buildTextField('간병해본 진단명(경력)'),
+              _buildTextField('간병 가능한 증상'),
+
+              // 못 걷는 사람 간병 가능 여부 체크박스
+              Row(
+                children: [
+                  Checkbox(
+                    value: _canWalk,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _canWalk = value!;
+                      });
+                    },
+                  ),
+                  Text(
+                    '못 걷는 사람도 간병 가능',
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
+
               _buildDropdownField(
-                "환자 보행 가능 여부",
-                value: _canWalkPatient, // ✅ 선택한 값 유지
-                options: ['걸을 수 있음', '걸을 수 없음', '상관없음'],
-                onChanged: (value) => setState(() => _canWalkPatient = value),
+                '선호하는 환자 성별',
+                options: ['남성', '여성'],
+                onChanged: (value) => setState(() => _preferredSex = value),
               ),
-              _buildDropdownField(
-                "선호하는 환자 성별",
-                value: _preferSex, // ✅ 선택한 값 유지
-                options: ['남성', '여성', '상관없음'],
-                onChanged: (value) => setState(() => _preferSex = value),
-              ),
-              _buildDropdownField(
-                "흡연 여부",
-                value: _smoking, // ✅ 선택한 값 유지
-                options: ['비흡연', '흡연'],
-                onChanged: (value) => setState(() => _smoking = value),
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _updateProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _updateProfile, // ✅ 버튼 클릭 시 _updateProfile 실행
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF43C098),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    "프로필 업데이트",
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-                child: const Text("프로필 업데이트",
-                    style: TextStyle(color: Colors.white, fontSize: 18)),
               ),
+
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -167,15 +213,14 @@ class _CaregiverEditProfileScreenState
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label,
-      {String hintText = '',
-      TextInputType keyboardType = TextInputType.text,
-      bool obscureText = false}) {
+// ✅ TextField 대신 TextFormField 사용
+  Widget _buildTextField(String label,
+      {String hintText = '', bool obscureText = false}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(bottom: 1.0), // 설명 텍스트 간격 최소화
+          padding: const EdgeInsets.only(bottom: 1.0),
           child: Text(
             label,
             style: GoogleFonts.notoSansKr(
@@ -185,17 +230,14 @@ class _CaregiverEditProfileScreenState
             ),
           ),
         ),
-        TextField(
-          controller: controller,
-          keyboardType: keyboardType,
+        TextFormField(
           obscureText: obscureText,
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: GoogleFonts.notoSansKr(
-              // 힌트 텍스트 흐리게 적용
               fontSize: 14,
-              fontWeight: FontWeight.w400, // Regular 적용
-              color: Colors.black45, // 흐린 회색 적용
+              fontWeight: FontWeight.w400,
+              color: Colors.black45,
             ),
             contentPadding:
                 const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
@@ -208,16 +250,160 @@ class _CaregiverEditProfileScreenState
               borderSide: const BorderSide(color: Colors.black87),
             ),
           ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return '$label을 입력하세요.';
+            }
+            return null;
+          },
         ),
-        const SizedBox(height: 10), // 필드 간 간격 추가
+        const SizedBox(height: 10),
       ],
     );
   }
 
+// ✅ 수정된 _updateProfile 함수
+  void _updateProfile() {
+    if (_formKey.currentState!.validate()) {
+      // ✅ Form이 연결되어야 정상 작동
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("프로필이 업데이트되었습니다!"),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
+
+  Widget _buildBirthdateSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '생년월일',
+          style: GoogleFonts.notoSansKr(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 4), // 제목과 드롭다운 사이 간격 최소화
+        Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 2.0), // **년도 라벨과 드롭다운 간격 최소화**
+                    child: Text(
+                      '년도',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                  _buildDropdownField2(
+                    '',
+                    options: years,
+                    onChanged: (value) => setState(() => _selectedYear = value),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6), // 간격 최소화
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 2.0), // **월 라벨과 드롭다운 간격 최소화**
+                    child: Text(
+                      '월',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                  _buildDropdownField2(
+                    '',
+                    options: months,
+                    onChanged: (value) =>
+                        setState(() => _selectedMonth = value),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 6), // 간격 최소화
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(
+                        bottom: 2.0), // **일 라벨과 드롭다운 간격 최소화**
+                    child: Text(
+                      '일',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ),
+                  _buildDropdownField2(
+                    '',
+                    options: days,
+                    onChanged: (value) => setState(() => _selectedDay = value),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField2(String label,
+      {List<String>? options, ValueChanged<String?>? onChanged}) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8), // 박스 둥글기 줄임
+          borderSide: const BorderSide(color: Colors.grey),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+            vertical: 2, horizontal: 8), // 내부 패딩 최대한 줄이기
+      ),
+      value: null,
+      items: options?.map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(
+            value,
+            style: GoogleFonts.notoSansKr(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.black87,
+            ),
+          ),
+        );
+      }).toList(),
+      onChanged: onChanged,
+    );
+  }
+
   Widget _buildDropdownField(String label,
-      {required List<String> options,
-      required ValueChanged<String?> onChanged,
-      String? value}) {
+      {List<String>? options, ValueChanged<String?>? onChanged}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -233,16 +419,20 @@ class _CaregiverEditProfileScreenState
           ),
         ),
         DropdownButtonFormField<String>(
-          value: value ?? options.first, // ✅ 기본값 설정하여 null 방지
           decoration: InputDecoration(
-            contentPadding: const EdgeInsets.symmetric(
-                vertical: 10, horizontal: 16), // 내부 패딩 최소화
+            labelText: label, // 💡 라벨이 드롭다운 내부에도 유지되도록 추가
+            labelStyle: GoogleFonts.notoSansKr(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Colors.black54,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Colors.grey),
             ),
           ),
-          items: options.map((String value) {
+          value: null,
+          items: options?.map((String value) {
             return DropdownMenuItem<String>(
               value: value,
               child: Text(value),
@@ -252,44 +442,6 @@ class _CaregiverEditProfileScreenState
         ),
         const SizedBox(height: 16), // 필드 간 간격 추가
       ],
-    );
-  }
-
-  Widget _buildMultiSelect(
-      String label, List<String> allItems, List<String> selectedItems) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          Wrap(
-            spacing: 8.0, // 간격 추가
-            children: allItems.map((item) {
-              bool isSelected = selectedItems.contains(item);
-              return ChoiceChip(
-                label: Text(item),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    isSelected
-                        ? selectedItems.remove(item)
-                        : selectedItems.add(item);
-                  });
-                },
-                selectedColor: Colors.blueAccent, // 선택 시 배경색 변경
-                backgroundColor: Colors.grey[200], // 비선택 시 배경색
-                labelStyle: TextStyle(
-                    color: isSelected
-                        ? Colors.white
-                        : Colors.black), // 선택된 항목 텍스트 색상 변경
-              );
-            }).toList(),
-          ),
-        ],
-      ),
     );
   }
 }
