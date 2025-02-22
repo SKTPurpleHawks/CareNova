@@ -30,7 +30,7 @@ class _ForeignManagePatientScreenState
 
   /// 보호자가 요청한 간병 요청 목록 가져오기
   Future<void> fetchCareRequests() async {
-    final url = Uri.parse('http://10.0.2.2:8000/care-requests');
+    final url = Uri.parse('http://192.168.0.10:8000/care-requests');
 
     try {
       final response = await http.get(
@@ -57,7 +57,7 @@ class _ForeignManagePatientScreenState
 
   /// 환자 정보 불러오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://10.0.2.2:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.0.10:8000/caregiver/patients');
 
     try {
       final response = await http.get(
@@ -185,8 +185,8 @@ class _ForeignManagePatientScreenState
                             isCaregiver: true,
                             hasCaregiver: hasCaregiver,
                             caregiverName: '',
-                            caregiverId: '',
-                            protectorId: (_patients[index]['protector_id'] ?? "").toString(), // ✅ Null 방지
+                            caregiverId: (_patients[index]['caregiver_id'] ?? "").toString(),
+                            protectorId: (_patients[index]['protector_id'] ?? "").toString(), 
                           ),
                         ),
                       );

@@ -155,3 +155,31 @@ def create_care_request(db: Session, request_data: schemas.CareRequestCreate, pr
     db.refresh(new_request)
 
     return new_request
+
+
+
+def update_daily_record(db: Session, record_id: int, updated_record: schemas.DailyRecordCreate):
+    """간병일지 수정 함수"""
+    record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
+
+    if not record:
+        return None
+
+    for key, value in updated_record.dict().items():
+        setattr(record, key, value)
+
+    db.commit()
+    db.refresh(record)
+    return record
+
+
+def delete_daily_record(db: Session, record_id: int):
+    """간병일지 삭제 함수"""
+    record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
+
+    if not record:
+        return None
+
+    db.delete(record)
+    db.commit()
+    return record_id

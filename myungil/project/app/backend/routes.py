@@ -261,12 +261,12 @@ def get_care_requests(
 @router.get("/caregiver/patients")
 def get_caregiver_patients(
     db: Session = Depends(get_db),
-    current_user: Union[ProtectorUserInfo, ForeignUserInfo] = Depends(get_current_user)  # ✅ Union 적용
+    current_user: Union[ProtectorUserInfo, ForeignUserInfo] = Depends(get_current_user)  # Union 적용
 ):
     patients = []
 
     if isinstance(current_user, ForeignUserInfo):
-        # ✅ 간병인 로직
+        # 간병인 로직
         requests = db.query(models.CareRequest).filter(
             models.CareRequest.caregiver_id == current_user.id,
             models.CareRequest.status == "accepted"
@@ -274,6 +274,10 @@ def get_caregiver_patients(
 
         for request in requests:
             patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == request.patient_id).first()
+            
+            caregiver_id = current_user.id
+            caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == caregiver_id).first()
+            caregiver_name = caregiver.name if caregiver else "알 수 없음"
 
             if patient:
 
@@ -286,10 +290,12 @@ def get_caregiver_patients(
                     "height": patient.height,
                     "weight": patient.weight,
                     "symptoms": patient.symptoms,
+                    "caregiver_id": caregiver_id,
+                    "caregiver_name": caregiver_name
                 })
 
     elif isinstance(current_user, ProtectorUserInfo):
-        # ✅ 보호자 로직
+        # 보호자 로직
         protector_patients = db.query(models.PatientUserInfo).filter(
             models.PatientUserInfo.protector_id == current_user.id
         ).all()
@@ -364,27 +370,47 @@ def create_daily_record(
     db.refresh(new_record)
     return new_record
 
-@router.get("/dailyrecord/{record_id}", response_model=schemas.DailyRecordResponse)
-def get_daily_record(record_id: int, db: Session = Depends(get_db)):
-    """특정 간병일지 조회 API"""
-    record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
-    if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
-    return record
 
-@router.get("/dailyrecords/{patient_id}", response_model=list[schemas.DailyRecordResponse])
-def get_patient_records(patient_id: int, db: Session = Depends(get_db)):
-    """특정 환자의 간병일지를 조회하는 API"""
-    records = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.patient_id == patient_id).all()
+@router.get("/dailyrecord/{patient_id}", response_model=List[schemas.DailyRecordResponse])
+def get_patient_records(patient_id: str, db: Session = Depends(get_db)):
+    """특정 환자의 간병일지를 작성순으로 조회하는 API"""
+    records = db.query(models.DailyRecordInfo).filter(
+        models.DailyRecordInfo.patient_id == patient_id
+    ).order_by(models.DailyRecordInfo.created_at.asc()).all()
+
+    if not records:
+        raise HTTPException(status_code=404, detail="해당 환자의 간병일지가 없습니다.")
+
     return records
 
 @router.delete("/dailyrecord/{record_id}")
 def delete_daily_record(record_id: int, db: Session = Depends(get_db)):
     """간병일지 삭제 API"""
     record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
+
     if not record:
-        raise HTTPException(status_code=404, detail="Record not found")
+        raise HTTPException(status_code=404, detail="간병일지를 찾을 수 없습니다.")
 
     db.delete(record)
     db.commit()
-    return {"message": "Record deleted successfully"}
+    return {"message": "간병일지가 성공적으로 삭제되었습니다."}
+
+
+@router.put("/dailyrecord/{record_id}", response_model=schemas.DailyRecordResponse)
+def update_daily_record(
+    record_id: int,
+    updated_record: schemas.DailyRecordCreate,
+    db: Session = Depends(get_db)
+):
+    """간병일지 수정 API"""
+    record = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == record_id).first()
+
+    if not record:
+        raise HTTPException(status_code=404, detail="간병일지를 찾을 수 없습니다.")
+
+    for key, value in updated_record.dict().items():
+        setattr(record, key, value)
+
+    db.commit()
+    db.refresh(record)
+    return record

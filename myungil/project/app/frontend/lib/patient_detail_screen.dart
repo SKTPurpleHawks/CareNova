@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'caregiver_patient_log_create_screen.dart';
+import 'caregiver_patient_log_list.dart';
+import 'protector_patient_log_list.dart'; // ✅ 보호자 간병일지 리스트 화면 import
 import 'review_edit_screen.dart'; // 리뷰 화면 import
 
 class PatientDetailScreen extends StatelessWidget {
@@ -65,16 +66,17 @@ class PatientDetailScreen extends StatelessWidget {
             ),
 
             SizedBox(height: 10),
-            // ✅ 간병일지 작성하기 버튼 - 간병인이 눌렀을 때만 동작
+
+            // ✅ 보호자 또는 간병인이 간병일지 확인/작성 가능
             if (isCaregiver)
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CaregiverPatientLogCreateScreen(
+                      builder: (context) => CaregiverPatientLogListScreen(
                         patientName: patient['name'],
-                        caregiverId: caregiverId, 
+                        caregiverId: caregiverId,
                         protectorId: protectorId ?? "0",
                         patientId: patient['id'],
                         token: token,
@@ -86,13 +88,24 @@ class PatientDetailScreen extends StatelessWidget {
               )
             else
               ElevatedButton(
-                onPressed: () {},
-                child: Text("간병일지 확인하기"),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ProtectorPatientLogListScreen(
+                        patientName: patient['name'],
+                        patientId: patient['id'],
+                        token: token,
+                      ),
+                    ),
+                  );
+                },
+                child: Text("간병일지 확인하기"), // ✅ 보호자는 간병일지 조회만 가능
               ),
 
             SizedBox(height: 10),
 
-            // 보호자가 간병인과 연결된 경우 "간병인 계약 취소" 버튼 표시
+            // ✅ 보호자가 간병인과 연결된 경우 "간병인 계약 취소" 버튼 표시
             if (!isCaregiver && hasCaregiver)
               Column(
                 children: [

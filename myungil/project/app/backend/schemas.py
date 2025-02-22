@@ -101,18 +101,18 @@ class ReviewCreate(BaseModel):
 
 
 class DailyRecordBase(BaseModel):
-    caregiver_id: int
-    protector_id: int
-    patient_id: int
+    caregiver_id: str
+    protector_id: str
+    patient_id: str
     location: str
     mood: str
     sleep_quality: str
     breakfast_type: Optional[str] = None
-    breakfast_amount: Optional[float] = None
+    breakfast_amount: Optional[str] = None
     lunch_type: Optional[str] = None
-    lunch_amount: Optional[float] = None
+    lunch_amount: Optional[str] = None
     dinner_type: Optional[str] = None
-    dinner_amount: Optional[float] = None
+    dinner_amount: Optional[str] = None
     urine_amount: Optional[str] = None
     urine_color: Optional[str] = None
     urine_smell: Optional[str] = None
@@ -126,12 +126,33 @@ class DailyRecordBase(BaseModel):
     notes: Optional[str] = None
 
 class DailyRecordCreate(DailyRecordBase):
-    caregiver_id: int
-    protector_id: int
-    patient_id: int
+    pass
 
-class DailyRecordResponse(DailyRecordBase):
+class DailyRecordResponse(BaseModel):
     id: int
+    caregiver_id: str
+    protector_id: str
+    patient_id: str 
+    location: str
+    mood: str
+    sleep_quality: str
+    breakfast_type: Optional[str] = None
+    breakfast_amount: Optional[str] = None
+    lunch_type: Optional[str] = None
+    lunch_amount: Optional[str] = None
+    dinner_type: Optional[str] = None
+    dinner_amount: Optional[str] = None
+    urine_amount: Optional[str] = None
+    urine_color: Optional[str] = None
+    urine_smell: Optional[str] = None
+    urine_foam: Optional[bool] = False
+    stool_amount: Optional[str] = None
+    stool_condition: Optional[str] = None
+    position_change: Optional[bool] = False
+    wheelchair_transfer: Optional[bool] = False
+    walking_assistance: Optional[bool] = False
+    outdoor_walk: Optional[bool] = False
+    notes: Optional[str] = None
     created_at: datetime
 
     class Config:
