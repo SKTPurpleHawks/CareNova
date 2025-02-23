@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:prac11/login/login_screen.dart';
 
 class CaregiverSignupScreen extends StatefulWidget {
   const CaregiverSignupScreen({super.key});
@@ -9,356 +12,554 @@ class CaregiverSignupScreen extends StatefulWidget {
 }
 
 class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
-  bool _canWalk = false; // 못 걷는 사람 간병 가능 여부
-  String? _selectedSpot = '집'; // 간병 가능 장소 기본값
-  String? _selectedSex;
-  String? _preferredSex;
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
+  final _ageController = TextEditingController();
 
-  // 생년월일 관련 변수
-  String? _selectedYear;
-  String? _selectedMonth;
-  String? _selectedDay;
+  DateTime? _birthday;
+  int _age = 0;
+  DateTime? _startDate;
+  DateTime? _endDate;
+  String _sex = '남성';
+  String _spot = '병원';
+  List<String> _selectedRegions = [];
+  String _canWalkPatient = '걸을 수 없음';
+  String _preferSex = '남성';
+  List<String> _selectedSymptoms = [];
+  bool _canCareForImmobile = false;
+  String _smoking = '비흡연';
 
-  final List<String> years =
-      List.generate(100, (index) => (2024 - index).toString());
-  final List<String> months =
-      List.generate(12, (index) => (index + 1).toString().padLeft(2, '0'));
-  final List<String> days =
-      List.generate(31, (index) => (index + 1).toString().padLeft(2, '0'));
+  final List<String> _regions = [
+    '서울',
+    '부산',
+    '대구',
+    '인천',
+    '광주',
+    '대전',
+    '울산',
+    '세종',
+    '경기남부',
+    '경기북부',
+    '강원영서',
+    '강원영동',
+    '충북',
+    '충남',
+    '전북',
+    '전남',
+    '경북',
+    '경남',
+    '제주'
+  ];
+
+  final List<String> _symptoms = [
+    '치매',
+    '섬망',
+    '욕창',
+    '하반신마비',
+    '상반신마비',
+    '전신마비',
+    '와상환자',
+    '기저귀케어',
+    '의식없음',
+    '석션',
+    '피딩',
+    '소변줄',
+    '장루',
+    '야간집중돌봄',
+    '전염성',
+    '파킨슨',
+    '정신질환',
+    '투석',
+    '재활'
+  ];
+
+  Future<void> _signup() async {
+    if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+        );
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8000/signup/foreign'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': _emailController.text,
+          'password': _passwordController.text,
+          'name': _nameController.text,
+          'phonenumber': _phoneNumberController.text,
+          'birthday': _birthday?.toIso8601String().split('T')[0] ?? '',
+          'age': int.parse(_ageController.text),
+          'sex': _sex,
+          'startdate': _startDate?.toIso8601String().split('T')[0] ?? '',
+          'enddate': _endDate?.toIso8601String().split('T')[0] ?? '',
+          'region': _selectedRegions.join(','),
+          'spot': _spot,
+          'height': int.parse(_heightController.text),
+          'weight': int.parse(_weightController.text),
+          'symptoms': _selectedSymptoms.join(','),
+          'canwalkpatient': _canWalkPatient,
+          'prefersex': _preferSex,
+          'smoking': _smoking,
+          'can_care_for_immobile': _canCareForImmobile,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+              builder: (context) => const LoginScreen(userType: 'caregiver')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('회원가입에 실패했습니다. 다시 시도해주세요.')),
+        );
+      }
+    }
+  }
+
+  int _calculateAge(DateTime? birthDate) {
+    if (birthDate == null) return 0;
+    DateTime currentDate = DateTime.now();
+    int age = currentDate.year - birthDate.year;
+    if (currentDate.month < birthDate.month ||
+        (currentDate.month == birthDate.month &&
+            currentDate.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = const Color(0xFF43C098); // 메인 컬러 (초록)
-
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0, // 그림자 제거
-        title: Text(
-          '간병인 회원가입',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTextField('이메일', hintText: '0000@flyai.com'),
-            const SizedBox(height: 25),
-            _buildTextField('비밀번호', obscureText: true),
-            _buildTextField('비밀번호 확인', obscureText: true),
-            const SizedBox(height: 25),
-
-            _buildTextField('이름'),
-            _buildTextField('나이'),
-            _buildTextField('키'),
-            _buildTextField('몸무게'),
-            _buildTextField('전화번호', hintText: '010-0000-0000'),
-            const SizedBox(height: 25),
-
-            _buildDropdownField('성별',
-                options: ['남성', '여성'],
-                onChanged: (value) => setState(() => _selectedSex = value)),
-            const SizedBox(height: 25),
-
-            // 생년월일 필드 적용
-            _buildBirthdateSelector(),
-            const SizedBox(height: 25),
-
-            _buildTextField('간병 가능 지역'),
-            _buildTextField('간병 가능한 질환'),
-
-            _buildDropdownField('간병 가능 장소',
-                options: ['집', '병원', '둘다'],
-                onChanged: (value) => setState(() => _selectedSpot = value)),
-            const SizedBox(height: 15),
-
-            _buildTextField('간병해본 진단명(경력)'),
-            _buildTextField('간병 가능한 증상'),
-
-            // 못 걷는 사람 간병 가능 여부 체크박스
-            Row(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Checkbox(
-                  value: _canWalk,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      _canWalk = value!;
-                    });
-                  },
-                ),
-                Text(
-                  '못 걷는 사람도 간병 가능',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                SizedBox(height: 50),
+                Center(
+                  child: Text(
+                    "SBJNMCCARE",
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF43C098),
+                    ),
                   ),
                 ),
+                SizedBox(height: 30),
+                Text("간병인 회원가입",
+                    style:
+                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(height: 20),
+                _buildTextFieldWithLabel(_emailController, "이메일"),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_passwordController, "비밀번호",
+                    isPassword: true),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_confirmPasswordController, "비밀번호 확인",
+                    isPassword: true),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_nameController, "이름"),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_phoneNumberController, "전화번호",
+                    keyboardType: TextInputType.phone),
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel("생년월일", _birthday, (date) {
+                  setState(() {
+                    _birthday = date;
+                    _age = _calculateAge(date ?? DateTime.now());
+                    _ageController.text = _age.toString(); // 🔹 나이 필드 자동 업데이트
+                  });
+                }),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(
+                  _ageController,
+                  "나이",
+                  keyboardType: TextInputType.number,
+                  readOnly: true,
+                ),
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel("간병 시작일", _startDate, (date) {
+                  setState(() {
+                    _startDate = date;
+                  });
+                }),
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel("간병 종료일", _endDate, (date) {
+                  setState(() {
+                    _endDate = date;
+                  });
+                }),
+                SizedBox(height: 10),
+                _buildGenderSelectionWithLabel(),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_heightController, "키 (cm)",
+                    keyboardType: TextInputType.number),
+                SizedBox(height: 10),
+                _buildTextFieldWithLabel(_weightController, "몸무게 (kg)",
+                    keyboardType: TextInputType.number),
+                SizedBox(height: 10),
+                _buildDropdownWithLabel("간병 가능 장소", _spot, ['병원', '집', '둘 다'],
+                    (value) => setState(() => _spot = value)),
+                SizedBox(height: 10),
+                _buildMultiSelectWithLabel(
+                    "간병 가능 지역", _regions, _selectedRegions),
+                SizedBox(height: 10),
+                _buildMultiSelectWithLabel(
+                    "간병 가능 질환", _symptoms, _selectedSymptoms),
+                SizedBox(height: 10),
+                _buildDropdownWithLabel(
+                    "환자의 보행 가능 여부",
+                    _canWalkPatient,
+                    ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                    (value) => setState(() => _canWalkPatient = value)),
+                SizedBox(height: 10),
+                _buildDropdownWithLabel(
+                    "선호하는 환자 성별",
+                    _preferSex,
+                    ['남성', '여성', '상관없음'],
+                    (value) => setState(() => _preferSex = value)),
+                SizedBox(height: 10),
+                _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
+                    (value) => setState(() => _smoking = value)),
+                SizedBox(height: 30),
+                Container(
+                  width: double.infinity,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Color(0xFF43C098),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton(
+                    onPressed: _signup,
+                    child: const Text("가입하기",
+                        style: TextStyle(color: Colors.white, fontSize: 18)),
+                  ),
+                ),
+                SizedBox(height: 30),
               ],
             ),
-
-            _buildDropdownField(
-              '선호하는 환자 성별',
-              options: ['남성', '여성'],
-              onChanged: (value) => setState(() => _preferredSex = value),
-            ),
-
-            const SizedBox(height: 32),
-
-            // 가입하기 버튼
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Text(
-                  '가입하기',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildBirthdateSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '생년월일',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 4), // 제목과 드롭다운 사이 간격 최소화
-        Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 2.0), // **년도 라벨과 드롭다운 간격 최소화**
-                    child: Text(
-                      '년도',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black54,
+  Widget _buildGenderSelectionWithLabel() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("성별",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _sex = '남성'),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      color: _sex == '남성' ? Color(0xFF43C098) : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFF43C098)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "남성",
+                        style: TextStyle(
+                          color:
+                              _sex == '남성' ? Colors.white : Color(0xFF43C098),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                  _buildDropdownField2(
-                    '',
-                    options: years,
-                    onChanged: (value) => setState(() => _selectedYear = value),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: 6), // 간격 최소화
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 2.0), // **월 라벨과 드롭다운 간격 최소화**
-                    child: Text(
-                      '월',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black54,
+              SizedBox(width: 10),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _sex = '여성'),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      color: _sex == '여성' ? Color(0xFF43C098) : Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Color(0xFF43C098)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        "여성",
+                        style: TextStyle(
+                          color:
+                              _sex == '여성' ? Colors.white : Color(0xFF43C098),
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
-                  _buildDropdownField2(
-                    '',
-                    options: months,
-                    onChanged: (value) =>
-                        setState(() => _selectedMonth = value),
-                  ),
-                ],
+                ),
               ),
-            ),
-            const SizedBox(width: 6), // 간격 최소화
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(
-                        bottom: 2.0), // **일 라벨과 드롭다운 간격 최소화**
-                    child: Text(
-                      '일',
-                      style: GoogleFonts.notoSansKr(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ),
-                  _buildDropdownField2(
-                    '',
-                    options: days,
-                    onChanged: (value) => setState(() => _selectedDay = value),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTextField(String label,
-      {String hintText = '', bool obscureText = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 1.0), // 설명 텍스트 간격 추가
-          child: Text(
-            label,
-            style: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+            ],
           ),
-        ),
-        TextField(
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: GoogleFonts.notoSansKr(
-              // 💡 힌트 텍스트 흐리게 적용
-              fontSize: 14,
-              fontWeight: FontWeight.w400, // Regular로 설정하여 가볍게
-              color: Colors.black45, // 흐리게 보이도록 회색 톤 적용
-            ),
-            labelStyle: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.black87,
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.black87),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10), // 필드 간 간격 추가
-      ],
-    );
-  }
-
-  Widget _buildDropdownField2(String label,
-      {List<String>? options, ValueChanged<String?>? onChanged}) {
-    return DropdownButtonFormField<String>(
-      decoration: InputDecoration(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), // 박스 둥글기 줄임
-          borderSide: const BorderSide(color: Colors.grey),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-            vertical: 2, horizontal: 8), // 내부 패딩 최대한 줄이기
+        ],
       ),
-      value: null,
-      items: options?.map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(
-            value,
-            style: GoogleFonts.notoSansKr(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Colors.black87,
-            ),
-          ),
-        );
-      }).toList(),
-      onChanged: onChanged,
     );
   }
 
-  Widget _buildDropdownField(String label,
-      {List<String>? options, ValueChanged<String?>? onChanged}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(bottom: 6.0), // 설명 텍스트 간격 추가
-          child: Text(
-            label, // 💡 라벨 표시 유지
-            style: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
+  Widget _buildDateSelectionWithLabel(
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildDropdownYear(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownMonth(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownDay(selectedDate, onDateChanged)),
+            ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownYear(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int?>(
+          value: selectedDate?.year != null ? selectedDate!.year : null, //
+          hint: Text("년도", style: TextStyle(color: Colors.grey)),
+          items: List.generate(100, (index) {
+            int year = DateTime.now().year - index;
+            return DropdownMenuItem(value: year, child: Text(year.toString()));
+          }),
+          onChanged: (int? newValue) {
+            if (newValue != null) {
+              onDateChanged(DateTime(
+                  newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
+            }
+          },
+          isExpanded: true,
         ),
-        DropdownButtonFormField<String>(
-          decoration: InputDecoration(
-            labelText: label, // 💡 라벨이 드롭다운 내부에도 유지되도록 추가
-            labelStyle: GoogleFonts.notoSansKr(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Colors.black54,
+      ),
+    );
+  }
+
+  Widget _buildDropdownMonth(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: selectedDate?.month,
+          hint: Text('월', style: TextStyle(color: Colors.grey)),
+          items: List.generate(12, (index) {
+            int month = index + 1;
+            return DropdownMenuItem(
+                value: month, child: Text(month.toString()));
+          }),
+          onChanged: (int? newValue) {
+            if (newValue != null) {
+              onDateChanged(DateTime(selectedDate?.year ?? DateTime.now().year,
+                  newValue, selectedDate?.day ?? 1));
+            }
+          },
+          isExpanded: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownDay(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: selectedDate?.day,
+          hint: Text('일', style: TextStyle(color: Colors.grey)),
+          items: List.generate(31, (index) {
+            int day = index + 1;
+            return DropdownMenuItem(value: day, child: Text(day.toString()));
+          }),
+          onChanged: (int? newValue) {
+            if (newValue != null) {
+              onDateChanged(DateTime(selectedDate?.year ?? DateTime.now().year,
+                  selectedDate?.month ?? 1, newValue));
+            }
+          },
+          isExpanded: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextFieldWithLabel(
+      TextEditingController controller, String label,
+      {bool isPassword = false,
+      bool readOnly = false,
+      TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            keyboardType: keyboardType,
+            readOnly: readOnly,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: const Color(0xFF43C098), width: 2.0),
+              ),
+              filled: true,
+              fillColor: Colors.white,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
-            ),
+            validator: (value) =>
+                value == null || value.isEmpty ? '$label을 입력해주세요' : null,
           ),
-          value: null,
-          items: options?.map((String value) {
-            return DropdownMenuItem<String>(
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownWithLabel(String label, String value, List<String> items,
+      void Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonFormField<String>(
               value: value,
-              child: Text(value),
-            );
-          }).toList(),
-          onChanged: onChanged,
-        ),
-        const SizedBox(height: 16), // 필드 간 간격 추가
-      ],
+              decoration: InputDecoration(
+                hintText: label, // ✅ 문자열만 넣기
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              ),
+              items: items
+                  .map((String item) =>
+                      DropdownMenuItem(value: item, child: Text(item)))
+                  .toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) onChanged(newValue);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMultiSelectWithLabel(
+      String label, List<String> allItems, List<String> selectedItems) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ExpansionTile(
+              title: Text('${selectedItems.length} 선택됨',
+                  style: TextStyle(fontSize: 16)),
+              children: allItems.map((item) {
+                return CheckboxListTile(
+                  title: Text(item),
+                  value: selectedItems.contains(item),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value!) {
+                        selectedItems.add(item);
+                      } else {
+                        selectedItems.remove(item);
+                      }
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

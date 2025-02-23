@@ -56,6 +56,7 @@ class _GuardianSignupScreenState extends State<GuardianSignupScreen> {
 
             // 생년월일 입력 필드
             _buildBirthdateSelector(),
+            const SizedBox(height: 20),
 
             // 성별 선택 필드
             _buildDropdownField(

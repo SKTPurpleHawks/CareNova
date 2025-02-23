@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class CaregiverProfileScreen extends StatefulWidget {
   const CaregiverProfileScreen({super.key});
@@ -8,7 +9,9 @@ class CaregiverProfileScreen extends StatefulWidget {
 }
 
 class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
-  bool isJobInfoEnabled = false; // ✅ 스위치 상태 저장  const CaregiverProfileScreen({super.key});
+  bool isJobInfoEnabled = false; // ✅ 구인 정보 띄우기 상태
+  bool isJobManagementEnabled = false; // ✅ 구인 관리 상태
+  int selectedIndex = 0; // ✅ 네비게이션 바 선택 상태 추가
 
   @override
   Widget build(BuildContext context) {
@@ -18,181 +21,229 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-
-        title: Center(
-          child: Container(
-            width: 100, // 🔥 로고 박스 너비
-            height: 40, // 🔥 로고 박스 높이
-            decoration: BoxDecoration(
-              color: Colors.grey[300], // 🔥 회색 박스
-              borderRadius: BorderRadius.circular(8), // 🔥 모서리 둥글게
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Container()), // 🔹 왼쪽 빈 공간 확보
+            Container(
+              width: 100,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "LOGO",
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
             ),
-            alignment: Alignment.center,
-            child: Text(
-              "LOGO",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
-          ),
+            Expanded(child: Container()), // 🔹 오른쪽 빈 공간 확보
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications, color: Colors.black),
-            onPressed: () {},
-          ),
-        ],
+        centerTitle: true, // ✅ iOS에서도 중앙 정렬 유지
+        actions: [Container(width: 48)], // 🔹 leading 버튼과 균형 맞추기 위해 추가
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
+            const SizedBox(height: 80),
 
-
-            SizedBox(height: 50), // 🔥 프로필 카드 위쪽에 여백 추가
-            // 프로필 카드
+            // 🟢 프로필 카드
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(30),
               decoration: BoxDecoration(
-                color: Colors.teal[200],
-                borderRadius: BorderRadius.circular(10),
+                color: const Color.fromARGB(255, 218, 218, 218),
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Color.fromARGB(0, 0, 0, 0), width: 2),
               ),
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: Colors.white,
-                    child: Icon(Icons.person, size: 50, color: Colors.grey),
+                    backgroundColor: Colors.grey[300],
+                    child: const Icon(Icons.person,
+                        size: 50, color: Color(0xFF43C098)),
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    "나이: 52   성별: 여성   키: 192",
-                    style: TextStyle(fontSize: 14, color: Colors.white),
-                  ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 10),
                   Text(
                     "홍길동",
-                    style: TextStyle(
+                    style: GoogleFonts.notoSansKr(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: const Color.fromARGB(255, 0, 0, 0),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 50),
+
+                  // 🟢 프로필 수정 버튼
                   Container(
-                    height: 80,
-                    padding: EdgeInsets.all(10),
+                    width: double.infinity,
+                    height: 45,
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
+                      color: Color(0xFF43C098),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Color(0xFF43C098), width: 1.5),
                     ),
-                    child: TextField(
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: "간병인 정보를 입력하세요.",
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/caregiver_edit_profile');
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor:
+                            const Color.fromARGB(255, 255, 255, 255),
+                        textStyle: GoogleFonts.notoSansKr(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
+                      child: const Text("프로필 수정"),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 100),
 
-            // 프로필 수정 버튼
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/caregiver_edit_profile');
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: Text("프로필 수정", style: TextStyle(color: Colors.white, fontSize: 16)),
-            ),
-            SizedBox(height: 30),
+            const SizedBox(height: 40),
 
-            // 구인 정보 띄우기 버튼 (스위치 포함)
-            ElevatedButton(
-              onPressed: () {
+            // 🟢 구인 정보 띄우기 버튼
+// 구인 정보 띄우기 버튼
+            GestureDetector(
+              onTap: () {
                 setState(() {
-                  isJobInfoEnabled = !isJobInfoEnabled; // 버튼 클릭 시 스위치 토글
+                  isJobInfoEnabled = !isJobInfoEnabled;
                 });
               },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // 둥글게
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                decoration: BoxDecoration(
+                  color:
+                      isJobInfoEnabled ? const Color(0xFF43C098) : Colors.white,
+                  borderRadius: BorderRadius.circular(50),
+                  border: isJobInfoEnabled
+                      ? null
+                      : Border.all(color: const Color(0xFF43C098), width: 1.5),
+                  boxShadow: [
+                    // ✅ 그림자 추가
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 16), // 좌우 패딩 추가
-              ),
-              child: Stack(
-                alignment: Alignment.center, // 🔥 텍스트를 중앙에 배치
-                children: [
-                  Align(
-                    alignment: Alignment.center, // 텍스트 중앙 정렬
-                    child: Text(
-                      "구인 정보 띄우기",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "구인 정보 띄우기",
+                        style: GoogleFonts.notoSansKr(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: isJobInfoEnabled ? Colors.white : Colors.black,
+                        ),
+                      ),
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight, // 스위치를 오른쪽 정렬
-                    child: Switch(
-                      value: isJobInfoEnabled,
-                      activeColor: Colors.teal,
-                      onChanged: (value) {
-                        setState(() {
-                          isJobInfoEnabled = value;
-                        });
-                      },
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: Switch(
+                        value: isJobInfoEnabled,
+                        activeColor: Colors.teal,
+                        onChanged: (value) {
+                          setState(() {
+                            isJobInfoEnabled = value;
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
-            SizedBox(height: 30),
+            const SizedBox(height: 10),
 
-            // 구인 관리 버튼
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8), // 둥글게
+// 구인 관리 버튼
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isJobManagementEnabled = !isJobManagementEnabled;
+                });
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                constraints: const BoxConstraints(minHeight: 80),
+                decoration: BoxDecoration(
+                  color: isJobManagementEnabled
+                      ? const Color(0xFF43C098)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(50),
+                  border: isJobManagementEnabled
+                      ? null
+                      : Border.all(color: const Color(0xFF43C098), width: 1.5),
+                  boxShadow: [
+                    // ✅ 그림자 추가
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    "구인 관리",
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      color:
+                          isJobManagementEnabled ? Colors.white : Colors.black,
+                    ),
+                  ),
                 ),
               ),
-              child: Text("구인 관리", style: TextStyle(color: Colors.white)),
             ),
-          ],
-        ),
-      ),
 
-      // 하단 네비게이션 바
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.grey[200],
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        currentIndex: 0,
-        onTap: (index) {
+            const SizedBox(height: 20),
+          ], // ✅ 이 괄호를 추가해서 Column의 children 리스트를 닫아줘야 함
+        ), // ✅ Column 위젯을 닫는 괄호 추가
+      ), // ✅ SingleChildScrollView를 닫는 괄호 추가
+
+      // 🟢 하단 네비게이션 바
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+
           if (index == 1) {
-            Navigator.pushNamed(context, '/caregiver_patient_list'); // ✅ 네비게이션 바에서 "환자 관리" 클릭 시 이동
+            Navigator.pushNamed(context, '/caregiver_patient_list');
           }
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: Color(0xFF43C098)),
             label: "프로필",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.edit_note),
+          NavigationDestination(
+            icon: Icon(Icons.list_alt),
+            selectedIcon: Icon(Icons.list_alt, color: Color(0xFF43C098)),
             label: "환자 관리",
           ),
         ],

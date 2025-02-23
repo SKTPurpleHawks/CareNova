@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
 
-class CaregiverPatientListScreen extends StatelessWidget {
+class CaregiverPatientListScreen extends StatefulWidget {
   const CaregiverPatientListScreen({super.key});
+
+  @override
+  _CaregiverPatientListScreenState createState() =>
+      _CaregiverPatientListScreenState();
+}
+
+class _CaregiverPatientListScreenState
+    extends State<CaregiverPatientListScreen> {
+  int selectedIndex = 1; // ✅ 기본 선택 값 설정
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +37,8 @@ class CaregiverPatientListScreen extends StatelessWidget {
               alignment: Alignment.center,
               child: const Text(
                 "LOGO",
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
               ),
             ),
             Expanded(child: Container()), // 🔹 오른쪽 빈 공간 확보
@@ -50,23 +60,29 @@ class CaregiverPatientListScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.grey[200],
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        currentIndex: 1, // "환자 관리" 활성화
-        onTap: (index) {
+
+      // ✅ 하단 네비게이션 바 수정
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+
           if (index == 0) {
-            Navigator.pushNamed(context, '/caregiver_profile'); // ✅ "프로필" 클릭 시 이동
+            Navigator.pushReplacementNamed(context,
+                '/caregiver_profile'); // ✅ pushReplacementNamed로 변경 (이전 페이지 히스토리 제거)
           }
         },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: Color(0xFF43C098)),
             label: "프로필",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.edit_note),
+          NavigationDestination(
+            icon: Icon(Icons.list_alt),
+            selectedIcon: Icon(Icons.list_alt, color: Color(0xFF43C098)),
             label: "환자 관리",
           ),
         ],
@@ -82,15 +98,32 @@ class CaregiverPatientListScreen extends StatelessWidget {
 
         Navigator.pushNamed(
           context,
-          '/caregiver_patient_detail', // ✅ 상세 화면으로 이동
-          arguments: patientName, // ✅ 선택한 환자의 이름 전달
+          '/caregiver_patient_info',
+          arguments: {
+            "name": patientName,
+            "gender": "여성",
+            "height": 165,
+            "weight": 60,
+            "care_region": "서울, 경기",
+            "care_place": "집",
+            "diagnosis": "고혈압, 당뇨",
+            "symptoms": ["어지러움", "만성 피로", "고혈압"],
+          },
         );
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.black, width: 1),
-          borderRadius: BorderRadius.circular(10),
+          color: const Color(0xFF43C098),
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            // ✅ 그림자 추가
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -98,7 +131,11 @@ class CaregiverPatientListScreen extends StatelessWidget {
             const SizedBox(width: 10),
             Text(
               patientName,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ],
         ),
