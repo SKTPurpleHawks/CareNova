@@ -52,33 +52,17 @@ class _GuardianPatientDetailScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context, _nameController.text),
+          onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(child: Container()),
-            Container(
-              width: 100,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                "LOGO",
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(child: Container()),
-          ],
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
         ),
-        centerTitle: true,
-        actions: [Container(width: 48)],
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -159,6 +143,7 @@ class _GuardianPatientDetailScreenState
         ),
       ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
           setState(() => selectedIndex = index);

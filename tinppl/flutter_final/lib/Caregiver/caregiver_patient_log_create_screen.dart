@@ -32,9 +32,9 @@ class _CaregiverPatientLogCreateScreenState
   String? _breakfastType = "일반식";
   String? _lunchType = "일반식";
   String? _dinnerType = "일반식";
-  double _breakfastAmount = 0.0;
-  double _lunchAmount = 0.0;
-  double _dinnerAmount = 0.0;
+  String? _breakfastAmount = "완식";
+  String? _lunchAmount = "완식";
+  String? _dinnerAmount = "완식";
 
   final TextEditingController _urineAmountController = TextEditingController();
   final TextEditingController _stoolTimesController = TextEditingController();
@@ -300,8 +300,8 @@ class _CaregiverPatientLogCreateScreenState
     );
   }
 
-  Widget _buildMealSection(String meal, String? type, double amount,
-      Function(String, double) onChanged) {
+  Widget _buildMealSection(String meal, String? type, String? amount,
+      Function(String, String) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: Column(
@@ -315,17 +315,22 @@ class _CaregiverPatientLogCreateScreenState
             ),
           ),
           const SizedBox(height: 8.0),
-          _buildDropdown("$meal 식사", type, ["일반식", "죽", "유동식(경관식)"], (value) {
-            onChanged(value!, amount);
-          }),
-          Slider(
-            value: amount,
-            min: 0,
-            max: 1,
-            divisions: 4,
-            label: "$amount",
-            activeColor: const Color(0xFF43C098), // ✅ 슬라이더 포인트 색상 변경
-            onChanged: (value) => onChanged(type!, value),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDropdown(
+                    "$meal 식사 종류", type, ["일반식", "죽", "유동식(경관식)"], (value) {
+                  onChanged(value!, amount!);
+                }),
+              ),
+              const SizedBox(width: 12.0),
+              Expanded(
+                child: _buildDropdown(
+                    "$meal 식사량", amount, ["완식", "반식", "소식", "거부"], (value) {
+                  onChanged(type!, value!);
+                }),
+              ),
+            ],
           ),
         ],
       ),

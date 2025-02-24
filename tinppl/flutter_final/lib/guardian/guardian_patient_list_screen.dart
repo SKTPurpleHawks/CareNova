@@ -96,6 +96,7 @@ class _GuardianPatientListScreenState extends State<GuardianPatientListScreen> {
         ),
       ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
           setState(() => selectedIndex = index);

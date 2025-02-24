@@ -1,25 +1,60 @@
 import 'package:flutter/material.dart';
+import 'caregiver_detail_screen.dart';
 
 class CaregiverListScreen2 extends StatelessWidget {
   final String patientName; // ✅ 선택한 환자 이름 저장
 
-  const CaregiverListScreen2({super.key, required this.patientName}); // ✅ required 추가
+  const CaregiverListScreen2(
+      {super.key, required this.patientName}); // ✅ required 추가
 
   final List<Map<String, dynamic>> caregivers = const [
     {
-      "name": "서민석",
-      "age": 25,
-      "gender": "남성",
-      "experience": 1,
-      "height": 175,
-      "weight": 68,
+      "name": "이수민",
+      "age": 49,
+      "gender": "여성",
+      "experience": 5,
+      "height": 160,
+      "weight": 60,
       "spot": "병원",
-      "regions": ["서울", "경기"],
-      "symptoms": ["치매", "중풍"],
-      "canWalkPatient": "걸을 수 있음",
-      "preferSex": "남성",
+      "regions": ["서울", "인천"],
+      "symptoms": ["치매", "섬망", "피딩", "기저귀케어"],
+      "canWalkPatient": "지원 가능",
+      "preferSex": "상관없음",
       "smoking": "비흡연",
-      "matchingRate": 99.2,
+      "matchingRate": 95.2,
+      "rating": 4.8
+    },
+    {
+      "name": "박지훈",
+      "age": 36,
+      "gender": "남성",
+      "experience": 3,
+      "height": 175,
+      "weight": 70,
+      "spot": "둘 다",
+      "regions": ["부산", "경남"],
+      "symptoms": ["하반신마비", "전신마비", "소변줄", "장루"],
+      "canWalkPatient": "지원 불가능",
+      "preferSex": "남성",
+      "smoking": "흡연",
+      "matchingRate": 89.7,
+      "rating": 4.3
+    },
+    {
+      "name": "최미경",
+      "age": 33,
+      "gender": "여성",
+      "experience": 4,
+      "height": 158,
+      "weight": 50,
+      "spot": "집",
+      "regions": ["경기북부", "강원영서"],
+      "symptoms": ["파킨슨", "재활", "야간집중돌봄"],
+      "canWalkPatient": "상관없음",
+      "preferSex": "여성",
+      "smoking": "비흡연",
+      "matchingRate": 92.4,
+      "rating": 4.6
     },
     {
       "name": "최명일",
@@ -35,109 +70,154 @@ class CaregiverListScreen2 extends StatelessWidget {
       "preferSex": "여성",
       "smoking": "흡연",
       "matchingRate": 98.6,
-    },
+      "rating": 5.0
+    }
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("간병인 추천 리스트"),
-        centerTitle: true,
         backgroundColor: Colors.white,
-        elevation: 1,
+        elevation: 0,
+        centerTitle: true, // ✅ 타이틀 가운데 정렬
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: caregivers.length,
-        itemBuilder: (context, index) {
-          final caregiver = caregivers[index];
-          return _buildCaregiverCard(context, caregiver);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCaregiverCard(BuildContext context, Map<String, dynamic> caregiver) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 이름 및 매칭률
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  caregiver["name"],
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "${caregiver["matchingRate"]}%",
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-                ),
-              ],
+            SizedBox(height: 10),
+            Center(
+              child: Text(
+                '*조건에 맞춘 간병인 추천 순위 리스트입니다*',
+                style: TextStyle(
+                    color: const Color.fromARGB(195, 0, 0, 0), fontSize: 14),
+              ),
             ),
-            const SizedBox(height: 6),
-
-            // 나이, 성별, 경력
-            Text(
-              "나이: ${caregiver["age"]}세  |  성별: ${caregiver["gender"]}  |  경력: ${caregiver["experience"]}년",
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-
-            const SizedBox(height: 6),
-
-            // 키, 몸무게, 간병 가능 장소
-            Text(
-              "키: ${caregiver["height"]}cm  |  몸무게: ${caregiver["weight"]}kg  |  간병 가능 장소: ${caregiver["spot"]}",
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-            ),
-
-            const SizedBox(height: 6),
-
-            // 추가 정보 (필터링 관련)
-            Row(
-              children: [
-                _infoTag("🚶‍♂ 환자 보행: ${caregiver["canWalkPatient"]}"),
-                const SizedBox(width: 6),
-                _infoTag("🚻 선호 성별: ${caregiver["preferSex"]}"),
-                const SizedBox(width: 6),
-                _infoTag("🚬 ${caregiver["smoking"]}"),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            // 상세보기 버튼
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/caregiver_detail', arguments: caregiver);
+            SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: caregivers.length,
+                itemBuilder: (context, index) {
+                  return _buildCaregiverCard(context, caregivers[index]);
                 },
-                child: const Text("상세보기 >", style: TextStyle(fontSize: 14, color: Colors.blue)),
               ),
             ),
           ],
         ),
       ),
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+
+        selectedIndex: 0, // 현재 선택된 탭 (간병인 찾기)
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            Navigator.pushNamed(context, '/guardian_patient_list');
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            selectedIcon: Icon(Icons.search, color: Color(0xFF43C098)),
+            label: '간병인 찾기',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.edit),
+            selectedIcon: Icon(Icons.edit, color: Color(0xFF43C098)),
+            label: '내 환자 정보',
+          ),
+        ],
+      ),
     );
   }
 
-  // 작은 정보 박스 디자인
-  Widget _infoTag(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(10),
+  Widget _buildCaregiverCard(BuildContext context, Map caregiver) {
+    // ✅ context 추가
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(80),
+        ),
+        child: Stack(
+          children: [
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CaregiverDetailScreen(
+                        caregiver: Map<String, dynamic>.from(caregiver)),
+                  ),
+                );
+              },
+              contentPadding: EdgeInsets.only(right: 80, left: 16, bottom: 8),
+              leading: Icon(Icons.account_circle, size: 40, color: Colors.teal),
+              title: Text(caregiver['name'],
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle:
+                  Text('나이: ${caregiver['age']}세\n성별: ${caregiver['gender']}'),
+            ),
+            Positioned(
+              top: 10,
+              right: 16,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Row(
+                    children: [
+                      Text('매칭률:',
+                          style: TextStyle(
+                              fontSize: 14, fontWeight: FontWeight.w400)),
+                      SizedBox(width: 4),
+                      Text('${caregiver['matchingRate']}%',
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.teal,
+                              fontWeight: FontWeight.bold)),
+                      SizedBox(width: 10),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...List.generate(5, (index) {
+                        double rating = caregiver['rating'];
+                        if (index < rating.floor()) {
+                          return Icon(Icons.star,
+                              size: 25, color: Colors.amber);
+                        } else if (index < rating) {
+                          return Icon(Icons.star_half,
+                              size: 25, color: Colors.amber);
+                        } else {
+                          return Icon(Icons.star_border,
+                              size: 25, color: Colors.amber);
+                        }
+                      }),
+                      SizedBox(width: 10), // ✅ List.generate 바깥쪽에 위치
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 12, color: Colors.black)),
     );
   }
 }

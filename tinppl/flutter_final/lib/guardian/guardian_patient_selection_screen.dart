@@ -20,6 +20,7 @@ class _GuardianPatientSelectionScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+<<<<<<< HEAD
         centerTitle: true, // ✅ 중앙 정렬 필수
         title: Image.asset(
           'assets/images/textlogo.png', // ✅ 여기에 로고 이미지 경로 입력
@@ -27,6 +28,19 @@ class _GuardianPatientSelectionScreenState
           fit: BoxFit.contain,
         ),
         iconTheme: IconThemeData(color: Colors.black),
+=======
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
+>>>>>>> 558423842c9fadd3c28537cce8e4f517ba641228
       ),
       body: Column(
         children: [
@@ -139,6 +153,8 @@ class _GuardianPatientSelectionScreenState
         ],
       ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+
         selectedIndex: 0, // 현재 선택된 탭 (간병인 찾기)
         onDestinationSelected: (index) {
           if (index == 1) {
