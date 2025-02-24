@@ -82,14 +82,14 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         decoration: BoxDecoration(
-          color: Colors.grey[200], // 🔹 부드러운 배경색 추가
+          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             // ✅ 그림자 추가
             BoxShadow(
-              color: Colors.black.withOpacity(0.01), // 그림자 색 (연한 검은색)
-              blurRadius: 10, // 흐림 정도
-              spreadRadius: 8, // 퍼지는 정도
+              color: Colors.black.withOpacity(0.1), // 그림자 색 (연한 검은색)
+              blurRadius: 5, // 흐림 정도
+              // spreadRadius: 8, // 퍼지는 정도
               offset: const Offset(0, 4), // 그림자 위치 (아래쪽)
             ),
           ],
@@ -99,8 +99,14 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.edit,
-                    size: 24, color: Colors.black), // ✏️ 아이콘 (편집 가능)
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white, // 배경색 흰색
+                    shape: BoxShape.circle, // 원형 모양
+                  ),
+                  padding: EdgeInsets.all(8),
+                  child: Icon(Icons.edit, size: 24, color: Color(0xFF43C098)),
+                ),
                 const SizedBox(width: 10),
                 Text(
                   logTitle,

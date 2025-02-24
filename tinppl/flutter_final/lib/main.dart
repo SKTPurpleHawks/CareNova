@@ -19,6 +19,7 @@ import 'Caregiver/caregiver_patient_logs_screen.dart';
 import 'Caregiver/caregiver_patient_log_detail_screen.dart';
 import 'Caregiver/caregiver_patient_log_create_screen.dart';
 import 'Caregiver/caregiver_patient_info_screen.dart';
+import 'guardian/guardian_edit_patient_information_screen.dart';
 
 import 'recorder_screen.dart'; // ✅ RecorderScreen 추가
 
@@ -86,6 +87,14 @@ class MyApp extends StatelessWidget {
               builder: (context) => GuardianPatientRegisterScreen(token: token),
             );
 
+          case '/guardian_edit_patient_information':
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
+            final token = args['token'] ?? '';
+            return MaterialPageRoute(
+              builder: (context) =>
+                  GuardianEditPatientInformationScreen(token: token),
+            );
+
           default:
             return MaterialPageRoute(
               builder: (context) => const LanguageScreen(),
@@ -111,10 +120,6 @@ class MyApp extends StatelessWidget {
             const profile.CaregiverProfileScreen(),
         '/caregiver_patient_list': (context) =>
             const CaregiverPatientListScreen(),
-        '/caregiver_patient_log_detail': (context) =>
-            const CaregiverPatientLogDetailScreen(),
-        // '/recorder_screen': 제거 (중복)
-        // '/guardian_patient_register': 제거 (onGenerateRoute에서 처리)
       },
     );
   }

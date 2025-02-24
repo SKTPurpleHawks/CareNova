@@ -102,7 +102,7 @@ class _GuardianPatientSelectionScreenState
                                 isSelected ? Colors.white : Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(50),
                               side: BorderSide(
                                 color: isSelected
                                     ? const Color(0xFF43C098)

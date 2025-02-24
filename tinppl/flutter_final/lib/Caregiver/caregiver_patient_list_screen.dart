@@ -119,8 +119,8 @@ class _CaregiverPatientListScreenState
           boxShadow: [
             // ✅ 그림자 추가
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
               offset: const Offset(0, 4),
             ),
           ],

@@ -57,6 +57,13 @@ class _GuardianPatientRegisterScreenState
     '제주'
   ];
 
+  final List<String> messages = [
+    "성실하게 환자를 돌봐주세요.",
+    "의사소통을 중요하게 생각해요.",
+    "위생/청결 관리에 신경 써주세요."
+  ];
+  String? selectedMessage;
+
   final List<String> _symptomsList = [
     '치매',
     '섬망',
@@ -130,23 +137,30 @@ class _GuardianPatientRegisterScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true, // ✅ 타이틀 가운데 정렬
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(children: [
-          Text("환자 추가",
-              style: GoogleFonts.notoSansKr(
-                  fontSize: 20, fontWeight: FontWeight.bold)),
-          Expanded(child: Container()),
-        ]),
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: 10),
+              Text(
+                "환자 추가하기",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               _buildTextFieldWithLabel(_nameController, "이름"),
               SizedBox(height: 10),
@@ -200,7 +214,44 @@ class _GuardianPatientRegisterScreenState
                 });
               }),
               _buildSymptomsSelection(),
-              const SizedBox(height: 30),
+              SizedBox(height: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+                    child: Text(
+                      "간병인에게 전하고 싶은 말",
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: messages.length,
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        return RadioListTile<String>(
+                          title: Text(message),
+                          value: message,
+                          groupValue: selectedMessage,
+                          onChanged: (String? value) {
+                            setState(() {
+                              selectedMessage = value;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
                 height: 60, // 원하는 높이로 조정
@@ -524,7 +575,7 @@ class _GuardianPatientRegisterScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("질병 이력",
+          Text("환자에게 해당되는 증상",
               style: GoogleFonts.notoSansKr(
                   fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 5),
@@ -535,7 +586,7 @@ class _GuardianPatientRegisterScreenState
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: ExpansionTile(
-              title: Text('${_selectedSymptoms.length} 선택됨',
+              title: Text('${_selectedSymptoms.length}개 선택됨',
                   style: GoogleFonts.notoSansKr(fontSize: 16)),
               children: _symptomsList.map((symptom) {
                 return CheckboxListTile(

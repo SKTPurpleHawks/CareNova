@@ -29,7 +29,7 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
   String _sex = '남성';
   String _spot = '병원';
   List<String> _selectedRegions = [];
-  String _canWalkPatient = '걸을 수 없음';
+  String _canWalkPatient = '지원 불가능';
   String _preferSex = '남성';
   List<String> _selectedSymptoms = [];
   bool _canCareForImmobile = false;
@@ -164,6 +164,17 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true, // ✅ 중앙 정렬 필수
+        title: Image.asset(
+          'assets/images/textlogo.png', // ✅ 여기에 로고 이미지 경로 입력
+          height: 25, // 원하는 높이 조정 가능
+          fit: BoxFit.contain,
+        ),
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Form(
@@ -172,21 +183,11 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 50),
-                Center(
-                  child: Text(
-                    "SBJNMCCARE",
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF43C098),
-                    ),
-                  ),
-                ),
                 SizedBox(height: 30),
-                Text("간병인 회원가입",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  "간병인 회원가입",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 20),
                 _buildTextFieldWithLabel(_emailController, "이메일"),
                 SizedBox(height: 10),
@@ -246,9 +247,9 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
                     "간병 가능 질환", _symptoms, _selectedSymptoms),
                 SizedBox(height: 10),
                 _buildDropdownWithLabel(
-                    "환자의 보행 가능 여부",
+                    "환자의 보행 지원 여부",
                     _canWalkPatient,
-                    ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                    ['지원 가능', '지원 불가능', '상관없음'],
                     (value) => setState(() => _canWalkPatient = value)),
                 SizedBox(height: 10),
                 _buildDropdownWithLabel(

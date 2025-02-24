@@ -132,7 +132,9 @@ class _GuardianPatientDetailScreenState
                     ),
                     child: TextButton.icon(
                       onPressed: () => Navigator.pushNamed(
-                          context, '/guardian_patient_register'),
+                        context,
+                        '/guardian_edit_patient_information',
+                      ),
                       icon: const Icon(Icons.edit, color: Colors.white),
                       label: const Text("환자 정보 수정"),
                       style: TextButton.styleFrom(
