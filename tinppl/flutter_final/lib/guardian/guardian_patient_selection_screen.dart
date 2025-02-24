@@ -20,44 +20,17 @@ class _GuardianPatientSelectionScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-<<<<<<< HEAD
-        centerTitle: true, // ✅ 중앙 정렬 필수
-        title: Image.asset(
-          'assets/images/textlogo.png', // ✅ 여기에 로고 이미지 경로 입력
-          height: 25, // 원하는 높이 조정 가능
-          fit: BoxFit.contain,
-        ),
-        iconTheme: IconThemeData(color: Colors.black),
-=======
-        centerTitle: true,
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(child: Container()), // 🔹 왼쪽 빈 공간 확보
-            Container(
-              width: 100,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                "LOGO",
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(child: Container()), // 🔹 오른쪽 빈 공간 확보
-          ],
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
         ),
-        centerTitle: true, // ✅ iOS에서도 중앙 정렬 유지
-        actions: [Container(width: 48)], // 🔹 leading 버튼과 균형 맞추기 위해 추가
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Column(
         children: [
