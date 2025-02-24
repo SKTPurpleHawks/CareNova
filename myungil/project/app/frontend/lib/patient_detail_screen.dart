@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'caregiver_patient_log_list.dart';
-import 'protector_patient_log_list.dart'; // ✅ 보호자 간병일지 리스트 화면 import
-import 'review_edit_screen.dart'; // 리뷰 화면 import
+import 'protector_patient_log_list.dart';
+import 'review_edit_screen.dart';
 
 class PatientDetailScreen extends StatelessWidget {
   final Map<String, dynamic> patient;
@@ -10,6 +11,9 @@ class PatientDetailScreen extends StatelessWidget {
   final bool hasCaregiver;
   final String caregiverName;
   final String caregiverId;
+  final String caregiverPhone;
+  final String caregiverStartDate;
+  final String caregiverEndDate;
   final String? protectorId;
 
   const PatientDetailScreen({
@@ -20,123 +24,215 @@ class PatientDetailScreen extends StatelessWidget {
     required this.hasCaregiver,
     required this.caregiverName,
     required this.caregiverId,
+    required this.caregiverPhone,
+    required this.caregiverStartDate,
+    required this.caregiverEndDate,
     this.protectorId,
   }) : super(key: key);
+
+  String _formatDate(String dateString) {
+    if (dateString == "정보 없음" || dateString.isEmpty) return "정보 없음";
+    try {
+      DateTime parsedDate = DateTime.parse(dateString);
+      return "${parsedDate.year}-${parsedDate.month.toString().padLeft(2, '0')}-${parsedDate.day.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return "정보 없음";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("환자 상세 정보"),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          "환자 정보",
+          style: GoogleFonts.notoSansKr(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+          ),
+        ),
+        centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              patient['name'],
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text("나이: ${patient['age']}세"),
-            Text("성별: ${patient['sex']}"),
-            Text("키: ${patient['height']} cm"),
-            Text("몸무게: ${patient['weight']} kg"),
-            Text("증상: ${patient['symptoms']}"),
-            SizedBox(height: 20),
-            Divider(),
-            SizedBox(height: 20),
-
-            if (!isCaregiver)
-              ElevatedButton(
-                onPressed: () {},
-                child: Text("환자 정보 수정"),
-              ),
-
-            SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: () {},
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(isCaregiver ? "환자와의 대화" : "간병인과의 대화"),
+                  _buildInfoCard([
+                    _buildRow("이름", patient['name']),
+                    _buildRow("나이", "${patient['age']}세"),
+                    _buildRow("성별", patient['sex']),
+                    _buildRow("키", "${patient['height']} cm"),
+                    _buildRow("몸무게", "${patient['weight']} kg"),
+                  ]),
+                  const SizedBox(height: 20),
+                  _buildInfoCard([
+                    _buildRow("증상", patient['symptoms'] ?? "정보 없음"),
+                  ]),
+                  const SizedBox(height: 20),
+                  if (!isCaregiver && hasCaregiver)
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: _buildInfoCard([
+                        _buildRow("간병인 이름", caregiverName),
+                        _buildRow("간병인 전화번호", caregiverPhone),
+                        _buildRow("간병 시작일", _formatDate(caregiverStartDate)),
+                        _buildRow("간병 종료일", _formatDate(caregiverEndDate)),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ReviewScreen(
+                                    token: token,
+                                    caregiverId: caregiverId,
+                                    protectorId: protectorId ?? "",
+                                  ),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text("간병인 계약 취소",
+                                style: TextStyle(fontSize: 16)),
+                          ),
+                        ),
+                      ]),
+                    ),
                 ],
               ),
             ),
-
-            SizedBox(height: 10),
-
-            // ✅ 보호자 또는 간병인이 간병일지 확인/작성 가능
-            if (isCaregiver)
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => CaregiverPatientLogListScreen(
-                        patientName: patient['name'],
-                        caregiverId: caregiverId,
-                        protectorId: protectorId ?? "0",
-                        patientId: patient['id'],
-                        token: token,
-                      ),
-                    ),
-                  );
-                },
-                child: Text("간병일지 작성하기"),
-              )
-            else
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProtectorPatientLogListScreen(
-                        patientName: patient['name'],
-                        patientId: patient['id'],
-                        token: token,
-                      ),
-                    ),
-                  );
-                },
-                child: Text("간병일지 확인하기"), // ✅ 보호자는 간병일지 조회만 가능
-              ),
-
-            SizedBox(height: 10),
-
-            // ✅ 보호자가 간병인과 연결된 경우 "간병인 계약 취소" 버튼 표시
-            if (!isCaregiver && hasCaregiver)
-              Column(
-                children: [
-                  Text('연결된 간병인 : $caregiverName',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 20),
-                  ElevatedButton(
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 8,
+                    offset: Offset(0, -2)),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
                     onPressed: () {
-                      print("Caregiver ID 전달됨: $caregiverId");
-                      // 리뷰 작성 화면으로 이동
+                      // 대화 기능 추가
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        side: const BorderSide(color: Colors.black12),
+                      ),
+                    ),
+                    child: Text(
+                      isCaregiver ? "환자와 대화하기" : "간병인과 대화하기",
+                      style: GoogleFonts.notoSansKr(fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ReviewScreen(
-                              token: token,
-                              caregiverId: caregiverId,
-                              protectorId: protectorId ?? ""),
+                          builder: (context) => isCaregiver
+                              ? CaregiverPatientLogListScreen(
+                                  patientName: patient['name'],
+                                  caregiverId: caregiverId,
+                                  protectorId: protectorId ?? "0",
+                                  patientId: patient['id'],
+                                  token: token,
+                                )
+                              : ProtectorPatientLogListScreen(
+                                  patientName: patient['name'],
+                                  patientId: patient['id'],
+                                  token: token,
+                                ),
                         ),
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: const Color(0xFF43C098),
                       foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
-                    child: Text("간병인 계약 취소"),
+                    child: Text(
+                      isCaregiver ? "간병일지 작성" : "간병일지 확인",
+                      style: GoogleFonts.notoSansKr(fontSize: 16),
+                    ),
                   ),
-                ],
-              ),
-          ],
-        ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard(List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1),
+        ],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildRow(String title, String? value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.notoSansKr(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            value ?? "정보 없음",
+            style: GoogleFonts.notoSansKr(fontSize: 16),
+          ),
+        ],
       ),
     );
   }

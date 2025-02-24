@@ -22,44 +22,56 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
   }
 
   Future<void> fetchCareRequests() async {
-    final response = await http.get(
-      Uri.parse('http://192.168.232.218:8000/care-requests'),
-      headers: {
-        'Authorization': 'Bearer ${widget.token}',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.11.93:8000/care-request'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      setState(() {
-        _requests = jsonDecode(response.body);
-        isLoading = false;
-      });
-    } else {
-      _showSnackBar('간병 요청을 불러오지 못했습니다.');
+      if (response.statusCode == 200) {
+        // ✅ UTF-8 변환 없이 jsonDecode 직접 사용
+        final decodedBody = response.bodyBytes.isNotEmpty
+            ? jsonDecode(utf8.decode(response.bodyBytes))
+            : [];
+
+        setState(() {
+          _requests = decodedBody;
+          isLoading = false;
+        });
+      } else {
+        _showSnackBar('간병 요청을 불러오지 못했습니다.');
+      }
+    } catch (e) {
+      _showSnackBar('서버 연결 중 오류가 발생했습니다.');
     }
   }
 
   Future<void> respondToRequest(int requestId, bool accept) async {
-  final response = await http.put(
-    Uri.parse('http://192.168.232.218:8000/care-requests/$requestId'),
-    headers: {
-      'Authorization': 'Bearer ${widget.token}',
-      'Content-Type': 'application/json',
-    },
-    body: jsonEncode({'status': accept ? 'accepted' : 'rejected'}),
-  );
+    try {
+      final response = await http.put(
+        Uri.parse('http://192.168.11.93:8000/care-request/$requestId'),
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({'status': accept ? 'accepted' : 'rejected'}),
+      );
 
-  if (response.statusCode == 200) {
-    setState(() {
-      _requests.removeWhere((r) => r['id'] == requestId);
-    });
-    _showSnackBar('요청이 ${accept ? '수락' : '거절'}되었습니다.');
-  } else {
-    _showSnackBar('처리 중 오류가 발생했습니다.');
+      if (response.statusCode == 200) {
+        setState(() {
+          _requests.removeWhere((r) => r['id'] == requestId);
+        });
+        _showSnackBar('요청이 ${accept ? '수락' : '거절'}되었습니다.');
+      } else {
+        _showSnackBar('처리 중 오류가 발생했습니다.');
+      }
+    } catch (e) {
+      _showSnackBar('요청 처리 중 오류가 발생했습니다.');
+    }
   }
-}
-
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -79,26 +91,38 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                   itemCount: _requests.length,
                   itemBuilder: (context, index) {
                     final request = _requests[index];
+
+                    // ✅ protector_name 값이 없거나 null이면 기본값 설정
+                    String protectorName =
+                        request['protector_name'] ?? "알 수 없는 보호자";
+
                     return Card(
                       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                       child: ListTile(
-                        title: Text("보호자 ID: ${request['protector_id']}"),
-                        subtitle: Text("상태: ${request['status']}"),
+                        title: Text("$protectorName 님의 요청이 도착하였습니다."),
                         trailing: request['status'] == "pending"
                             ? Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   TextButton(
-                                    onPressed: () => respondToRequest(request['id'], true),
-                                    child: Text("수락", style: TextStyle(color: Colors.green)),
+                                    onPressed: () =>
+                                        respondToRequest(request['id'], true),
+                                    child: Text("수락",
+                                        style: TextStyle(color: Colors.green)),
                                   ),
                                   TextButton(
-                                    onPressed: () => respondToRequest(request['id'], false),
-                                    child: Text("거절", style: TextStyle(color: Colors.red)),
+                                    onPressed: () =>
+                                        respondToRequest(request['id'], false),
+                                    child: Text("거절",
+                                        style: TextStyle(color: Colors.red)),
                                   ),
                                 ],
                               )
-                            : Text(request['status'] == "accepted" ? "✅ 수락됨" : "❌ 거절됨"),
+                            : Text(
+                                request['status'] == "accepted"
+                                    ? "✅ 수락됨"
+                                    : "❌ 거절됨",
+                              ),
                       ),
                     );
                   },

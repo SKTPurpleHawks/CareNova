@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:google_fonts/google_fonts.dart';
 import 'user_type_selection_screen.dart';
 import 'package:app/protector_home_screen.dart';
 import 'package:app/foreign_home_screen.dart';
@@ -13,9 +14,15 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isPasswordVisible = false; // 패스워드 보기 토글 상태
+  bool _isLoading = false; // 로그인 버튼 로딩 상태
 
   Future<void> _login() async {
-    final String baseUrl = "http://192.168.232.218:8000"; // FastAPI 서버 IP 사용
+    setState(() {
+      _isLoading = true;
+    });
+
+    final String baseUrl = "http://192.168.11.93:8000"; // FastAPI 서버 IP 사용
     final String url = "$baseUrl/login";
     final response = await http.post(
       Uri.parse(url),
@@ -25,6 +32,10 @@ class _LoginScreenState extends State<LoginScreen> {
         'password': _passwordController.text,
       }),
     );
+
+    setState(() {
+      _isLoading = false;
+    });
 
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
@@ -54,53 +65,155 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = Color(0xFF43C098); // 고급스러운 색상 유지
+    final Color accentColor = Color(0xFF43C098);
+
     return Scaffold(
-      backgroundColor: Color(0xFFFFFFFF),
-      appBar: AppBar(title: Text('로그인')),
-      body: SingleChildScrollView( 
-        child: Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start, 
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(height: 40),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Image.asset('assets/images/carenova2.png', width: 120, height: 120),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 60),
+
+            // 로그인 제목
+            Text(
+              '로그인',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.notoSansKr(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
               ),
-              SizedBox(height: 80),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(labelText: '이메일'),
+            ),
+
+            const SizedBox(height: 80),
+
+            // 이메일 입력 필드
+            _buildInputField(
+              label: '이메일',
+              isPassword: false,
+              icon: Icons.email_outlined,
+              controller: _emailController,
+            ),
+
+            const SizedBox(height: 16),
+
+            // 비밀번호 입력 필드
+            _buildInputField(
+              label: '비밀번호',
+              isPassword: true,
+              icon: Icons.lock_outline,
+              controller: _passwordController,
+            ),
+
+            const SizedBox(height: 24),
+
+            // 로그인 버튼
+            ElevatedButton(
+              onPressed: _isLoading ? null : _login,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: primaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-              SizedBox(height: 10),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(labelText: '비밀번호'),
-                obscureText: true,
+              child: _isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text(
+                      '로그인',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 회원가입 버튼
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => UserTypeSelectionScreen()),
+                );
+              },
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  '회원가입',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: accentColor,
+                  ),
+                ),
               ),
-              SizedBox(height: 20),
-              TextButton(
-                child: Text('로그인', style: Theme.of(context).textTheme.bodyMedium),
-                onPressed: _login,
-              ),
-              SizedBox(height: 10),
-              TextButton(
-                child: Text('회원가입', style: Theme.of(context).textTheme.bodyMedium),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => UserTypeSelectionScreen()),
-                  );
-                },
-              ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 30),
+          ],
         ),
       ),
     );
   }
 
-
+  /// **입력 필드 위젯 (아이콘 포함 & 패스워드 보기 추가)**
+  Widget _buildInputField({
+    required String label,
+    required bool isPassword,
+    required IconData icon,
+    required TextEditingController controller,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: isPassword && !_isPasswordVisible,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.black54), // 아이콘 추가
+        labelText: label,
+        labelStyle: GoogleFonts.notoSansKr(
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        ),
+        contentPadding: EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black87),
+        ),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Colors.black54),
+                onPressed: () {
+                  setState(() {
+                    _isPasswordVisible = !_isPasswordVisible;
+                  });
+                },
+              )
+            : null,
+      ),
+    );
+  }
 }

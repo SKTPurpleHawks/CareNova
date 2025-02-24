@@ -90,6 +90,10 @@ class PatientUserInfo(Base):
     canwalk = Column(String)
     prefersex = Column(String)
     smoking = Column(String)
+    startdate = Column(DateTime, nullable=True)  
+    enddate = Column(DateTime, nullable=True)  
+    region = Column(String, nullable=True) 
+    spot = Column(String, nullable=True) 
 
     protector = relationship("ProtectorUserInfo", back_populates="patients")
     caregiver = relationship("CareRequest", back_populates="patient")

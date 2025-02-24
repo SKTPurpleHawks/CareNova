@@ -18,46 +18,17 @@ class ForeignManagePatientScreen extends StatefulWidget {
 class _ForeignManagePatientScreenState
     extends State<ForeignManagePatientScreen> {
   List<dynamic> _patients = [];
-  List<dynamic> careRequests = [];
   int _selectedIndex = 1;
 
   @override
   void initState() {
     super.initState();
     fetchPatients();
-    fetchCareRequests(); // 간병 요청 데이터 불러오기
-  }
-
-  /// 보호자가 요청한 간병 요청 목록 가져오기
-  Future<void> fetchCareRequests() async {
-    final url = Uri.parse('http://192.168.232.218:8000/care-requests');
-
-    try {
-      final response = await http.get(
-        url,
-        headers: {
-          'Authorization': 'Bearer ${widget.token}',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        List<dynamic> requests = jsonDecode(utf8.decode(response.bodyBytes));
-        setState(() {
-          careRequests =
-              requests.where((r) => r['status'] == 'pending').toList();
-        });
-      } else {
-        _showSnackBar('간병 요청을 불러오는 데 실패했습니다.');
-      }
-    } catch (e) {
-      _showSnackBar('서버에 연결할 수 없습니다.');
-    }
   }
 
   /// 환자 정보 불러오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://192.168.232.218:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.11.93:8000/caregiver/patients');
 
     try {
       final response = await http.get(
@@ -104,104 +75,147 @@ class _ForeignManagePatientScreenState
     }
   }
 
-  /// 간병 요청 알림 팝업
-  void _showCareRequestDialog(
-      BuildContext context, Map<String, dynamic> request) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('간병 요청'),
-          content: Text(
-              '${request['protector_name'] ?? "알 수 없는 보호자"}님이 간병을 요청했습니다.'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                _showSnackBar('요청을 거절했습니다.');
-                Navigator.pop(context);
-              },
-              child: Text('거절'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                _showSnackBar('요청을 수락했습니다.');
-                Navigator.pop(context);
-              },
-              child: Text('수락'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white, // 🔹 배경색 추가
       appBar: AppBar(
-        title: Text("환자 관리"),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Text(
+          "환자 관리",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.black),
         actions: [
           IconButton(
-            icon: Icon(Icons.notifications),
-            onPressed: () {
-              if (careRequests.isEmpty) {
-                _showSnackBar('새로운 간병 요청이 없습니다.');
-              } else {
-                _showCareRequestDialog(context, careRequests[0]);
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: () {
               Navigator.pushReplacementNamed(context, "/");
             },
           ),
         ],
       ),
-      body: _patients.isEmpty
-          ? Center(child: Text("연결된 환자가 없습니다."))
-          : ListView.builder(
-              itemCount: _patients.length,
-              itemBuilder: (context, index) {
-                final patient = _patients[index];
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: _patients.isEmpty
+            ? Center(child: Text("연결된 환자가 없습니다."))
+            : ListView.builder(
+                itemCount: _patients.length,
+                itemBuilder: (context, index) {
+                  final patient = _patients[index];
+                  bool hasCaregiver = patient.containsKey('caregiver_id') &&
+                      patient['caregiver_id'] != null &&
+                      patient['caregiver_id'].toString().isNotEmpty;
 
-                bool hasCaregiver = patient.containsKey('caregiver_id') &&
-                    patient['caregiver_id'] != null &&
-                    patient['caregiver_id'].toString().isNotEmpty;
-                return Card(
-                  elevation: 3,
-                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                  child: ListTile(
-                    title: Text(_patients[index]['name']),
-                    subtitle: Text("나이: ${_patients[index]['age']}"),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => PatientDetailScreen(
-                            patient: _patients[index],
-                            token: widget.token,
-                            isCaregiver: true,
-                            hasCaregiver: hasCaregiver,
-                            caregiverName: '',
-                            caregiverId: (_patients[index]['caregiver_id'] ?? "").toString(),
-                            protectorId: (_patients[index]['protector_id'] ?? "").toString(), 
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '프로필'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: '환자 관리'),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: _buildPatientCard(
+                      context,
+                      patient['name'],
+                      patient['age'].toString(),
+                      patient,
+                      hasCaregiver,
+                    ),
+                  );
+                },
+              ),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: Color(0xFF43C098)),
+            label: "프로필",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.list_alt),
+            selectedIcon: Icon(Icons.list_alt, color: Color(0xFF43C098)),
+            label: "환자 관리",
+          ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  /// 🔹 새로운 UI 적용된 환자 카드
+  Widget _buildPatientCard(
+    BuildContext context,
+    String patientName,
+    String age,
+    dynamic patientData,
+    bool hasCaregiver,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PatientDetailScreen(
+              patient: patientData,
+              token: widget.token,
+              isCaregiver: true,
+              hasCaregiver: hasCaregiver,
+              caregiverName: '',
+              caregiverId: (patientData['caregiver_id'] ?? "").toString(),
+              caregiverPhone: '',
+              caregiverStartDate: '',
+              caregiverEndDate: '',
+              protectorId: (patientData['protector_id'] ?? "").toString(),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              padding: EdgeInsets.all(8),
+              child: Icon(
+                Icons.person_outline,
+                size: 24,
+                color: Color(0xFF43C098),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  patientName,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                Text(
+                  "나이: $age",
+                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -56,13 +56,36 @@ class PatientBase(BaseModel):
     name: str
     birthday: datetime
     age: int
+    startdate: Optional[datetime] = None
+    enddate: Optional[datetime] = None
     sex: str
-    height: int
-    weight: int
-    symptoms: str
-    canwalk: str
-    prefersex: str
-    smoking: str
+    region: Optional[str] = None
+    spot: Optional[str] = None
+    height: Optional[int] = None
+    weight: Optional[int] = None
+    symptoms: Optional[str] = None
+    canwalk: Optional[str] = None
+    prefersex: Optional[str] = None
+    smoking: Optional[str] = None
+
+
+# 업데이트 모델을 수정하여 모든 필드를 선택적(Optional)으로 변경
+class PatientUpdate(BaseModel):
+    name: Optional[str] = None
+    birthday: Optional[datetime] = None
+    age: Optional[int] = None
+    startdate: Optional[datetime] = None
+    enddate: Optional[datetime] = None
+    sex: Optional[str] = None
+    region: Optional[str] = None
+    spot: Optional[str] = None
+    height: Optional[int] = None
+    weight: Optional[int] = None
+    symptoms: Optional[str] = None
+    canwalk: Optional[str] = None
+    prefersex: Optional[str] = None
+    smoking: Optional[str] = None
+
 
 
 class PatientResponse(PatientBase):

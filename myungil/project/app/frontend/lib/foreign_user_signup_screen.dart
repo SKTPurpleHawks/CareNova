@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
 import 'login_screen.dart';
 
 class ForeignUserSignupScreen extends StatefulWidget {
+  const ForeignUserSignupScreen({super.key});
+
   @override
-  _ForeignUserSignupScreenState createState() =>
-      _ForeignUserSignupScreenState();
+  State<ForeignUserSignupScreen> createState() => _ForeignUserSignupScreenState();
 }
 
 class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
@@ -28,7 +29,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   String _sex = '남성';
   String _spot = '병원';
   List<String> _selectedRegions = [];
-  String _canWalkPatient = '걸을 수 없음';
+  String _canWalkPatient = '지원 불가능';
   String _preferSex = '남성';
   List<String> _selectedSymptoms = [];
   bool _canCareForImmobile = false;
@@ -88,7 +89,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.232.218:8000/signup/foreign'),
+        Uri.parse('http://192.168.11.93:8000/signup/foreign'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,
@@ -140,6 +141,18 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true, // 중앙 정렬 필수
+        title: Image.asset(
+          'assets/images/textlogo.png', // 여기에 로고 이미지 경로 입력
+          height: 25, // 원하는 높이 조정 가능
+          fit: BoxFit.contain,
+        ),
+        iconTheme: IconThemeData(color: Colors.black),
+      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Form(
@@ -148,21 +161,11 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 50),
-                Center(
-                  child: Text(
-                    "CARENOVA",
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF43C098),
-                    ),
-                  ),
-                ),
                 SizedBox(height: 30),
-                Text("간병인 회원가입",
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Text(
+                  "간병인 회원가입",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 20),
                 _buildTextFieldWithLabel(_emailController, "이메일"),
                 SizedBox(height: 10),
@@ -222,9 +225,9 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                     "간병 가능 질환", _symptoms, _selectedSymptoms),
                 SizedBox(height: 10),
                 _buildDropdownWithLabel(
-                    "환자의 보행 가능 여부",
+                    "환자의 보행 지원 여부",
                     _canWalkPatient,
-                    ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                    ['지원 가능', '지원 불가능', '상관없음'],
                     (value) => setState(() => _canWalkPatient = value)),
                 SizedBox(height: 10),
                 _buildDropdownWithLabel(
@@ -238,7 +241,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                 SizedBox(height: 30),
                 Container(
                   width: double.infinity,
-                  height: 50,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: Color(0xFF43C098),
                     borderRadius: BorderRadius.circular(10),
@@ -257,6 +260,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       ),
     );
   }
+
 
   Widget _buildGenderSelectionWithLabel() {
     return Padding(
@@ -457,17 +461,16 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             decoration: InputDecoration(
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.grey.shade300), 
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide:
-                    BorderSide(color: Colors.grey.shade300), 
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
-                    color: const Color(0xFF43C098), width: 2.0), 
+                borderSide:
+                    BorderSide(color: const Color(0xFF43C098), width: 2.0),
               ),
               filled: true,
               fillColor: Colors.white,
@@ -499,7 +502,8 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             child: DropdownButtonFormField<String>(
               value: value,
               decoration: InputDecoration(
-                hintText: label,
+                hintText: label, // ✅ 문자열만 넣기
+                hintStyle: TextStyle(color: Colors.grey),
                 border: InputBorder.none,
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -560,4 +564,3 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
     );
   }
 }
-

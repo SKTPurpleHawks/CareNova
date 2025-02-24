@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'patient_detail_screen.dart';
+import 'patient_edit_profile_screen.dart'; // 환자 정보 수정 화면 추가
 import 'patient_add_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -15,8 +16,8 @@ class PatientManageScreen extends StatefulWidget {
 }
 
 class _PatientManageScreenState extends State<PatientManageScreen> {
-  List<dynamic> _patients = []; // 환자 리스트
-  List<dynamic> _caregiverpatients = []; // 환자 리스트
+  List<dynamic> _patients = []; // 보호자 환자 리스트
+  List<dynamic> _caregiverpatients = []; // 간병인 환자 리스트
 
   @override
   void initState() {
@@ -26,7 +27,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   }
 
   Future<void> _fetchCaregiverPatients() async {
-    final url = Uri.parse('http://192.168.232.218:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.11.93:8000/caregiver/patients');
 
     try {
       final response = await http.get(
@@ -52,7 +53,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   Future<void> _fetchProtectorPatients() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.232.218:8000/patients'),
+        Uri.parse('http://192.168.11.93:8000/patients'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json; charset=UTF-8',
@@ -114,7 +115,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                   orElse: () =>
                                       {'caregiver_id': null})['caregiver_id'] ??
                               "")
-                          .toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
+                          .toString();
 
                       String caregiverName = (_caregiverpatients.firstWhere(
                                   (caregiverPatient) =>
@@ -125,8 +126,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                         'caregiver_name': null
                                       })['caregiver_name'] ??
                               "정보 없음")
-                          .toString(); // Null 방지 : String으로 받는데 null값이 들어오면 처리를 못함
-
+                          .toString();
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -137,11 +137,68 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                             hasCaregiver: hasCaregiver,
                             caregiverName: caregiverName,
                             caregiverId: caregiverId,
-                            protectorId: (_patients[index]['protector_id'] ?? "").toString(),
+                            caregiverPhone: (_caregiverpatients.firstWhere(
+                                        (caregiverPatient) =>
+                                            caregiverPatient['id'] ==
+                                                patientId &&
+                                            caregiverPatient
+                                                .containsKey('caregiver_phonenumber'),
+                                        orElse: () => {
+                                              'caregiver_phonenumber': "정보 없음"
+                                            })['caregiver_phonenumber'] ??
+                                    "정보 없음")
+                                .toString(),
+                            caregiverStartDate: (_caregiverpatients.firstWhere(
+                                        (caregiverPatient) =>
+                                            caregiverPatient['id'] ==
+                                                patientId &&
+                                            caregiverPatient
+                                                .containsKey('caregiver_startdate'),
+                                        orElse: () => {
+                                              'caregiver_startdate': "정보 없음"
+                                            })['caregiver_startdate'] ??
+                                    "정보 없음")
+                                .toString(),
+                            caregiverEndDate: (_caregiverpatients.firstWhere(
+                                        (caregiverPatient) =>
+                                            caregiverPatient['id'] ==
+                                                patientId &&
+                                            caregiverPatient
+                                                .containsKey('caregiver_enddate'),
+                                        orElse: () =>
+                                            {'caregiver_enddate': "정보 없음"})['caregiver_enddate'] ??
+                                    "정보 없음")
+                                .toString(),
+                            protectorId:
+                                (_patients[index]['protector_id'] ?? "")
+                                    .toString(),
                           ),
                         ),
                       );
                     },
+                    // **🔹 수정 버튼 추가**
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) async {
+                        if (value == "edit") {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PatientEditProfileScreen(
+                                token: widget.token,
+                                patientData: _patients[index], // 해당 환자 정보 전달
+                              ),
+                            ),
+                          );
+
+                          if (result == true) {
+                            _refreshPatients(); // 수정 후 새로고침
+                          }
+                        }
+                      },
+                      itemBuilder: (BuildContext context) => [
+                        PopupMenuItem(value: "edit", child: Text("수정")),
+                      ],
+                    ),
                   ),
                 );
               },

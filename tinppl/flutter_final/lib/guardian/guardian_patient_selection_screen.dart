@@ -20,17 +20,41 @@ class _GuardianPatientSelectionScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+<<<<<<< Updated upstream
         centerTitle: true,
+=======
+>>>>>>> Stashed changes
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
-          fit: BoxFit.contain,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Container()), // 🔹 왼쪽 빈 공간 확보
+            Container(
+              width: 100,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "LOGO",
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(child: Container()), // 🔹 오른쪽 빈 공간 확보
+          ],
         ),
+<<<<<<< Updated upstream
         iconTheme: const IconThemeData(color: Colors.black),
+=======
+        centerTitle: true, // ✅ iOS에서도 중앙 정렬 유지
+        actions: [Container(width: 48)], // 🔹 leading 버튼과 균형 맞추기 위해 추가
+>>>>>>> Stashed changes
       ),
       body: Column(
         children: [

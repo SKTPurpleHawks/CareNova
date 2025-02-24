@@ -147,6 +147,10 @@ def add_patient(
         canwalk=patient.canwalk,
         prefersex=patient.prefersex,
         smoking=patient.smoking,
+        startdate=patient.startdate,
+        enddate=patient.enddate,
+        region=patient.region,
+        spot=patient.spot,
     )
 
     db.add(new_patient)
@@ -187,9 +191,6 @@ def get_caregivers(db: Session = Depends(get_db)):
             "name": c.name,
             "age": c.age,
             "sex": c.sex,
-            # "experience": c.experience,
-            # "rating": c.rating,
-            # "salary": c.salary,
             "region": c.region,
         }
         for c in caregivers
@@ -234,7 +235,7 @@ def update_care_request_status(
 
 
 
-@router.get("/care-requests")
+@router.get("/care-request")
 def get_care_requests(
     db: Session = Depends(get_db),
     current_user: models.CaregiverUserInfo = Depends(get_current_user)
@@ -292,6 +293,9 @@ def get_caregiver_patients(
                     "symptoms": patient.symptoms,
                     "caregiver_id": caregiver_id,
                     "caregiver_name": caregiver_name,
+                    "caregiver_phonenumber": caregiver.phonenumber,
+                    "caregiver_startdate": caregiver.startdate,
+                    "caregiver_enddate": caregiver.enddate,
                     "protector_id": patient.protector_id
                 })
 
@@ -418,3 +422,38 @@ def update_daily_record(
     db.commit()
     db.refresh(record)
     return record
+
+
+
+@router.put("/patient-info/{patient_id}")
+def update_patient_info(patient_id: str, patient_update: schemas.PatientUpdate, db: Session = Depends(get_db)):
+    patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == patient_id).first()
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="환자를 찾을 수 없습니다.")
+
+    # 요청된 데이터만 업데이트 (None 값은 제외)
+    update_data = patient_update.dict(exclude_unset=True)  # 🔹 None인 필드는 제외
+    for key, value in update_data.items():
+        setattr(patient, key, value)
+
+    db.commit()
+    db.refresh(patient)
+    
+    return {"message": "환자 정보가 성공적으로 업데이트되었습니다."}
+
+
+@router.delete("/patient-info/{patient_id}")
+def delete_patient_info(patient_id: str, db: Session = Depends(get_db)):
+    patient_daily_records = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == patient_id).all()
+    patient_requests = db.query(models.CareRequest).filter(models.CareRequest.id == patient_id).all()
+    patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == patient_id).first()
+    
+    if not patient:
+        raise HTTPException(status_code=404, detail="환자를 찾을 수 없습니다.")
+
+    db.delete(patient_daily_records)
+    db.delete(patient_requests)
+    db.delete(patient)
+    db.commit()
+    return {"message": "환자 정보가 삭제되었습니다."}

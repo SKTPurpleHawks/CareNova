@@ -99,8 +99,8 @@ class _CaregiverPatientLogCreateScreenState
     final isEditing = widget.initialLogData != null;
     final url = isEditing
         ? Uri.parse(
-            'http://192.168.232.218:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
-        : Uri.parse('http://192.168.232.218:8000/dailyrecord'); // 새 기록
+            'http://192.168.11.93:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
+        : Uri.parse('http://192.168.11.93:8000/dailyrecord'); // 새 기록
 
     final method = isEditing ? "PUT" : "POST";
 
