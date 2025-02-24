@@ -194,8 +194,6 @@ class _GuardianPatientRegisterScreenState
                   _preferSex,
                   ['남성', '여성', '상관없음'],
                   (val) => setState(() => _preferSex = val)),
-              _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
-                  (val) => setState(() => _smoking = val)),
               _buildDropdownWithLabel("간병 장소", _spot, ['병원', '집', '둘 다'],
                   (value) => setState(() => _spot = value)),
               SizedBox(height: 10),
@@ -214,6 +212,9 @@ class _GuardianPatientRegisterScreenState
                 });
               }),
               _buildSymptomsSelection(),
+              SizedBox(height: 10),
+              _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
+                  (val) => setState(() => _smoking = val)),
               SizedBox(height: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

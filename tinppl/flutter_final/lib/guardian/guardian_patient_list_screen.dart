@@ -30,33 +30,17 @@ class _GuardianPatientListScreenState extends State<GuardianPatientListScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true, // ✅ 타이틀 가운데 정렬
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(child: Container()),
-            Container(
-              width: 100,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                "LOGO",
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Expanded(child: Container()),
-          ],
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
         ),
-        centerTitle: true,
-        actions: [Container(width: 48)],
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),

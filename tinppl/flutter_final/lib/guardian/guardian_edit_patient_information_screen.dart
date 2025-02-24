@@ -137,23 +137,30 @@ class _GuardianEditPatientInformationScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true, // ✅ 타이틀 가운데 정렬
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Row(children: [
-          Text("환자 정보 수정하기",
-              style: GoogleFonts.notoSansKr(
-                  fontSize: 20, fontWeight: FontWeight.bold)),
-          Expanded(child: Container()),
-        ]),
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Form(
           key: _formKey,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: 10),
+              Text(
+                "환자 정보 수정하기",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               _buildTextFieldWithLabel(_nameController, "이름"),
               SizedBox(height: 10),
