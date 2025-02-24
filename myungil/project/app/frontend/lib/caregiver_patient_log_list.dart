@@ -38,7 +38,7 @@ class _CaregiverPatientLogListScreenState
   /// 간병일지 리스트를 서버에서 가져오는 함수
   Future<void> _fetchCareLogs() async {
     final url =
-        Uri.parse('http://192.168.0.10:8000/dailyrecord/${widget.patientId}');
+        Uri.parse('http://192.168.232.218:8000/dailyrecord/${widget.patientId}');
 
     try {
       final response = await http.get(
@@ -66,7 +66,7 @@ class _CaregiverPatientLogListScreenState
 
   /// 간병일지 삭제 함수 (삭제 후 UI 즉시 반영)
   Future<void> _deleteCareLog(int recordId) async {
-    final url = Uri.parse('http://192.168.0.10:8000/dailyrecord/$recordId');
+    final url = Uri.parse('http://192.168.232.218:8000/dailyrecord/$recordId');
 
     try {
       final response = await http.delete(

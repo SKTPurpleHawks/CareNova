@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 import schemas, crud, models
-from models import ProtectorUserInfo, ForeignUserInfo
+from models import ProtectorUserInfo, CaregiverUserInfo
 from security import verify_password, create_access_token, get_current_user, get_password_hash
 from datetime import datetime
 from fastapi.responses import JSONResponse
@@ -45,7 +45,7 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
 
     # 사용자 유형 확인
-    user_type = "foreign" if isinstance(db_user, models.ForeignUserInfo) else "protector"
+    user_type = "foreign" if isinstance(db_user, models.CaregiverUserInfo) else "protector"
     logger.info(f"✅ [LOGIN SUCCESS] User: {user.email}, Type: {user_type}")
 
     # JWT 액세스 토큰 생성
@@ -57,7 +57,7 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
 
 @router.get("/user-info")
 def get_user_info(token_data=Depends(get_current_user), db=Depends(get_db)):
-    user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.email == token_data.email).first()
+    user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.email == token_data.email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {
@@ -82,7 +82,7 @@ def get_user_info(token_data=Depends(get_current_user), db=Depends(get_db)):
 
 @router.put("/user-info")
 def update_user_info(user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
-    user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.email == user_update.email).first()
+    user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.email == user_update.email).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
@@ -177,7 +177,7 @@ def get_patients(
 
 @router.get("/caregivers")
 def get_caregivers(db: Session = Depends(get_db)):
-    caregivers = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.showyn == 1).all()
+    caregivers = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.showyn == 1).all()
     if not caregivers:
         raise HTTPException(status_code=404, detail="등록된 간병인이 없습니다.")
 
@@ -209,7 +209,7 @@ def update_care_request_status(
     request_id: int,
     status_update: schemas.CareRequestUpdate,
     db: Session = Depends(get_db),
-    current_user: models.ForeignUserInfo = Depends(get_current_user)
+    current_user: models.CaregiverUserInfo = Depends(get_current_user)
 ):
     logging.info(f"📥 Care request update received: {status_update.dict()}")  # ✅ 로그 추가
 
@@ -237,7 +237,7 @@ def update_care_request_status(
 @router.get("/care-requests")
 def get_care_requests(
     db: Session = Depends(get_db),
-    current_user: models.ForeignUserInfo = Depends(get_current_user)
+    current_user: models.CaregiverUserInfo = Depends(get_current_user)
 ):
     requests = db.query(models.CareRequest).filter(
         models.CareRequest.caregiver_id == current_user.id,  
@@ -261,11 +261,11 @@ def get_care_requests(
 @router.get("/caregiver/patients")
 def get_caregiver_patients(
     db: Session = Depends(get_db),
-    current_user: Union[ProtectorUserInfo, ForeignUserInfo] = Depends(get_current_user)  # Union 적용
+    current_user: Union[ProtectorUserInfo, CaregiverUserInfo] = Depends(get_current_user)  # Union 적용
 ):
     patients = []
 
-    if isinstance(current_user, ForeignUserInfo):
+    if isinstance(current_user, CaregiverUserInfo):
         # 간병인 로직
         requests = db.query(models.CareRequest).filter(
             models.CareRequest.caregiver_id == current_user.id,
@@ -276,7 +276,7 @@ def get_caregiver_patients(
             patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == request.patient_id).first()
             
             caregiver_id = current_user.id
-            caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == caregiver_id).first()
+            caregiver = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == caregiver_id).first()
             caregiver_name = caregiver.name if caregiver else "알 수 없음"
 
             if patient:
@@ -291,7 +291,8 @@ def get_caregiver_patients(
                     "weight": patient.weight,
                     "symptoms": patient.symptoms,
                     "caregiver_id": caregiver_id,
-                    "caregiver_name": caregiver_name
+                    "caregiver_name": caregiver_name,
+                    "protector_id": patient.protector_id
                 })
 
     elif isinstance(current_user, ProtectorUserInfo):
@@ -307,7 +308,7 @@ def get_caregiver_patients(
             ).first()
 
             caregiver_id = care_request.caregiver_id if care_request else None
-            caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == caregiver_id).first()
+            caregiver = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == caregiver_id).first()
             caregiver_name = caregiver.name if caregiver else "알 수 없음"
 
             patients.append({
@@ -335,8 +336,11 @@ def submit_review(
     """
     보호자가 간병인을 평가하고 리뷰를 저장한 후, 연결을 해제함
     """
+    
+    new_review_id = models.Review.Review_custom_id(db)
     # 리뷰 저장
     review = models.Review(
+        id=new_review_id,
         caregiver_id=review_data.caregiver_id,
         protector_id=review_data.protector_id,
         sincerity=review_data.sincerity,

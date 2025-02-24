@@ -44,7 +44,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     double communication = (understandingRequests + responseAccuracy) / 2;
     double totalScore = (sincerity + hygiene + communication) / 3;
 
-    final url = Uri.parse('http://192.168.0.10:8000/reviews');
+    final url = Uri.parse('http://192.168.232.218:8000/reviews');
 
     final response = await http.post(
       url,

@@ -10,9 +10,9 @@ logger = logging.getLogger(__name__)
 
 def create_foreign_user(db: Session, user: schemas.ForeignUserCreate):
 
-    new_id = models.ForeignUserInfo.foreign_generate_custom_id(db)
+    new_id = models.CaregiverUserInfo.foreign_generate_custom_id(db)
 
-    db_user = models.ForeignUserInfo(
+    db_user = models.CaregiverUserInfo(
         id=new_id, 
         email=user.email,
         password=get_password_hash(user.password),
@@ -91,7 +91,7 @@ def get_user_by_email(db: Session, email: str):
     logger.info(f" [SEARCH USER] Searching for email: {email}")
 
     # 외국인 사용자 테이블에서 검색
-    foreign_user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.email == email).first()
+    foreign_user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.email == email).first()
     if foreign_user:
         logger.info(f" [USER FOUND] Foreign user found: {email}")
         return foreign_user
@@ -108,7 +108,7 @@ def get_user_by_email(db: Session, email: str):
 
 
 def update_job_info(db: Session, user_id: str, job_info_update: schemas.JobInfoUpdate):
-    user = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == user_id).first()
+    user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == user_id).first()
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -125,7 +125,7 @@ def create_care_request(db: Session, request_data: schemas.CareRequestCreate, pr
     """
     간병 요청 생성
     """
-    caregiver = db.query(models.ForeignUserInfo).filter(models.ForeignUserInfo.id == request_data.caregiver_id).first()
+    caregiver = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == request_data.caregiver_id).first()
     if not caregiver:
         raise HTTPException(status_code=404, detail="Caregiver not found")
 

@@ -30,7 +30,7 @@ class _ForeignManagePatientScreenState
 
   /// 보호자가 요청한 간병 요청 목록 가져오기
   Future<void> fetchCareRequests() async {
-    final url = Uri.parse('http://192.168.0.10:8000/care-requests');
+    final url = Uri.parse('http://192.168.232.218:8000/care-requests');
 
     try {
       final response = await http.get(
@@ -57,7 +57,7 @@ class _ForeignManagePatientScreenState
 
   /// 환자 정보 불러오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://192.168.0.10:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.232.218:8000/caregiver/patients');
 
     try {
       final response = await http.get(

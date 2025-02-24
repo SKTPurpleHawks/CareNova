@@ -88,7 +88,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.30.1.50:8000/signup/foreign'),
+        Uri.parse('http://192.168.232.218:8000/signup/foreign'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,

@@ -99,8 +99,8 @@ class _CaregiverPatientLogCreateScreenState
     final isEditing = widget.initialLogData != null;
     final url = isEditing
         ? Uri.parse(
-            'http://192.168.0.10:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
-        : Uri.parse('http://192.168.0.10:8000/dailyrecord'); // 새 기록
+            'http://192.168.232.218:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
+        : Uri.parse('http://192.168.232.218:8000/dailyrecord'); // 새 기록
 
     final method = isEditing ? "PUT" : "POST";
 
@@ -236,12 +236,31 @@ class _CaregiverPatientLogCreateScreenState
         Row(
           children: [
             Expanded(
-              child: _buildField("$meal 식사", type, ["선택해주세요.", "일반식", "죽", "유동식(경관식)"]),
+              child: _buildDropdown(
+                  "$meal 식사", type, ["선택해주세요.", "일반식", "죽", "유동식(경관식)"],
+                  (value) {
+                if (value != null) {
+                  setState(() {
+                    onChanged(value, amount ?? "선택해주세요.");
+                  });
+                }
+              }),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _buildField("$meal 식사량", amount,
-                  ["선택해주세요.", "완식 (100%)", "반식 (50%)", "소식 (25%)", "거부 (0%)"]),
+              child: _buildDropdown("$meal 식사량", amount, [
+                "선택해주세요.",
+                "완식 (100%)",
+                "반식 (50%)",
+                "소식 (25%)",
+                "거부 (0%)"
+              ], (value) {
+                if (value != null) {
+                  setState(() {
+                    onChanged(type ?? "선택해주세요.", value);
+                  });
+                }
+              }),
             ),
           ],
         ),
@@ -262,7 +281,13 @@ class _CaregiverPatientLogCreateScreenState
   Widget _buildField(String label, String? value, List<String> items) {
     return widget.isReadOnly
         ? _buildReadOnlyTextField(label, value ?? "데이터 없음")
-        : _buildDropdown(label, value, items);
+        : _buildDropdown(label, value, items, (val) {
+            if (val != null) {
+              setState(() {
+                value = val; // 변경된 값 적용
+              });
+            }
+          });
   }
 
   Widget _buildReadOnlyTextField(String label, String value) {
@@ -277,17 +302,27 @@ class _CaregiverPatientLogCreateScreenState
     );
   }
 
-  Widget _buildDropdown(String label, String? value, List<String> items) {
+  Widget _buildDropdown(String label, String? value, List<String> items,
+      Function(String?) onChanged) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
       child: DropdownButtonFormField<String>(
-        value: value,
+        value: items.contains(value) ? value : null, // 값이 리스트에 있는지 확인 후 설정
         items: items
             .map((e) => DropdownMenuItem(value: e, child: Text(e)))
             .toList(),
-        onChanged: (val) => setState(() => value = val),
+        onChanged: widget.isReadOnly
+            ? null
+            : (val) {
+                if (val != null) {
+                  setState(() {
+                    onChanged(val);
+                  });
+                }
+              },
         decoration:
             InputDecoration(labelText: label, border: OutlineInputBorder()),
+        disabledHint: Text(value ?? ""),
       ),
     );
   }

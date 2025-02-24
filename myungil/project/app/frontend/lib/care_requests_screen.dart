@@ -23,7 +23,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
 
   Future<void> fetchCareRequests() async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.10:8000/care-requests'),
+      Uri.parse('http://192.168.232.218:8000/care-requests'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json',
@@ -42,7 +42,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
 
   Future<void> respondToRequest(int requestId, bool accept) async {
   final response = await http.put(
-    Uri.parse('http://192.168.0.10:8000/care-requests/$requestId'),
+    Uri.parse('http://192.168.232.218:8000/care-requests/$requestId'),
     headers: {
       'Authorization': 'Bearer ${widget.token}',
       'Content-Type': 'application/json',

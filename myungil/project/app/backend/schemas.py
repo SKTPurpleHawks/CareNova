@@ -20,7 +20,6 @@ class ForeignUserCreate(BaseModel):
     canwalkpatient: str
     prefersex: str
     smoking: str
-    showyn: int
 
 class ProtectorUserCreate(BaseModel):
     email: str
@@ -102,7 +101,7 @@ class ReviewCreate(BaseModel):
 
 class DailyRecordBase(BaseModel):
     caregiver_id: str
-    protector_id: str
+    protector_id: Optional[str] = None
     patient_id: str
     location: str
     mood: str
@@ -131,7 +130,7 @@ class DailyRecordCreate(DailyRecordBase):
 class DailyRecordResponse(BaseModel):
     id: int
     caregiver_id: str
-    protector_id: str
+    protector_id: Optional[str] = None
     patient_id: str 
     location: str
     mood: str

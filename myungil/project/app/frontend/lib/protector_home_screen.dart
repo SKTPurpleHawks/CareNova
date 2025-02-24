@@ -26,7 +26,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
 
   Future<void> _fetchCaregivers() async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.10:8000/caregivers'),
+      Uri.parse('http://192.168.232.218:8000/caregivers'),
       headers: {
         'Authorization': 'Bearer ${widget.token}',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -170,7 +170,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
 
   /// 보호자가 등록한 환자 리스트 가져오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://192.168.0.10:8000/patients');
+    final url = Uri.parse('http://192.168.232.218:8000/patients');
 
     try {
       final response = await http.get(
@@ -200,7 +200,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
       return;
     }
 
-    final url = Uri.parse("http://192.168.0.10:8000/care-request");
+    final url = Uri.parse("http://192.168.232.218:8000/care-request");
     final response = await http.post(
       url,
       headers: {
