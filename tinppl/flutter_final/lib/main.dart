@@ -13,15 +13,15 @@ import 'guardian/guardian_patient_list_screen.dart';
 import 'guardian/guardian_patient_detail_screen.dart';
 import 'guardian/guardian_patient_register_screen.dart';
 import 'guardian/caregiver_log_screen.dart';
-import 'guardian/caregiver_list_screen2.dart'; // ✅ CaregiverListScreen2 추가
+import 'guardian/caregiver_list_screen2.dart';
 import 'Caregiver/caregiver_patient_list_screen.dart';
 import 'Caregiver/caregiver_patient_logs_screen.dart';
-import 'Caregiver/caregiver_patient_log_detail_screen.dart';
 import 'Caregiver/caregiver_patient_log_create_screen.dart';
 import 'Caregiver/caregiver_patient_info_screen.dart';
 import 'guardian/guardian_edit_patient_information_screen.dart';
+// import 'guardian/review_edit_screen.dart';
 
-import 'recorder_screen.dart'; // ✅ RecorderScreen 추가
+import 'recorder_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -94,6 +94,16 @@ class MyApp extends StatelessWidget {
               builder: (context) =>
                   GuardianEditPatientInformationScreen(token: token),
             );
+
+          // case '/review_edit_screen':
+          //   final args = settings.arguments as Map<String, dynamic>? ?? {};
+          //   return MaterialPageRoute(
+          //     builder: (context) => ReviewEditScreen(
+          //       token: args['token'] ?? '',
+          //       caregiverId: args['caregiverId'] ?? '',
+          //       protectorId: args['protectorId'] ?? '',
+          //     ),
+          //   );
 
           default:
             return MaterialPageRoute(

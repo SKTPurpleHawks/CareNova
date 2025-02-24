@@ -153,7 +153,8 @@ class _GuardianPatientDetailScreenState
             _buildActionButton("간병인과의 대화", Icons.chat, '/chat'),
             const SizedBox(height: 10),
             _buildActionButton("간병일지 확인", Icons.lock, '/caregiver_log'),
-            const SizedBox(height: 20),
+            const SizedBox(height: 70),
+            _buildActionButton2('간병인 리뷰', Icons.lock, '/review_edit_screen')
           ],
         ),
       ),
@@ -204,6 +205,36 @@ class _GuardianPatientDetailScreenState
           child: Text(label,
               style: GoogleFonts.notoSansKr(
                   fontSize: 16, fontWeight: FontWeight.w400)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton2(String label, IconData icon, String route,
+      {double width = double.infinity, double height = 50}) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Container(
+        width: width,
+        height: height,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 5,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(label,
+              style: GoogleFonts.notoSansKr(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500)),
         ),
       ),
     );

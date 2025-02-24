@@ -19,36 +19,36 @@ class _LanguageScreenState extends State<LanguageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 배경색 흰색
+      backgroundColor: Colors.white,
       body: Center(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Image.asset(
+                'assets/images/logoplain.png', // ✅ 로고 추가됨
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 10),
               Text(
                 'Select Your Language',
                 style: GoogleFonts.notoSansKr(
-                  // Pretendard 대신 Noto Sans KR 적용
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 25,
+                  fontWeight: FontWeight.w500,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 80),
-
-              // 카드 스타일 언어 선택
+              const SizedBox(height: 10),
               _buildLanguageCard('English'),
               _buildLanguageCard('Korean'),
               _buildLanguageCard('Chinese'),
-
               const SizedBox(height: 40),
-
-              // Next 버튼
               ElevatedButton(
                 onPressed: _goToCaregiverSearchScreen,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor, // 버튼 색상 변경
+                  backgroundColor: primaryColor,
                   padding:
                       const EdgeInsets.symmetric(vertical: 14, horizontal: 32),
                   shape: RoundedRectangleBorder(
@@ -58,33 +58,28 @@ class _LanguageScreenState extends State<LanguageScreen> {
                 child: Text(
                   'Next',
                   style: GoogleFonts.notoSansKr(
-                    // Noto Sans KR 적용
                     fontSize: 18,
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-
               const SizedBox(height: 12),
-
-              // Record 버튼
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacementNamed(context, '/recorder_screen');
-                },
-                style: TextButton.styleFrom(
-                  foregroundColor: primaryColor, // 버튼 색상 변경
-                ),
-                child: Text(
-                  'Record',
-                  style: GoogleFonts.notoSansKr(
-                    // Noto Sans KR 적용
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
+              // TextButton(
+              //   onPressed: () {
+              //     Navigator.pushReplacementNamed(context, '/recorder_screen');
+              //   },
+              //   style: TextButton.styleFrom(
+              //     foregroundColor: primaryColor,
+              //   ),
+              //   child: Text(
+              //     'Record',
+              //     style: GoogleFonts.notoSansKr(
+              //       fontSize: 16,
+              //       fontWeight: FontWeight.bold,
+              //   ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -124,7 +119,6 @@ class _LanguageScreenState extends State<LanguageScreen> {
             Text(
               language,
               style: GoogleFonts.notoSansKr(
-                // Noto Sans KR 적용
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.black87,
