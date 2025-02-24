@@ -71,19 +71,20 @@ class PatientDetailScreen extends StatelessWidget {
                 children: [
                   _buildInfoCard([
                     _buildRow("이름", patient['name']),
-                    _buildRow("나이", "${patient['age']}세"),
                     _buildRow("성별", patient['sex']),
                     _buildRow("키", "${patient['height']} cm"),
                     _buildRow("몸무게", "${patient['weight']} kg"),
                   ]),
                   const SizedBox(height: 20),
                   _buildInfoCard([
+                    _buildRow("간병 지역", patient['region'] ?? "정보 없음"),
+                    _buildRow("간병 가능 장소", patient['spot'] ?? "정보 없음"),
                     _buildRow("증상", patient['symptoms'] ?? "정보 없음"),
                   ]),
                   const SizedBox(height: 20),
                   if (!isCaregiver && hasCaregiver)
                     Padding(
-                      padding: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(0),
                       child: _buildInfoCard([
                         _buildRow("간병인 이름", caregiverName),
                         _buildRow("간병인 전화번호", caregiverPhone),

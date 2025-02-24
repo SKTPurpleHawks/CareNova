@@ -293,9 +293,6 @@ def get_caregiver_patients(
                     "symptoms": patient.symptoms,
                     "caregiver_id": caregiver_id,
                     "caregiver_name": caregiver_name,
-                    "caregiver_phonenumber": caregiver.phonenumber,
-                    "caregiver_startdate": caregiver.startdate,
-                    "caregiver_enddate": caregiver.enddate,
                     "protector_id": patient.protector_id
                 })
 
@@ -321,11 +318,15 @@ def get_caregiver_patients(
                 "birthday": patient.birthday,
                 "age": patient.age,
                 "sex": patient.sex,
+                "region": patient.region,
                 "height": patient.height,
                 "weight": patient.weight,
                 "symptoms": patient.symptoms,
                 "caregiver_id": caregiver_id,
-                "caregiver_name": caregiver_name
+                "caregiver_name": caregiver_name,
+                "caregiver_phonenumber": caregiver.phonenumber,
+                "caregiver_startdate": caregiver.startdate,
+                "caregiver_enddate": caregiver.enddate,
             })
 
     return patients
