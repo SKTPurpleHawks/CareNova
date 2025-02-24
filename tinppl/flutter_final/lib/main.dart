@@ -19,7 +19,7 @@ import 'Caregiver/caregiver_patient_logs_screen.dart';
 import 'Caregiver/caregiver_patient_log_create_screen.dart';
 import 'Caregiver/caregiver_patient_info_screen.dart';
 import 'guardian/guardian_edit_patient_information_screen.dart';
-// import 'guardian/review_edit_screen.dart';
+import 'guardian/review_edit_screen.dart';
 
 import 'recorder_screen.dart';
 
@@ -95,15 +95,11 @@ class MyApp extends StatelessWidget {
                   GuardianEditPatientInformationScreen(token: token),
             );
 
-          // case '/review_edit_screen':
-          //   final args = settings.arguments as Map<String, dynamic>? ?? {};
-          //   return MaterialPageRoute(
-          //     builder: (context) => ReviewEditScreen(
-          //       token: args['token'] ?? '',
-          //       caregiverId: args['caregiverId'] ?? '',
-          //       protectorId: args['protectorId'] ?? '',
-          //     ),
-          //   );
+          case '/review_edit_screen':
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
+            return MaterialPageRoute(
+              builder: (context) => ReviewEditScreen(),
+            );
 
           default:
             return MaterialPageRoute(

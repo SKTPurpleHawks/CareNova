@@ -10,7 +10,11 @@ class CaregiverLogScreen extends StatefulWidget {
 class _CaregiverLogScreenState extends State<CaregiverLogScreen> {
   int selectedIndex = 1; // ✅ 기본 선택 값 설정
 
-  List<String> logs = ['간병일지 1', '간병일지 2', '간병일지 3']; // 예시 데이터
+  final List<Map<String, String>> logs = [
+    {"title": "간병일지 1", "date": "2025.02.19"},
+    {"title": "간병일지 2", "date": "2025.02.20"},
+    {"title": "간병일지 3", "date": "2025.02.21"},
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +42,20 @@ class _CaregiverLogScreenState extends State<CaregiverLogScreen> {
               child: ListView.builder(
                 itemCount: logs.length,
                 itemBuilder: (context, index) {
+                  final log = logs[index];
                   return Card(
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: ListTile(
                       leading: const Icon(Icons.edit),
-                      title: Text(logs[index]),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.more_vert),
-                        onPressed: () {},
-                      ),
+                      title: Text(log["title"]!,
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      subtitle: Text(log["date"]!),
+                      onTap: () {
+                        Navigator.pushNamed(context, '/caregiver_log_detail',
+                            arguments: log);
+                      },
                     ),
                   );
                 },
@@ -57,8 +64,6 @@ class _CaregiverLogScreenState extends State<CaregiverLogScreen> {
           ],
         ),
       ),
-
-      // ✅ 하단 네비게이션 바 유지
       bottomNavigationBar: NavigationBar(
         selectedIndex: selectedIndex,
         onDestinationSelected: (index) {
