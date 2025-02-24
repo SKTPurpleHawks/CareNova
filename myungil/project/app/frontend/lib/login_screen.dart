@@ -15,7 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
 
   Future<void> _login() async {
-    final String baseUrl = "http://10.0.2.2:8000"; // FastAPI 서버 IP 사용
+    final String baseUrl = "http://192.168.0.10:8000"; // FastAPI 서버 IP 사용
     final String url = "$baseUrl/login";
     final response = await http.post(
       Uri.parse(url),

@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GuardianPatientDetailScreen extends StatefulWidget {
   const GuardianPatientDetailScreen({super.key});
 
   @override
-  State<GuardianPatientDetailScreen> createState() => _GuardianPatientDetailScreenState();
+  State<GuardianPatientDetailScreen> createState() =>
+      _GuardianPatientDetailScreenState();
 }
 
-class _GuardianPatientDetailScreenState extends State<GuardianPatientDetailScreen> {
+class _GuardianPatientDetailScreenState
+    extends State<GuardianPatientDetailScreen> {
   late TextEditingController _nameController;
+  int selectedIndex = 1;
   bool isEditing = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(); // ✅ 초기화만 먼저
+    _nameController = TextEditingController();
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final String patientName = ModalRoute.of(context)?.settings.arguments as String? ?? '환자'; // ✅ 여기서 호출
+    final String patientName =
+        ModalRoute.of(context)?.settings.arguments as String? ?? '환자';
     _nameController.text = patientName;
   }
 
@@ -36,78 +41,167 @@ class _GuardianPatientDetailScreenState extends State<GuardianPatientDetailScree
     });
 
     if (!isEditing) {
-      Navigator.pop(context, _nameController.text); // ✅ 수정된 이름을 이전 화면으로 전달
+      Navigator.pop(context, _nameController.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context, _nameController.text), // ✅ 수정된 이름 반환
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context, _nameController.text),
         ),
-        title: isEditing
-            ? TextField(
-          controller: _nameController,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          decoration: const InputDecoration(border: InputBorder.none),
-          onSubmitted: (_) => _toggleEditing(),
-        )
-            : GestureDetector(
-          onTap: _toggleEditing,
-          child: Text(
-            _nameController.text,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+        title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(height: 24),
-            _buildButton(context, '간병인과의 대화', Icons.chat, '/chat'),
-            _buildButton(context, '간병일지 확인', Icons.lock, '/caregiver_log'), // ✅ 간병일지 화면 연결
-            _buildButton(context, '환자 정보 수정', Icons.edit, '/guardian_patient_register'),
+            Expanded(child: Container()),
+            Container(
+              width: 100,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "LOGO",
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(child: Container()),
+          ],
+        ),
+        centerTitle: true,
+        actions: [Container(width: 48)],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          children: [
+            const SizedBox(height: 80),
+            Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Colors.grey[200],
+                    child: const Icon(Icons.person,
+                        size: 50, color: Color(0xFF43C098)),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    _nameController.text,
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  Container(
+                    width: double.infinity,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF43C098),
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 3,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextButton.icon(
+                      onPressed: () => Navigator.pushNamed(
+                          context, '/guardian_patient_register'),
+                      icon: const Icon(Icons.edit, color: Colors.white),
+                      label: const Text("환자 정보 수정"),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        textStyle: GoogleFonts.notoSansKr(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
+            _buildActionButton("간병인과의 대화", Icons.chat, '/chat'),
+            const SizedBox(height: 10),
+            _buildActionButton("간병일지 확인", Icons.lock, '/caregiver_log'),
+            const SizedBox(height: 20),
           ],
         ),
       ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() => selectedIndex = index);
 
-      // ✅ 하단 네비게이션 바 유지
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: '간병인 찾기'),
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: '내 환자 정보'),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '마이페이지'),
-        ],
-        currentIndex: 1,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        onTap: (index) {
-          if (index == 1) {
-            Navigator.pop(context, _nameController.text);
+          if (index == 0) {
+            Navigator.pushReplacementNamed(
+                context, '/guardian_patient_selection');
           }
         },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            selectedIcon: Icon(Icons.search, color: Color(0xFF43C098)),
+            label: '간병인 찾기',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.edit),
+            selectedIcon: Icon(Icons.edit, color: Color(0xFF43C098)),
+            label: '내 환자 정보',
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildButton(BuildContext context, String text, IconData icon, String route) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ElevatedButton.icon(
-        onPressed: () => Navigator.pushNamed(context, route),
-        icon: Icon(icon, color: Colors.black),
-        label: Text(text, style: const TextStyle(color: Colors.black)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          side: const BorderSide(color: Colors.black),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+  Widget _buildActionButton(String label, IconData icon, String route) {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, route),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(50),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Text(label,
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 16, fontWeight: FontWeight.w400)),
         ),
       ),
     );

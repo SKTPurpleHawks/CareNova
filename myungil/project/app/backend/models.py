@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean
 from database import Base
 from sqlalchemy.orm import Session, relationship
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 
@@ -139,22 +139,21 @@ class DailyRecordInfo(Base):
     __tablename__ = "daily_record_info"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    caregiver_id = Column(Integer, ForeignKey("foreign_user_info.id"), nullable=False)  
-    protector_id = Column(Integer, ForeignKey("protector_user_info.id"), nullable=False)  
-    patient_id = Column(Integer, ForeignKey("patient_user_info.id"), nullable=False) 
-    
+    caregiver_id = Column(String, ForeignKey("foreign_user_info.id"), nullable=False)
+    protector_id = Column(String, ForeignKey("protector_user_info.id"), nullable=False)
+    patient_id = Column(String, ForeignKey("patient_user_info.id"), nullable=False)
 
     location = Column(String, nullable=False)
     mood = Column(String, nullable=False)
     sleep_quality = Column(String, nullable=False)
     
     # 식사 정보
-    breakfast_type = Column(String, nullable=False)
-    breakfast_amount = Column(Float, nullable=False)
-    lunch_type = Column(String, nullable=False)
-    lunch_amount = Column(Float, nullable=False)
-    dinner_type = Column(String, nullable=False)
-    dinner_amount = Column(Float, nullable=False)
+    breakfast_type = Column(String, nullable=True)
+    breakfast_amount = Column(String, nullable=True)
+    lunch_type = Column(String, nullable=True)
+    lunch_amount = Column(String, nullable=True)
+    dinner_type = Column(String, nullable=True)
+    dinner_amount = Column(String, nullable=True)
 
     # 소변 정보
     urine_amount = Column(String, nullable=True)
@@ -175,7 +174,7 @@ class DailyRecordInfo(Base):
     # 요청 및 특이사항
     notes = Column(String, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow)  # 작성 날짜
+    created_at = Column(DateTime, default=datetime.utcnow() + timedelta(hours=9))
     
     
     caregiver = relationship("ForeignUserInfo", back_populates="daily_records")

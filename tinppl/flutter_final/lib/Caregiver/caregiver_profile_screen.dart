@@ -16,7 +16,7 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -58,15 +58,23 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
             Container(
               padding: const EdgeInsets.all(30),
               decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 218, 218, 218),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: Color.fromARGB(0, 0, 0, 0), width: 2),
+                border: Border.all(
+                    color: const Color.fromARGB(0, 0, 0, 0), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor: Colors.grey[200],
                     child: const Icon(Icons.person,
                         size: 50, color: Color(0xFF43C098)),
                   ),
@@ -89,6 +97,13 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                       color: Color(0xFF43C098),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(color: Color(0xFF43C098), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 3,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: TextButton(
                       onPressed: () {
@@ -129,12 +144,12 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                       isJobInfoEnabled ? const Color(0xFF43C098) : Colors.white,
                   borderRadius: BorderRadius.circular(50),
                   border: isJobInfoEnabled
-                      ? null
-                      : Border.all(color: const Color(0xFF43C098), width: 1.5),
+                      ? Border.all(color: const Color(0xFF43C098), width: 1.5)
+                      : Border.all(color: Colors.grey[200]!, width: 1.5),
                   boxShadow: [
                     // ✅ 그림자 추가
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -150,7 +165,9 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                         style: GoogleFonts.notoSansKr(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,
-                          color: isJobInfoEnabled ? Colors.white : Colors.black,
+                          color: isJobInfoEnabled
+                              ? const Color.fromARGB(255, 255, 255, 255)
+                              : Colors.black,
                         ),
                       ),
                     ),
@@ -192,12 +209,12 @@ class _CaregiverProfileScreenState extends State<CaregiverProfileScreen> {
                       : Colors.white,
                   borderRadius: BorderRadius.circular(50),
                   border: isJobManagementEnabled
-                      ? null
-                      : Border.all(color: const Color(0xFF43C098), width: 1.5),
+                      ? Border.all(color: const Color(0xFF43C098), width: 1.5)
+                      : Border.all(color: Colors.grey[200]!, width: 1.5),
                   boxShadow: [
                     // ✅ 그림자 추가
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
+                      color: Colors.black.withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),

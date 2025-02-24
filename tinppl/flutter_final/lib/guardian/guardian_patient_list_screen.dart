@@ -4,19 +4,21 @@ class GuardianPatientListScreen extends StatefulWidget {
   const GuardianPatientListScreen({super.key});
 
   @override
-  State<GuardianPatientListScreen> createState() => _GuardianPatientListScreenState();
+  _GuardianPatientListScreenState createState() =>
+      _GuardianPatientListScreenState();
 }
 
 class _GuardianPatientListScreenState extends State<GuardianPatientListScreen> {
+  int selectedIndex = 1; // ✅ 기본 선택 값 설정
   List<String> patients = ['환자 1', '환자 2'];
 
-  // ✅ 환자 추가 화면으로 이동하고 결과 받기
   Future<void> _navigateAndAddPatient() async {
-    final newPatient = await Navigator.pushNamed(context, '/guardian_patient_register');
+    final newPatient =
+        await Navigator.pushNamed(context, '/guardian_patient_register');
 
     if (newPatient != null && newPatient is String) {
       setState(() {
-        patients.add(newPatient); // ✅ 새 환자 추가
+        patients.add(newPatient);
       });
     }
   }
@@ -24,75 +26,165 @@ class _GuardianPatientListScreenState extends State<GuardianPatientListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('내 환자 정보'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () {},
-          ),
-        ],
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(child: Container()),
+            Container(
+              width: 100,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "LOGO",
+                style:
+                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Expanded(child: Container()),
+          ],
+        ),
+        centerTitle: true,
+        actions: [Container(width: 48)],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           children: [
+            const SizedBox(height: 20),
             Expanded(
               child: ListView.builder(
                 itemCount: patients.length,
                 itemBuilder: (context, index) {
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: ListTile(
-                      leading: const Icon(Icons.person),
-                      title: Text(patients[index]),
-                      onTap: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/guardian_patient_detail',
-                          arguments: patients[index], // ✅ 환자 이름 전달
-                        );
-                      },
-                    ),
-                  );
+                  return _buildPatientCard(context, patients[index]);
                 },
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _navigateAndAddPatient, // ✅ 새로운 환자 추가 화면으로 이동
-              icon: const Icon(Icons.add),
-              label: const Text('환자 추가하기'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueGrey[700],
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-                textStyle: const TextStyle(fontSize: 16),
+            Container(
+              decoration: BoxDecoration(
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _navigateAndAddPatient,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF43C098),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text("환자 추가하기",
+                          style: TextStyle(color: Colors.white, fontSize: 16)),
+                      SizedBox(width: 8),
+                      Icon(Icons.add, color: Colors.white, size: 20),
+                    ],
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 20),
           ],
         ),
       ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() => selectedIndex = index);
 
-      // ✅ 하단 네비게이션 바
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: '간병인 찾기'),
-          BottomNavigationBarItem(icon: Icon(Icons.edit), label: '내 환자 정보'),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: '마이페이지'),
-        ],
-        currentIndex: 1,
-        selectedItemColor: Colors.black,
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        onTap: (index) {
           if (index == 0) {
-            Navigator.pushNamed(context, '/guardian_patient_selection');
+            Navigator.pushReplacementNamed(
+                context, '/guardian_patient_selection');
           }
         },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.search),
+            selectedIcon: Icon(Icons.search, color: Color(0xFF43C098)),
+            label: '간병인 찾기',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.edit),
+            selectedIcon: Icon(Icons.edit, color: Color(0xFF43C098)),
+            label: '내 환자 정보',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPatientCard(BuildContext context, String patientName) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pushNamed(
+          context,
+          '/guardian_patient_detail',
+          arguments: patientName,
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+        margin: const EdgeInsets.only(bottom: 10),
+        decoration: BoxDecoration(
+          color: Colors.grey[200],
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              padding: const EdgeInsets.all(8),
+              child: const Icon(
+                Icons.person_outline,
+                size: 24,
+                color: Color(0xFF43C098),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              patientName,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

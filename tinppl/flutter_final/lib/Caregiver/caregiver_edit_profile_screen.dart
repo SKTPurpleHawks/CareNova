@@ -126,7 +126,7 @@ class _CaregiverEditProfileScreenState
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('회원가입에 실패했습니다. 다시 시도해주세요.')),
+          SnackBar(content: Text('프로필 수정정에 실패했습니다. 다시 시도해주세요.')),
         );
       }
     }
@@ -168,7 +168,7 @@ class _CaregiverEditProfileScreenState
                   ),
                 ),
                 SizedBox(height: 30),
-                Text("간병인 회원가입",
+                Text("프로필 수정",
                     style:
                         TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 SizedBox(height: 20),

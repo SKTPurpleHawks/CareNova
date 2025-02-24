@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
             ),
 
-            const SizedBox(height: 250),
+            const SizedBox(height: 20),
 
             // 🟢 회원가입 버튼 (애니메이션 적용)
             TextButton(

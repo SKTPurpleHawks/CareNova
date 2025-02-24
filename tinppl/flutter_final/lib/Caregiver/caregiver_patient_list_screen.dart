@@ -114,7 +114,7 @@ class _CaregiverPatientListScreenState
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
         decoration: BoxDecoration(
-          color: const Color(0xFF43C098),
+          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(100),
           boxShadow: [
             // ✅ 그림자 추가
@@ -127,14 +127,25 @@ class _CaregiverPatientListScreenState
         ),
         child: Row(
           children: [
-            const Icon(Icons.person_outline, size: 24, color: Colors.black),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white, // 배경색 흰색
+                shape: BoxShape.circle, // 원형 모양
+              ),
+              padding: EdgeInsets.all(8), // 아이콘과 배경 사이 간격
+              child: Icon(
+                Icons.person_outline,
+                size: 24,
+                color: Color(0xFF43C098),
+              ),
+            ),
             const SizedBox(width: 10),
             Text(
               patientName,
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Colors.black,
               ),
             ),
           ],

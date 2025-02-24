@@ -19,7 +19,7 @@ import 'Caregiver/caregiver_patient_logs_screen.dart';
 import 'Caregiver/caregiver_patient_log_detail_screen.dart';
 import 'Caregiver/caregiver_patient_log_create_screen.dart';
 import 'Caregiver/caregiver_patient_info_screen.dart';
-import 'Caregiver/caregiver_patient_detail_screen.dart';
+
 import 'recorder_screen.dart'; // ✅ RecorderScreen 추가
 
 void main() {
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'SBJNMCCARE',
       theme: ThemeData(
-        textTheme: GoogleFonts.notoSansKrTextTheme(), // 🔹 앱 전체에 적용
+        textTheme: GoogleFonts.notoSansKrTextTheme(),
       ),
       onGenerateRoute: (settings) {
         switch (settings.name) {
@@ -60,13 +60,6 @@ class MyApp extends StatelessWidget {
                   edit.CaregiverEditProfileScreen(userData: args),
             );
 
-          case '/caregiver_patient_detail':
-            final args = settings.arguments as String? ?? "환자";
-            return MaterialPageRoute(
-              builder: (context) =>
-                  CaregiverPatientDetailScreen(patientName: args),
-            );
-
           case '/caregiver_patient_log_create':
             final args = settings.arguments as Map<String, dynamic>? ?? {};
             final patientName = args['patientName'] as String? ?? "환자";
@@ -75,15 +68,22 @@ class MyApp extends StatelessWidget {
                   CaregiverPatientLogCreateScreen(patientName: patientName),
             );
 
-          case '/caregiver_list': // ✅ CaregiverListScreen2와 연결
+          case '/caregiver_list':
             final args = settings.arguments as String? ?? "환자";
             return MaterialPageRoute(
               builder: (context) => CaregiverListScreen2(patientName: args),
             );
 
-          case '/recorder_screen': // ✅ RecorderScreen 추가
+          case '/recorder_screen':
             return MaterialPageRoute(
               builder: (context) => const RecorderScreen(),
+            );
+
+          case '/guardian_patient_register':
+            final args = settings.arguments as Map<String, dynamic>? ?? {};
+            final token = args['token'] ?? '';
+            return MaterialPageRoute(
+              builder: (context) => GuardianPatientRegisterScreen(token: token),
             );
 
           default:
@@ -106,8 +106,6 @@ class MyApp extends StatelessWidget {
             const GuardianPatientListScreen(),
         '/guardian_patient_detail': (context) =>
             const GuardianPatientDetailScreen(),
-        '/guardian_patient_register': (context) =>
-            const GuardianPatientRegisterScreen(),
         '/caregiver_log': (context) => const CaregiverLogScreen(),
         '/caregiver_profile': (context) =>
             const profile.CaregiverProfileScreen(),
@@ -115,7 +113,8 @@ class MyApp extends StatelessWidget {
             const CaregiverPatientListScreen(),
         '/caregiver_patient_log_detail': (context) =>
             const CaregiverPatientLogDetailScreen(),
-        '/recorder_screen': (context) => const RecorderScreen(), // ✅ 추가된 화면 이동
+        // '/recorder_screen': 제거 (중복)
+        // '/guardian_patient_register': 제거 (onGenerateRoute에서 처리)
       },
     );
   }

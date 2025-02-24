@@ -34,6 +34,27 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
   List<String> _selectedSymptoms = [];
   bool _canCareForImmobile = false;
   String _smoking = '비흡연';
+  final List<String> _symptomsList = [
+    '치매',
+    '섬망',
+    '욕창',
+    '하반신마비',
+    '상반신마비',
+    '전신마비',
+    '와상환자',
+    '기저귀케어',
+    '의식없음',
+    '석션',
+    '피딩',
+    '소변줄',
+    '장루',
+    '야간집중돌봄',
+    '전염성',
+    '파킨슨',
+    '정신질환',
+    '투석',
+    '재활'
+  ];
 
   final List<String> _regions = [
     '서울',
@@ -257,6 +278,48 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSymptomsSelection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("질병 이력",
+              style: GoogleFonts.notoSansKr(
+                  fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: ExpansionTile(
+              title: Text('${_selectedSymptoms.length}개 선택됨',
+                  style: GoogleFonts.notoSansKr(fontSize: 16)),
+              children: _symptomsList.map((item) {
+                return CheckboxListTile(
+                  title: Text(item),
+                  value: _selectedSymptoms.contains(item),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        _selectedSymptoms.add(item);
+                      } else {
+                        _selectedSymptoms.remove(item);
+                      }
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }

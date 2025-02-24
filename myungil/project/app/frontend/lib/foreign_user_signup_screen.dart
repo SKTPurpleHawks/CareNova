@@ -88,7 +88,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/signup/foreign'),
+        Uri.parse('http://192.30.1.50:8000/signup/foreign'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,
@@ -151,11 +151,11 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                 SizedBox(height: 50),
                 Center(
                   child: Text(
-                    "SBJNMCCARE",
+                    "CARENOVA",
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF94d0cc),
+                      color: Color(0xFF43C098),
                     ),
                   ),
                 ),
@@ -240,7 +240,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                   width: double.infinity,
                   height: 50,
                   decoration: BoxDecoration(
-                    color: Color(0xFF94d0cc),
+                    color: Color(0xFF43C098),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextButton(
@@ -276,16 +276,16 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 15),
                     decoration: BoxDecoration(
-                      color: _sex == '남성' ? Color(0xFF94d0cc) : Colors.white,
+                      color: _sex == '남성' ? Color(0xFF43C098) : Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Color(0xFF94d0cc)),
+                      border: Border.all(color: Color(0xFF43C098)),
                     ),
                     child: Center(
                       child: Text(
                         "남성",
                         style: TextStyle(
                           color:
-                              _sex == '남성' ? Colors.white : Color(0xFF94d0cc),
+                              _sex == '남성' ? Colors.white : Color(0xFF43C098),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -300,16 +300,16 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                   child: Container(
                     padding: EdgeInsets.symmetric(vertical: 15),
                     decoration: BoxDecoration(
-                      color: _sex == '여성' ? Color(0xFF94d0cc) : Colors.white,
+                      color: _sex == '여성' ? Color(0xFF43C098) : Colors.white,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Color(0xFF94d0cc)),
+                      border: Border.all(color: Color(0xFF43C098)),
                     ),
                     child: Center(
                       child: Text(
                         "여성",
                         style: TextStyle(
                           color:
-                              _sex == '여성' ? Colors.white : Color(0xFF94d0cc),
+                              _sex == '여성' ? Colors.white : Color(0xFF43C098),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -467,7 +467,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(
-                    color: const Color(0xFF94d0cc), width: 2.0), 
+                    color: const Color(0xFF43C098), width: 2.0), 
               ),
               filled: true,
               fillColor: Colors.white,
@@ -560,3 +560,4 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
     );
   }
 }
+

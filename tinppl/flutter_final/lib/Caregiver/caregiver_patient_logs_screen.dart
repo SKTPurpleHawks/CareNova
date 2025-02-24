@@ -17,7 +17,8 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
         ),
         title: Text(
           patientName, // ✅ 선택한 환자 이름 표시
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+          style: const TextStyle(
+              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         centerTitle: true, // ✅ 중앙 정렬
         actions: [
@@ -50,7 +51,8 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
         currentIndex: 1, // ✅ "환자 관리" 활성화
         onTap: (index) {
           if (index == 0) {
-            Navigator.pushNamed(context, '/caregiver_profile'); // ✅ "프로필" 클릭 시 이동
+            Navigator.pushNamed(
+                context, '/caregiver_profile'); // ✅ "프로필" 클릭 시 이동
           }
         },
         items: const [
@@ -81,18 +83,29 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
         decoration: BoxDecoration(
           color: Colors.grey[200], // 🔹 부드러운 배경색 추가
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(100),
+          boxShadow: [
+            // ✅ 그림자 추가
+            BoxShadow(
+              color: Colors.black.withOpacity(0.01), // 그림자 색 (연한 검은색)
+              blurRadius: 10, // 흐림 정도
+              spreadRadius: 8, // 퍼지는 정도
+              offset: const Offset(0, 4), // 그림자 위치 (아래쪽)
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Row(
               children: [
-                const Icon(Icons.edit, size: 24, color: Colors.black), // ✏️ 아이콘 (편집 가능)
+                const Icon(Icons.edit,
+                    size: 24, color: Colors.black), // ✏️ 아이콘 (편집 가능)
                 const SizedBox(width: 10),
                 Text(
                   logTitle,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -103,7 +116,8 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
                   style: const TextStyle(fontSize: 14, color: Colors.black54),
                 ),
                 const SizedBox(width: 10),
-                _buildMoreOptionsButton(context, logTitle), // 🔹 ⋮ 버튼 추가 (수정/삭제)
+                _buildMoreOptionsButton(
+                    context, logTitle), // 🔹 ⋮ 버튼 추가 (수정/삭제)
               ],
             ),
           ],
@@ -115,19 +129,19 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
   // 🔹 점 세 개 (⋮) 버튼 추가 (수정/삭제 기능)
   Widget _buildMoreOptionsButton(BuildContext context, String logTitle) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.more_vert, color: Colors.black), // ⋮ 아이콘 추가
-      onSelected: (value) {
-        if (value == 'edit') {
-          _editLog(context, logTitle);
-        } else if (value == 'delete') {
-          _deleteLog(context, logTitle);
-        }
-      },
-      itemBuilder: (context) => [
-        const PopupMenuItem(value: 'edit', child: Text("수정")),
-        const PopupMenuItem(value: 'delete', child: Text("삭제")),
-      ],
-    );
+        icon: const Icon(Icons.more_vert, color: Colors.black), // ⋮ 아이콘 추가
+        onSelected: (value) {
+          if (value == 'edit') {
+            _editLog(context, logTitle);
+          } else if (value == 'delete') {
+            _deleteLog(context, logTitle);
+          }
+        },
+        itemBuilder: (context) => [
+              const PopupMenuItem(value: 'edit', child: Text("수정")),
+              const PopupMenuItem(value: 'delete', child: Text("삭제")),
+            ],
+        color: Colors.white);
   }
 
   // 🔹 간병일지 수정 함수 (수정 화면으로 이동)
@@ -170,28 +184,42 @@ class CaregiverPatientLogsScreen extends StatelessWidget {
   // 🔹 간병일지 작성 버튼
 // 🔹 간병일지 작성 버튼
   Widget _buildAddLogButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: () {
-          // ✅ CaregiverPatientLogFormScreen으로 이동
-          Navigator.pushNamed(context, '/caregiver_patient_log_create');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+    return Container(
+      decoration: BoxDecoration(
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
           ),
-          padding: const EdgeInsets.symmetric(vertical: 15),
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text("간병일지 작성", style: TextStyle(color: Colors.white, fontSize: 16)),
-            SizedBox(width: 8),
-            Icon(Icons.add, color: Colors.white, size: 20),
-          ],
+        ],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/caregiver_patient_log_create');
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF43C098),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 15),
+            elevation: 0, // 기본 elevation 제거 (그림자 중복 방지)
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("간병일지 작성",
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
+              SizedBox(width: 8),
+              Icon(Icons.add, color: Colors.white, size: 20),
+            ],
+          ),
         ),
       ),
     );
-  }}
+  }
+}
