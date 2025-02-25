@@ -80,6 +80,7 @@ class PatientDetailScreen extends StatelessWidget {
                     _buildRow("간병 지역", patient['region'] ?? "정보 없음"),
                     _buildRow("간병 가능 장소", patient['spot'] ?? "정보 없음"),
                     _buildRow("증상", patient['symptoms'] ?? "정보 없음"),
+                    _buildRow("보행 가능 여부", patient['canwalk'] ?? "정보 없음"),
                   ]),
                   const SizedBox(height: 20),
                   if (!isCaregiver && hasCaregiver)
