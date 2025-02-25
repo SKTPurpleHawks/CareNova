@@ -28,7 +28,7 @@ class _ForeignManagePatientScreenState
 
   /// 환자 정보 불러오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://192.168.232.218:8000/caregiver/patients');
+    final url = Uri.parse('http://172.23.250.30:8000/caregiver/patients');
 
     try {
       final response = await http.get(

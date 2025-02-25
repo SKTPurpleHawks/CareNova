@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_fonts/google_fonts.dart';
 
 class CaregiverPatientLogCreateScreen extends StatefulWidget {
   final String patientName;
@@ -61,6 +62,7 @@ class _CaregiverPatientLogCreateScreenState
 
     if (widget.initialLogData != null) {
       Map<String, dynamic> log = widget.initialLogData!;
+
       _location = log["location"];
       _mood = log["mood"];
       _sleepQuality = log["sleep_quality"];
@@ -82,16 +84,17 @@ class _CaregiverPatientLogCreateScreenState
       _outdoorWalk = log["outdoor_walk"] ?? false;
       _notesController.text = log["notes"] ?? "";
     } else {
-      _location = "병원";
-      _mood = "보통";
-      _sleepQuality = "보통";
-      _breakfastType = "선택해주세요.";
-      _breakfastAmount = "선택해주세요.";
-      _lunchType = "선택해주세요.";
-      _lunchAmount = "선택해주세요.";
-      _dinnerType = "선택해주세요.";
-      _dinnerAmount = "선택해주세요.";
-      _stool = "보통";
+      _location = null;
+      _mood = null;
+      _sleepQuality = null;
+      _breakfastType = null;
+      _breakfastAmount = null;
+      _lunchType = null;
+      _lunchAmount = null;
+      _dinnerType = null;
+      _dinnerAmount = null;
+
+      _stool = null;
     }
   }
 
@@ -99,8 +102,8 @@ class _CaregiverPatientLogCreateScreenState
     final isEditing = widget.initialLogData != null;
     final url = isEditing
         ? Uri.parse(
-            'http://192.168.11.93:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
-        : Uri.parse('http://192.168.11.93:8000/dailyrecord'); // 새 기록
+            'http://172.23.250.30:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
+        : Uri.parse('http://172.23.250.30:8000/dailyrecord'); // 새 기록
 
     final method = isEditing ? "PUT" : "POST";
 
@@ -157,7 +160,27 @@ class _CaregiverPatientLogCreateScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.isReadOnly ? "간병일지 상세 보기" : "간병일지 작성")),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            widget.isReadOnly ? "간병일지 상세 보기" : "간병일지 작성",
+            style: GoogleFonts.notoSansKr(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -217,10 +240,52 @@ class _CaregiverPatientLogCreateScreenState
                       child: Text("뒤로 가기"),
                     )
                   : ElevatedButton(
-                      onPressed: saveCareLog, // 저장 함수 연결 필요
-                      child: Text("간병일지 저장"),
+                      onPressed: saveCareLog,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF43C098),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        "간병일지 저장",
+                        style: GoogleFonts.notoSansKr(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildField(String label, String? value, List<String> items) {
+    return widget.isReadOnly
+        ? _buildReadOnlyTextField(label, value ?? "데이터 없음")
+        : _buildDropdown(label, value, items, (val) {
+            if (val != null) {
+              setState(() {
+                value = val; // 변경된 값 적용
+              });
+            }
+          });
+  }
+
+  Widget _buildReadOnlyTextField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: TextFormField(
+        readOnly: true,
+        initialValue: value,
+        decoration: InputDecoration(
+          labelText: label,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -278,89 +343,132 @@ class _CaregiverPatientLogCreateScreenState
     );
   }
 
-  Widget _buildField(String label, String? value, List<String> items) {
-    return widget.isReadOnly
-        ? _buildReadOnlyTextField(label, value ?? "데이터 없음")
-        : _buildDropdown(label, value, items, (val) {
-            if (val != null) {
-              setState(() {
-                value = val; // 변경된 값 적용
-              });
-            }
-          });
-  }
-
-  Widget _buildReadOnlyTextField(String label, String value) {
+  Widget _buildCheckbox(String label, bool value, Function(bool) onChanged) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: TextFormField(
-        readOnly: true,
-        initialValue: value,
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
-      ),
-    );
-  }
-
-  Widget _buildDropdown(String label, String? value, List<String> items,
-      Function(String?) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: DropdownButtonFormField<String>(
-        value: items.contains(value) ? value : null, // 값이 리스트에 있는지 확인 후 설정
-        items: items
-            .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-            .toList(),
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: CheckboxListTile(
+        title: Text(
+          label,
+          style: GoogleFonts.notoSansKr(),
+        ),
+        value: value,
+        activeColor: const Color(0xFF43C098),
         onChanged: widget.isReadOnly
             ? null
             : (val) {
                 if (val != null) {
-                  setState(() {
-                    onChanged(val);
-                  });
+                  setState(() => onChanged(val));
                 }
               },
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
-        disabledHint: Text(value ?? ""),
       ),
     );
   }
+}
 
-  Widget _buildTextField(String label, TextEditingController controller,
-      {int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        readOnly: widget.isReadOnly,
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
+Widget _buildDropdown(String label, String? value, List<String> items,
+    Function(String?) onChanged) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12.0),
+    child: DropdownButtonFormField<String>(
+      value: value,
+      items:
+          items.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+      onChanged: onChanged,
+      style: TextStyle(
+        color: value == null ? Colors.grey : Colors.black,
+        fontSize: 16,
       ),
-    );
-  }
-
-  Widget _buildCheckbox(
-      String label, bool currentValue, Function(bool) onChanged) {
-    return CheckboxListTile(
-      title: Text(
-        label,
-        style: TextStyle(
-          color: widget.isReadOnly ? Colors.black : null, // 읽기 모드에서 검정색
-          fontWeight: widget.isReadOnly ? FontWeight.bold : null, // 읽기 모드에서 볼드체
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        floatingLabelStyle: const TextStyle(
+          color: Color(0xFF43C098),
+          fontWeight: FontWeight.bold,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: Color(0xFF43C098),
+            width: 2,
+          ),
         ),
       ),
-      value: currentValue,
-      onChanged: widget.isReadOnly
-          ? null
-          : (val) {
-              if (val != null) {
-                setState(() => onChanged(val));
-              }
-            },
-      activeColor: widget.isReadOnly ? Colors.black : null, // 체크 색상을 검정으로 변경
-      checkColor: widget.isReadOnly ? Colors.white : null, // 체크 내부 색상 (가독성 유지)
-    );
-  }
+      dropdownColor: Colors.white,
+    ),
+  );
+}
+
+Widget _buildTextField(String label, TextEditingController controller,
+    {int maxLines = 1}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12.0),
+    child: TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        floatingLabelStyle: const TextStyle(
+          color: Color(0xFF43C098),
+          fontWeight: FontWeight.bold,
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Colors.grey),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(
+            color: Color(0xFF43C098),
+            width: 2,
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildCheckbox(String label, bool value, Function(bool?) onChanged) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 8.0),
+    child: CheckboxListTile(
+      title: Text(label, style: GoogleFonts.notoSansKr()),
+      value: value,
+      activeColor: const Color(0xFF43C098),
+      onChanged: onChanged,
+    ),
+  );
+}
+
+Widget _buildReadOnlyTextField(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12.0),
+    child: TextFormField(
+      readOnly: true,
+      initialValue: value,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        hintText: "데이터 없음",
+        hintStyle: const TextStyle(color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    ),
+  );
 }

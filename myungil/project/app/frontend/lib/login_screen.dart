@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
 
-    final String baseUrl = "http://192.168.11.93:8000"; // FastAPI 서버 IP 사용
+    final String baseUrl = "http://172.23.250.30:8000"; // FastAPI 서버 IP 사용
     final String url = "$baseUrl/login";
     final response = await http.post(
       Uri.parse(url),

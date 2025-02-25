@@ -137,7 +137,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
       final url = Uri.parse(
-          'http://192.168.11.93:8000/patient-info/${widget.patientData['id']}');
+          'http://172.23.250.30:8000/patient-info/${widget.patientData['id']}');
       Map<String, dynamic> data = {
         "birthday": DateFormat('yyyy-MM-dd').format(_birthday),
         "startdate": DateFormat('yyyy-MM-dd').format(_startDate),
@@ -181,7 +181,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   /// 환자 정보 삭제 함수
   Future<void> _deletePatient() async {
     final url = Uri.parse(
-        'http://192.168.11.93:8000/patient-info/${widget.patientData['id']}');
+        'http://172.23.250.30:8000/patient-info/${widget.patientData['id']}');
 
     try {
       final response = await http.delete(

@@ -44,7 +44,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 사용자 정보 불러오기
   Future<void> fetchUserInfo() async {
-    final url = Uri.parse('http://192.168.11.93:8000/user-info');
+    final url = Uri.parse('http://172.23.250.30:8000/user-info');
 
     try {
       final response = await http.get(
@@ -90,7 +90,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 구인 정보 업데이트
   Future<void> _updateJobInfo(bool value) async {
-    final url = Uri.parse('http://192.168.11.93:8000/update-job-info');
+    final url = Uri.parse('http://172.23.250.30:8000/update-job-info');
 
     try {
       final response = await http.put(

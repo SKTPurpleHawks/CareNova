@@ -27,7 +27,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   }
 
   Future<void> _fetchCaregiverPatients() async {
-    final url = Uri.parse('http://192.168.11.93:8000/caregiver/patients');
+    final url = Uri.parse('http://172.23.250.30:8000/caregiver/patients');
 
     try {
       final response = await http.get(
@@ -53,7 +53,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   Future<void> _fetchProtectorPatients() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.11.93:8000/patients'),
+        Uri.parse('http://172.23.250.30:8000/patients'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json; charset=UTF-8',

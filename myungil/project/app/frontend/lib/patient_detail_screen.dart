@@ -14,6 +14,9 @@ class PatientDetailScreen extends StatelessWidget {
   final String caregiverPhone;
   final String caregiverStartDate;
   final String caregiverEndDate;
+
+  // final String protectorName;
+  // final String protectorPhone;
   final String? protectorId;
 
   const PatientDetailScreen({
@@ -29,6 +32,20 @@ class PatientDetailScreen extends StatelessWidget {
     required this.caregiverEndDate,
     this.protectorId,
   }) : super(key: key);
+
+  //   const PatientDetailScreen({
+  //   Key? key,
+  //   required this.patient,
+  //   required this.token,
+  //   required this.isProtector,
+  //   required this.hasCaregiver,
+  //   required this.caregiverName,
+  //   required this.caregiverId,
+  //   required this.caregiverPhone,
+  //   required this.caregiverStartDate,
+  //   required this.caregiverEndDate,
+  //   this.protectorId,
+  // }) : super(key: key);
 
   String _formatDate(String dateString) {
     if (dateString == "정보 없음" || dateString.isEmpty) return "정보 없음";
@@ -71,15 +88,21 @@ class PatientDetailScreen extends StatelessWidget {
                 children: [
                   _buildInfoCard([
                     _buildRow("이름", patient['name']),
+                    SizedBox(height: 10),
                     _buildRow("성별", patient['sex']),
+                    SizedBox(height: 10),
                     _buildRow("키", "${patient['height']} cm"),
+                    SizedBox(height: 10),
                     _buildRow("몸무게", "${patient['weight']} kg"),
                   ]),
                   const SizedBox(height: 20),
                   _buildInfoCard([
                     _buildRow("간병 지역", patient['region'] ?? "정보 없음"),
-                    _buildRow("간병 가능 장소", patient['spot'] ?? "정보 없음"),
+                    SizedBox(height: 10),
+                    _buildRow("간병 장소", patient['spot'] ?? "정보 없음"),
+                    SizedBox(height: 10),
                     _buildRow("증상", patient['symptoms'] ?? "정보 없음"),
+                    SizedBox(height: 10),
                     _buildRow("보행 가능 여부", patient['canwalk'] ?? "정보 없음"),
                   ]),
                   const SizedBox(height: 20),
@@ -121,6 +144,20 @@ class PatientDetailScreen extends StatelessWidget {
                         ),
                       ]),
                     ),
+                  Padding(
+                    padding: const EdgeInsets.all(1),
+                    child: _buildInfoCard([
+                      // _buildRow("보호자 이름", protectorName),
+                      // SizedBox(height: 10),
+                      // _buildRow("보호자 전화번호", protectorPhone),
+                      // SizedBox(height: 10),
+                      _buildRow("간병 시작일", _formatDate(caregiverStartDate)),
+                      SizedBox(height: 10),
+
+                      _buildRow("간병 종료일", _formatDate(caregiverEndDate)),
+                      const SizedBox(height: 10),
+                    ]),
+                  ),
                 ],
               ),
             ),
@@ -148,13 +185,13 @@ class PatientDetailScreen extends StatelessWidget {
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         side: const BorderSide(color: Colors.black12),
                       ),
                     ),
                     child: Text(
                       isCaregiver ? "환자와 대화하기" : "간병인과 대화하기",
-                      style: GoogleFonts.notoSansKr(fontSize: 16),
+                      style: GoogleFonts.notoSansKr(fontSize: 18),
                     ),
                   ),
                 ),
@@ -186,12 +223,13 @@ class PatientDetailScreen extends StatelessWidget {
                       backgroundColor: const Color(0xFF43C098),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     child: Text(
                       isCaregiver ? "간병일지 작성" : "간병일지 확인",
-                      style: GoogleFonts.notoSansKr(fontSize: 16),
+                      style: GoogleFonts.notoSansKr(
+                          fontSize: 18, fontWeight: FontWeight.w500),
                     ),
                   ),
                 ),
@@ -208,7 +246,7 @@ class PatientDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 5, spreadRadius: 1),
         ],
@@ -226,13 +264,14 @@ class PatientDetailScreen extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.notoSansKr(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
             ),
           ),
           Text(
             value ?? "정보 없음",
-            style: GoogleFonts.notoSansKr(fontSize: 16),
+            style: GoogleFonts.notoSansKr(
+                fontSize: 18, fontWeight: FontWeight.w300),
           ),
         ],
       ),

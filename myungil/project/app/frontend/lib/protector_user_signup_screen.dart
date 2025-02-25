@@ -33,7 +33,7 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://192.168.11.93:8000/signup/protector'),
+        Uri.parse('http://172.23.250.30:8000/signup/protector'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
