@@ -187,7 +187,10 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
                   ['남성', '여성', '상관없음'],
                   (value) => setState(() => _preferSex = value)),
               SizedBox(height: 10),
-              _buildDropdownWithLabel("간병인의 흡연 여부", _smoking, ['비흡연', '흡연', '상관없음'],
+              _buildDropdownWithLabel(
+                  "간병인의 흡연 여부",
+                  _smoking,
+                  ['비흡연', '흡연', '상관없음'],
                   (value) => setState(() => _smoking = value)),
               const SizedBox(height: 20),
               Container(

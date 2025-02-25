@@ -10,26 +10,25 @@ class ProtectorUserSignupScreen extends StatefulWidget {
       _ProtectorUserSignupScreenState();
 }
 
-class _ProtectorUserSignupScreenState
-    extends State<ProtectorUserSignupScreen> {
+class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneNumberController = TextEditingController();
   DateTime selectedDate = DateTime.now();
-  
+
   String _sex = '남성';
   String message = "";
+  bool _isPrivacyAgreed = false;
 
   Future<void> _signup() async {
     if (_formKey.currentState!.validate()) {
-      if (passwordController.text != confirmPasswordController.text) {
-        setState(() {
-          message = "비밀번호가 일치하지 않습니다.";
-        });
+      if (_passwordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('비밀번호가 일치하지 않습니다.')),
+        );
         return;
       }
 
@@ -38,7 +37,7 @@ class _ProtectorUserSignupScreenState
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,
-          'password': passwordController.text,
+          'password': _passwordController.text,
           'name': nameController.text,
           'phonenumber': phoneNumberController.text,
           'birthday': selectedDate.toIso8601String().split('T')[0],
@@ -68,73 +67,136 @@ class _ProtectorUserSignupScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          '보호자 회원가입',
-          style: GoogleFonts.notoSansKr(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
+        centerTitle: true, // 중앙 정렬 필수
+        title: Image.asset(
+          'assets/images/textlogo.png', // 여기에 로고 이미지 경로 입력
+          height: 25, // 원하는 높이 조정 가능
+          fit: BoxFit.contain,
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
+        iconTheme: IconThemeData(color: Colors.black),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Form(
           key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTextField(emailController, '이메일'),
-              _buildTextField(passwordController, '비밀번호', obscureText: true),
-              _buildTextField(confirmPasswordController, '비밀번호 확인',
-                  obscureText: true),
-              _buildTextField(nameController, '이름'),
-              _buildTextField(phoneNumberController, '전화번호'),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 10),
+                Text(
+                  "보호자 회원가입",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                _buildTextField(emailController, '이메일'),
+                SizedBox(height: 10),
 
-              // 생년월일 입력 필드
-              _buildBirthdateSelector(),
-              const SizedBox(height: 20),
+                _buildTextField(_passwordController, '비밀번호', isPassword: true),
+                SizedBox(height: 10),
 
-              // 성별 선택 필드
-              _buildGenderSelectionWithLabel(),
+                _buildTextField(_confirmPasswordController, '비밀번호 확인',
+                    isPassword: true),
+                SizedBox(height: 10),
 
-              const SizedBox(height: 32),
+                _buildTextField(nameController, '이름'),
+                SizedBox(height: 10),
 
-              // 가입하기 버튼
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _signup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                _buildTextField(phoneNumberController, '전화번호'),
+
+                // 생년월일 입력 필드
+                _buildBirthdateSelector(),
+                const SizedBox(height: 20),
+
+                // 성별 선택 필드
+                _buildGenderSelectionWithLabel(),
+
+                const SizedBox(height: 32),
+                SizedBox(height: 20),
+
+// 개인정보 동의서 박스
+                Container(
+                  padding: EdgeInsets.all(12),
+                  height: 150, // 박스 크기 조정 가능
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade50,
                   ),
-                  child: Text(
-                    '가입하기',
-                    style: GoogleFonts.notoSansKr(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                  child: SingleChildScrollView(
+                    child: Text(
+                      '''본인은 CARENOVA 서비스 이용을 위해 환자의 개인정보를 제공함에 동의합니다.
+
+1. 수집 항목: 보호자 및 환자의 성명, 연락처, 생년월일, 건강 상태 등
+2. 이용 목적: 간병인 매칭 및 서비스 제공
+3. 보유 기간: 서비스 이용 종료 또는 보호자 요청 시 파기
+4. 동의 거부 시 서비스 이용이 제한될 수 있음''',
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(height: 24),
-            ],
+                SizedBox(height: 10),
+
+// 개인정보 동의 체크박스
+                CheckboxListTile(
+                  title: Text(
+                    '위의 개인정보 수집 및 이용에 동의합니다. (필수)',
+                    style: TextStyle(
+                      fontSize: 14, // 원하는 크기로 조정 가능
+                      fontWeight: FontWeight.w500, // 글씨 두께 조정 가능
+                      color: Colors.black87, // 글씨 색상
+                    ),
+                  ),
+                  value: _isPrivacyAgreed,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isPrivacyAgreed = value ?? false;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+                SizedBox(height: 20),
+
+                // 가입하기 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!_isPrivacyAgreed) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('개인정보 수집 및 이용에 동의해주세요.')),
+                        );
+                        return;
+                      }
+                      _signup(); // 기존 회원가입 처리 함수
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      '가입하기',
+                      style: GoogleFonts.notoSansKr(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 10),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
 
   Widget _buildGenderSelectionWithLabel() {
     return Padding(
@@ -202,47 +264,45 @@ class _ProtectorUserSignupScreenState
     );
   }
 
-  /// **입력 필드 (이메일, 비밀번호, 이름 등)**
   Widget _buildTextField(TextEditingController controller, String label,
-      {String hintText = '', bool obscureText = false}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.notoSansKr(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 6),
-        TextFormField(
-          controller: controller,
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: GoogleFonts.notoSansKr(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Colors.black45,
+      {bool isPassword = false,
+      bool readOnly = false,
+      TextInputType keyboardType = TextInputType.text}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 5),
+          TextFormField(
+            controller: controller,
+            obscureText: isPassword,
+            keyboardType: keyboardType,
+            readOnly: readOnly,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: Colors.grey.shade300),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide:
+                    BorderSide(color: const Color(0xFF43C098), width: 2.0),
+              ),
+              filled: true,
+              fillColor: Colors.white,
             ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            validator: (value) =>
+                value == null || value.isEmpty ? '$label을 입력해주세요' : null,
           ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return '$label을 입력해주세요';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-      ],
+        ],
+      ),
     );
   }
 
@@ -278,8 +338,8 @@ class _ProtectorUserSignupScreenState
       '',
       List.generate(100, (index) => (DateTime.now().year - index).toString()),
       (newValue) => setState(() {
-        selectedDate = DateTime(int.parse(newValue!), selectedDate.month,
-            selectedDate.day);
+        selectedDate = DateTime(
+            int.parse(newValue!), selectedDate.month, selectedDate.day);
       }),
     );
   }
@@ -289,8 +349,8 @@ class _ProtectorUserSignupScreenState
       '',
       List.generate(12, (index) => (index + 1).toString().padLeft(2, '0')),
       (newValue) => setState(() {
-        selectedDate = DateTime(
-            selectedDate.year, int.parse(newValue!), selectedDate.day);
+        selectedDate =
+            DateTime(selectedDate.year, int.parse(newValue!), selectedDate.day);
       }),
     );
   }
@@ -305,7 +365,6 @@ class _ProtectorUserSignupScreenState
       }),
     );
   }
-
 
   Widget _buildDropdownField(
       String label, List<String> options, ValueChanged<String?> onChanged) {

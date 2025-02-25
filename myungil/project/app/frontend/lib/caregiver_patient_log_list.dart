@@ -123,7 +123,8 @@ class _CaregiverPatientLogListScreenState
         itemBuilder: (context, index) {
           final log = _careLogs[index];
           return Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             elevation: 2,
             child: ListTile(
               title: Text("간병일지 ${index + 1}"),
@@ -141,7 +142,6 @@ class _CaregiverPatientLogListScreenState
                   PopupMenuItem(value: "delete", child: Text("삭제")),
                 ],
               ),
-              
             ),
           );
         },

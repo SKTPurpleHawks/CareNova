@@ -8,7 +8,8 @@ class ForeignUserSignupScreen extends StatefulWidget {
   const ForeignUserSignupScreen({super.key});
 
   @override
-  State<ForeignUserSignupScreen> createState() => _ForeignUserSignupScreenState();
+  State<ForeignUserSignupScreen> createState() =>
+      _ForeignUserSignupScreenState();
 }
 
 class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
@@ -22,6 +23,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
   final _weightController = TextEditingController();
   final _ageController = TextEditingController();
 
+  bool _isPrivacyAgreed = false;
   DateTime? _birthday;
   int _age = 0;
   DateTime? _startDate;
@@ -154,14 +156,14 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
         iconTheme: IconThemeData(color: Colors.black),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 30),
+                SizedBox(height: 10),
                 Text(
                   "간병인 회원가입",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -195,13 +197,13 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                   readOnly: true,
                 ),
                 SizedBox(height: 10),
-                _buildDateSelectionWithLabel("간병 시작일", _startDate, (date) {
+                _buildDateSelectionWithLabel2("간병 시작일", _startDate, (date) {
                   setState(() {
                     _startDate = date;
                   });
                 }),
                 SizedBox(height: 10),
-                _buildDateSelectionWithLabel("간병 종료일", _endDate, (date) {
+                _buildDateSelectionWithLabel2("간병 종료일", _endDate, (date) {
                   setState(() {
                     _endDate = date;
                   });
@@ -227,18 +229,63 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                 _buildDropdownWithLabel(
                     "환자의 보행 지원 여부",
                     _canWalkPatient,
-                    ['지원 가능', '지원 불가능', '상관없음'],
+                    ['지원 가능', '지원 불가능', '상관 없음'],
                     (value) => setState(() => _canWalkPatient = value)),
                 SizedBox(height: 10),
                 _buildDropdownWithLabel(
                     "선호하는 환자 성별",
                     _preferSex,
-                    ['남성', '여성', '상관없음'],
+                    ['남성', '여성', '상관 없음'],
                     (value) => setState(() => _preferSex = value)),
                 SizedBox(height: 10),
                 _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
                     (value) => setState(() => _smoking = value)),
                 SizedBox(height: 30),
+                SizedBox(height: 20),
+// 개인정보 동의 박스
+                Container(
+                  padding: EdgeInsets.all(12),
+                  height: 150, // 적절한 높이 설정
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade50,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      '''본인은 CARENOVA 서비스 이용을 위하여 아래와 같은 개인정보를 수집 및 이용하는 것에 동의합니다.
+
+1. 수집하는 개인정보 항목
+   - 필수정보: 성명, 생년월일, 성별, 연락처(전화번호, 이메일 주소), 신체 정보(키, 몸무게), 경력, 간병 가능 지역 및 장소, 간병 가능 질환 정보
+
+2. 개인정보 수집 및 이용 목적
+   - 회원 가입 및 관리
+   - 간병 서비스 매칭 및 관련 정보 제공
+   - 서비스 품질 향상 및 고객 응대
+
+3. 개인정보 보유 및 이용 기간
+   - 회원 탈퇴 시까지 또는 법령에 따른 보관 기간 동안 보관 후 즉시 파기됩니다.
+
+※ 귀하는 위와 같은 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있으나, 동의 거부 시 회원 가입이 제한됩니다.''',
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 10),
+// 체크박스
+                CheckboxListTile(
+                  title: Text('위의 개인정보 수집 및 이용에 동의합니다. (필수)',
+                      style: TextStyle(fontSize: 12, color: Colors.black87)),
+                  value: _isPrivacyAgreed,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isPrivacyAgreed = value ?? false;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+
                 Container(
                   width: double.infinity,
                   height: 60,
@@ -247,9 +294,20 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextButton(
-                    onPressed: _signup,
+                    onPressed: () {
+                      if (!_isPrivacyAgreed) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('개인정보 수집 및 이용에 동의해주세요.')),
+                        );
+                        return;
+                      }
+                      _signup();
+                    },
                     child: const Text("가입하기",
-                        style: TextStyle(color: Colors.white, fontSize: 18)),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500)),
                   ),
                 ),
                 SizedBox(height: 30),
@@ -260,7 +318,6 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       ),
     );
   }
-
 
   Widget _buildGenderSelectionWithLabel() {
     return Padding(
@@ -352,6 +409,76 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
     );
   }
 
+  Widget _buildDateSelectionWithLabel2(
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildDropdownYear2(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownMonth(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownDay(selectedDate, onDateChanged)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownYear2(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    int currentYear = DateTime.now().year;
+
+    return _buildDropdown<int>(
+      selectedValue: selectedDate?.year,
+      hintText: "년도",
+      items: List.generate(
+          100, (index) => currentYear + index), // 현재 연도부터 100년 뒤까지
+      onChanged: (int? newValue) {
+        if (newValue != null) {
+          onDateChanged(DateTime(
+              newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
+        }
+      },
+    );
+  }
+
+  Widget _buildDropdown<T>(
+      {T? selectedValue,
+      required String hintText,
+      required List<T> items,
+      required Function(T?) onChanged}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: selectedValue,
+          hint: Text(hintText, style: TextStyle(color: Colors.grey)),
+          items: items
+              .map((T item) =>
+                  DropdownMenuItem(value: item, child: Text(item.toString())))
+              .toList(),
+          onChanged: onChanged,
+          isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+        ),
+      ),
+    );
+  }
+
   Widget _buildDropdownYear(
       DateTime? selectedDate, Function(DateTime?) onDateChanged) {
     return Container(
@@ -376,6 +503,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -406,6 +534,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -435,6 +564,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -496,25 +626,35 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(10), // 둥근 모서리
+              border: Border.all(color: Colors.grey.shade300), // 테두리 추가
             ),
-            child: DropdownButtonFormField<String>(
-              value: value,
-              decoration: InputDecoration(
-                hintText: label, // ✅ 문자열만 넣기
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: SizedBox(
+              height: 55, // 높이 조정 ✅
+              child: DropdownButtonFormField<String>(
+                value: value,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10), // 둥근 모서리 유지
+                    borderSide: BorderSide.none, // 기본 테두리 제거
+                  ),
+                  filled: true,
+                  fillColor: Colors.white, // 배경색 설정
+                  contentPadding: EdgeInsets.symmetric(
+                      horizontal: 15, vertical: 15), // ✅ 높이 증가
+                ),
+                dropdownColor: Colors.white,
+                // 펼쳤을 때 배경 흰색 유지
+                icon:
+                    Icon(Icons.keyboard_arrow_down, color: Colors.grey), // 아이콘
+                items: items
+                    .map((String item) =>
+                        DropdownMenuItem(value: item, child: Text(item)))
+                    .toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) onChanged(newValue);
+                },
               ),
-              items: items
-                  .map((String item) =>
-                      DropdownMenuItem(value: item, child: Text(item)))
-                  .toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) onChanged(newValue);
-              },
             ),
           ),
         ],
@@ -532,31 +672,44 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
           Text(label,
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: ExpansionTile(
-              title: Text('${selectedItems.length} 선택됨',
-                  style: TextStyle(fontSize: 16)),
-              children: allItems.map((item) {
-                return CheckboxListTile(
-                  title: Text(item),
-                  value: selectedItems.contains(item),
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value!) {
-                        selectedItems.add(item);
-                      } else {
-                        selectedItems.remove(item);
-                      }
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
-                );
-              }).toList(),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10), // 둥근 모서리 유지
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Theme(
+                data: Theme.of(context).copyWith(
+                  dividerColor: Colors.transparent, // 구분선 제거
+                ),
+                child: ExpansionTile(
+                  backgroundColor: Colors.white, // 펼쳤을 때 배경 흰색
+                  collapsedBackgroundColor: Colors.white, // 닫혔을 때 배경 흰색
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  title: Text('${selectedItems.length}개 선택됨',
+                      style: TextStyle(fontSize: 16)),
+                  children: allItems.map((item) {
+                    return CheckboxListTile(
+                      title: Text(item),
+                      value: selectedItems.contains(item),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value!) {
+                            selectedItems.add(item);
+                          } else {
+                            selectedItems.remove(item);
+                          }
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    );
+                  }).toList(),
+                ),
+              ),
             ),
           ),
         ],

@@ -71,19 +71,26 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true, // ✅ 타이틀 가운데 정렬
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
+        ),
+        iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 60),
+            const SizedBox(height: 140),
 
             // 로그인 제목
             Text(
@@ -91,12 +98,12 @@ class _LoginScreenState extends State<LoginScreen> {
               textAlign: TextAlign.center,
               style: GoogleFonts.notoSansKr(
                 fontSize: 26,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w300,
                 color: Colors.black,
               ),
             ),
 
-            const SizedBox(height: 80),
+            const SizedBox(height: 40),
 
             // 이메일 입력 필드
             _buildInputField(
@@ -116,16 +123,16 @@ class _LoginScreenState extends State<LoginScreen> {
               controller: _passwordController,
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 40),
 
             // 로그인 버튼
             ElevatedButton(
               onPressed: _isLoading ? null : _login,
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryColor,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(50),
                 ),
               ),
               child: _isLoading
@@ -134,13 +141,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       '로그인',
                       style: GoogleFonts.notoSansKr(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white,
                       ),
                     ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // 회원가입 버튼
             TextButton(
@@ -148,24 +155,51 @@ class _LoginScreenState extends State<LoginScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => UserTypeSelectionScreen()),
+                    builder: (context) => UserTypeSelectionScreen(),
+                  ),
                 );
               },
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  '회원가입',
-                  style: GoogleFonts.notoSansKr(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: accentColor,
-                  ),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.grey[500], // ElevatedButton과 같은 배경색
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+              child: Text(
+                '회원가입',
+                style: GoogleFonts.notoSansKr(
+                  fontSize: 18, // ElevatedButton과 동일한 폰트 크기
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white, // 텍스트 색상을 ElevatedButton과 동일하게 설정
                 ),
               ),
             ),
 
             const SizedBox(height: 30),
+            TextButton(
+              onPressed: () {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //       builder: (context) => UserTypeSelectionScreen()),
+                // );
+              },
+              child: AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                padding: EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  '아이디/비밀번호 찾기 >',
+                  style: GoogleFonts.notoSansKr(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[500],
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.grey[500],
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),

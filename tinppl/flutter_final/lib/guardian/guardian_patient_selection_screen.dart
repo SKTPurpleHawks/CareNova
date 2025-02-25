@@ -20,10 +20,7 @@ class _GuardianPatientSelectionScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-<<<<<<< Updated upstream
         centerTitle: true,
-=======
->>>>>>> Stashed changes
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
@@ -49,12 +46,7 @@ class _GuardianPatientSelectionScreenState
             Expanded(child: Container()), // 🔹 오른쪽 빈 공간 확보
           ],
         ),
-<<<<<<< Updated upstream
         iconTheme: const IconThemeData(color: Colors.black),
-=======
-        centerTitle: true, // ✅ iOS에서도 중앙 정렬 유지
-        actions: [Container(width: 48)], // 🔹 leading 버튼과 균형 맞추기 위해 추가
->>>>>>> Stashed changes
       ),
       body: Column(
         children: [

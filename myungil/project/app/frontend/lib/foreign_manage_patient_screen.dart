@@ -28,7 +28,7 @@ class _ForeignManagePatientScreenState
 
   /// 환자 정보 불러오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://192.168.11.93:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.232.218:8000/caregiver/patients');
 
     try {
       final response = await http.get(
@@ -82,12 +82,12 @@ class _ForeignManagePatientScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          "환자 관리",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
         ),
         centerTitle: true,
-        iconTheme: IconThemeData(color: Colors.black),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
@@ -123,6 +123,7 @@ class _ForeignManagePatientScreenState
               ),
       ),
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
         selectedIndex: _selectedIndex,
         onDestinationSelected: _onItemTapped,
         destinations: const [
@@ -189,10 +190,10 @@ class _ForeignManagePatientScreenState
                 color: Colors.white,
                 shape: BoxShape.circle,
               ),
-              padding: EdgeInsets.all(8),
+              padding: EdgeInsets.all(5),
               child: Icon(
                 Icons.person_outline,
-                size: 24,
+                size: 45,
                 color: Color(0xFF43C098),
               ),
             ),
@@ -207,10 +208,6 @@ class _ForeignManagePatientScreenState
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
-                ),
-                Text(
-                  "나이: $age",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                 ),
               ],
             ),

@@ -144,7 +144,8 @@ class CaregiverDetailScreen extends StatefulWidget {
   final Map<String, dynamic> caregiver;
   final String token; // 로그인 토큰 추가
 
-  const CaregiverDetailScreen({Key? key, required this.caregiver, required this.token})
+  const CaregiverDetailScreen(
+      {Key? key, required this.caregiver, required this.token})
       : super(key: key);
 
   @override

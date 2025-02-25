@@ -35,7 +35,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   String _sex = '남성';
   String _spot = '병원';
   late List<String> _selectedRegions;
-  String _canWalkPatient = '걸을 수 없음';
+  String _canWalkPatient = '지원불가능';
   String _preferSex = '남성';
   late List<String> _selectedSymptoms;
   String _smoking = '비흡연';
@@ -140,9 +140,9 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         'email': widget.userData['email'],
         'name': _nameController.text,
         'phonenumber': _phoneNumberController.text,
-        'birthday': DateFormat('yyyy-MM-dd').format(_birthday),
-        'startdate': DateFormat('yyyy-MM-dd').format(_startDate),
-        'enddate': DateFormat('yyyy-MM-dd').format(_endDate),
+        'birthday': _birthday?.toIso8601String().split('T')[0] ?? '',
+        'startdate': _startDate?.toIso8601String().split('T')[0] ?? '',
+        'enddate': _endDate?.toIso8601String().split('T')[0] ?? '',
         'age': _age,
         'sex': _sex,
         'region': _selectedRegions.join(','),
@@ -188,7 +188,8 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
     }
   }
 
-  int _calculateAge(DateTime birthDate) {
+  int _calculateAge(DateTime? birthDate) {
+    if (birthDate == null) return 0;
     DateTime currentDate = DateTime.now();
     int age = currentDate.year - birthDate.year;
     if (currentDate.month < birthDate.month ||
@@ -204,39 +205,51 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text("프로필 수정"),
-        elevation: 0,
         backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true, // 중앙 정렬 필수
+        title: Image.asset(
+          'assets/images/textlogo.png', // 여기에 로고 이미지 경로 입력
+          height: 25, // 원하는 높이 조정 가능
+          fit: BoxFit.contain,
+        ),
         iconTheme: IconThemeData(color: Colors.black),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0),
         child: Form(
           key: _formKey,
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                SizedBox(height: 10),
+                Text(
+                  "프로필 수정",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
                 SizedBox(height: 20),
                 _buildTextFieldWithLabel(_nameController, "이름"),
                 _buildTextFieldWithLabel(_phoneNumberController, "전화번호",
                     keyboardType: TextInputType.phone),
                 _buildDateSelectionWithLabel("생년월일", _birthday, (date) {
                   setState(() {
-                    _birthday = date;
-                    _age = _calculateAge(date);
+                    _birthday = date ?? DateTime.now(); // date가 null이면 현재 날짜 사용
+                    _age = _calculateAge(_birthday);
                     _ageController.text = _age.toString();
                   });
                 }),
                 _buildTextFieldWithLabel(_ageController, "나이", readOnly: true),
-                _buildDateSelectionWithLabel("간병 시작일", _startDate, (date) {
+                _buildDateSelectionWithLabel2("간병 시작일", _startDate,
+                    (DateTime? date) {
                   setState(() {
-                    _startDate = date;
+                    _startDate = date ?? DateTime.now();
                   });
                 }),
-                _buildDateSelectionWithLabel("간병 종료일", _endDate, (date) {
+                _buildDateSelectionWithLabel2("간병 종료일", _endDate,
+                    (DateTime? date) {
                   setState(() {
-                    _endDate = date;
+                    _endDate = date ?? DateTime.now();
                   });
                 }),
                 SizedBox(height: 10),
@@ -252,14 +265,14 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
                 _buildMultiSelectWithLabel(
                     "간병 가능 질환", _symptoms, _selectedSymptoms),
                 _buildDropdownWithLabel(
-                    "환자의 보행 가능 여부",
+                    "환자의 보행 지원 여부",
                     _canWalkPatient,
-                    ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                    ['지원 가능', '지원 불가능', '상관 없음'],
                     (value) => setState(() => _canWalkPatient = value)),
                 _buildDropdownWithLabel(
                     "선호하는 환자 성별",
                     _preferSex,
-                    ['남성', '여성', '상관없음'],
+                    ['남성', '여성', '상관 없음'],
                     (value) => setState(() => _preferSex = value)),
                 _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
                     (value) => setState(() => _smoking = value)),
@@ -271,10 +284,10 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
                 _buildTextFieldWithLabel(
                     _confirmPasswordController, "새 비밀번호 확인",
                     isPassword: true),
-                SizedBox(height: 30),
+                SizedBox(height: 20),
                 Container(
                   width: double.infinity,
-                  height: 60,
+                  height: 70,
                   decoration: BoxDecoration(
                     color: Color(0xFF43C098),
                     borderRadius: BorderRadius.circular(10),
@@ -283,10 +296,12 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
                     onPressed: _updateProfile,
                     child: Text("프로필 업데이트",
                         style: GoogleFonts.notoSansKr(
-                            fontSize: 18, color: Colors.white)),
+                            fontSize: 18,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500)),
                   ),
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: 20),
               ],
             ),
           ),
@@ -339,7 +354,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   }
 
   Widget _buildDateSelectionWithLabel(
-      String label, DateTime selectedDate, Function(DateTime) onDateChanged) {
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Column(
@@ -362,8 +377,32 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
     );
   }
 
+  Widget _buildDateSelectionWithLabel2(
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildDropdownYear2(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownMonth(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownDay(selectedDate, onDateChanged)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDropdownYear(
-      DateTime selectedDate, Function(DateTime) onDateChanged) {
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -372,19 +411,66 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: selectedDate.year,
+        child: DropdownButton<int?>(
+          value: selectedDate?.year != null ? selectedDate!.year : null, //
+          hint: Text("년도", style: TextStyle(color: Colors.grey)),
           items: List.generate(100, (index) {
             int year = DateTime.now().year - index;
             return DropdownMenuItem(value: year, child: Text(year.toString()));
           }),
           onChanged: (int? newValue) {
             if (newValue != null) {
-              onDateChanged(
-                  DateTime(newValue, selectedDate.month, selectedDate.day));
+              onDateChanged(DateTime(
+                  newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownYear2(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    int currentYear = DateTime.now().year;
+
+    return _buildDropdown<int>(
+      selectedValue: selectedDate?.year,
+      hintText: "년도",
+      items: List.generate(100, (index) => currentYear + index),
+      onChanged: (int? newValue) {
+        if (newValue != null) {
+          onDateChanged(DateTime(
+              newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
+        }
+      },
+    );
+  }
+
+  Widget _buildDropdown<T>(
+      {T? selectedValue,
+      required String hintText,
+      required List<T> items,
+      required Function(T?) onChanged}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: selectedValue,
+          hint: Text(hintText, style: TextStyle(color: Colors.grey)),
+          items: items
+              .map((T item) =>
+                  DropdownMenuItem(value: item, child: Text(item.toString())))
+              .toList(),
+          onChanged: onChanged,
+          isExpanded: true,
+          dropdownColor: Colors.white,
         ),
       ),
     );
@@ -421,7 +507,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   }
 
   Widget _buildDropdownDay(
-      DateTime? selectedDate, Function(DateTime) onDateChanged) {
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -430,7 +516,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: DropdownButtonHideUnderline(
-        child: DropdownButton<int?>(
+        child: DropdownButton<int>(
           value: selectedDate?.day,
           hint: Text('일', style: TextStyle(color: Colors.grey)),
           items: List.generate(31, (index) {
@@ -444,6 +530,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -462,25 +549,35 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
           Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
+              borderRadius: BorderRadius.circular(10), // 둥근 모서리
+              border: Border.all(color: Colors.grey.shade300), // 테두리 추가
             ),
-            child: DropdownButtonFormField<String>(
-              value: value,
-              decoration: InputDecoration(
-                hintText: label,
-                hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            child: SizedBox(
+              height: 55, // 높이 조정 ✅
+              child: DropdownButtonFormField<String>(
+                value: items.contains(value) ? value : null,
+                decoration: InputDecoration(
+                  hintText: label,
+                  hintStyle: TextStyle(color: Colors.grey),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                  filled: true,
+                  fillColor: Colors.white,
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+                ),
+                dropdownColor: Colors.white,
+                icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                items: items
+                    .map((String item) =>
+                        DropdownMenuItem(value: item, child: Text(item)))
+                    .toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) onChanged(newValue);
+                },
               ),
-              items: items
-                  .map((String item) =>
-                      DropdownMenuItem(value: item, child: Text(item)))
-                  .toList(),
-              onChanged: (String? newValue) {
-                if (newValue != null) onChanged(newValue);
-              },
             ),
           ),
         ],
@@ -505,7 +602,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: ExpansionTile(
-              title: Text('${selectedItems.length} 선택됨',
+              title: Text('${selectedItems.length}개 선택됨',
                   style: TextStyle(fontSize: 16)),
               children: allItems.map((item) {
                 return CheckboxListTile(

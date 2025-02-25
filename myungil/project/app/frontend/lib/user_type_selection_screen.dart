@@ -19,13 +19,13 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen> {
     final Color borderColor = Colors.grey; // 선택되지 않은 카드 테두리 색
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 200),
+            const SizedBox(height: 160),
 
             // 타이틀
             Text(
@@ -38,7 +38,7 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen> {
               ),
             ),
 
-            const SizedBox(height: 80),
+            const SizedBox(height: 120),
 
             // "간병 일감을 찾고 있어요" 카드
             _buildSelectionCard(
@@ -75,7 +75,8 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen> {
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       side: const BorderSide(
-                          color: Colors.grey, width: 1.5), // 테두리 추가
+                          color: Color.fromARGB(255, 113, 113, 113),
+                          width: 1.5), // 테두리 추가
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -160,20 +161,24 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen> {
         decoration: BoxDecoration(
           color: selected ? primaryColor : secondaryColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: selected ? primaryColor : borderColor,
-            width: selected ? 2 : 1.5,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.4),
-                    blurRadius: 8,
-                    spreadRadius: 1,
-                    offset: const Offset(2, 4),
-                  ),
-                ]
-              : [],
+          border: selected
+              ? Border.all(
+                  color: primaryColor,
+                  width: 2,
+                )
+              : null, // 선택되지 않았을 때 border 제거
+          boxShadow: [
+            BoxShadow(
+              color: selected
+                  ? primaryColor.withOpacity(0.4)
+                  : borderColor.withOpacity(0.4), // 선택되지 않았을 때 약한 그림자
+              blurRadius: selected ? 8 : 6, // 선택되었을 때 더 뚜렷한 블러
+              spreadRadius: selected ? 1 : 0, // 선택되지 않았을 때 퍼짐 줄이기
+              offset: selected
+                  ? const Offset(2, 4)
+                  : const Offset(1, 2), // 선택 여부에 따라 그림자 위치 조정
+            ),
+          ],
         ),
         child: Center(
           child: Text(

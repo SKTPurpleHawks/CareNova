@@ -22,6 +22,8 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
   final _weightController = TextEditingController();
   final _ageController = TextEditingController();
 
+  bool _isPrivacyAgreed = false;
+
   DateTime? _birthday;
   int _age = 0;
   DateTime? _startDate;
@@ -261,6 +263,53 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
                 _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연'],
                     (value) => setState(() => _smoking = value)),
                 SizedBox(height: 30),
+
+                SizedBox(height: 20),
+// 개인정보 동의 박스
+                Container(
+                  padding: EdgeInsets.all(12),
+                  height: 150, // 적절한 높이 설정
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey.shade300),
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.grey.shade50,
+                  ),
+                  child: SingleChildScrollView(
+                    child: Text(
+                      '''본인은 CARENOVA 서비스 이용을 위하여 아래와 같은 개인정보를 수집 및 이용하는 것에 동의합니다.
+
+1. 수집하는 개인정보 항목
+   - 필수정보: 성명, 생년월일, 성별, 연락처(전화번호, 이메일 주소), 신체 정보(키, 몸무게), 경력, 간병 가능 지역 및 장소, 간병 가능 질환 정보
+
+2. 개인정보 수집 및 이용 목적
+   - 회원 가입 및 관리
+   - 간병 서비스 매칭 및 관련 정보 제공
+   - 서비스 품질 향상 및 고객 응대
+
+3. 개인정보 보유 및 이용 기간
+   - 회원 탈퇴 시까지 또는 법령에 따른 보관 기간 동안 보관 후 즉시 파기됩니다.
+
+※ 귀하는 위와 같은 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있으나, 동의 거부 시 회원 가입이 제한됩니다.''',
+                      style: TextStyle(fontSize: 14, color: Colors.black87),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 10),
+// 체크박스
+                CheckboxListTile(
+                  title: Text('위의 개인정보 수집 및 이용에 동의합니다. (필수)',
+                      style: TextStyle(fontSize: 12, color: Colors.black87)),
+                  value: _isPrivacyAgreed,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _isPrivacyAgreed = value ?? false;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+
+                SizedBox(height: 30),
                 Container(
                   width: double.infinity,
                   height: 60,
@@ -269,7 +318,15 @@ class _CaregiverSignupScreenState extends State<CaregiverSignupScreen> {
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: TextButton(
-                    onPressed: _signup,
+                    onPressed: () {
+                      if (!_isPrivacyAgreed) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('개인정보 수집 및 이용에 동의해주세요.')),
+                        );
+                        return;
+                      }
+                      _signup();
+                    },
                     child: const Text("가입하기",
                         style: TextStyle(color: Colors.white, fontSize: 18)),
                   ),

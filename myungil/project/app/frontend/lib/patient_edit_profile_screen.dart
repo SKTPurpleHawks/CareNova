@@ -38,21 +38,58 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   String _smoking = '비흡연';
 
   final List<String> _regions = [
-    '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기남부', '경기북부',
-    '강원영서', '강원영동', '충북', '충남', '전북', '전남', '경북', '경남', '제주'
+    '서울',
+    '부산',
+    '대구',
+    '인천',
+    '광주',
+    '대전',
+    '울산',
+    '세종',
+    '경기남부',
+    '경기북부',
+    '강원영서',
+    '강원영동',
+    '충북',
+    '충남',
+    '전북',
+    '전남',
+    '경북',
+    '경남',
+    '제주'
   ];
 
   final List<String> _symptoms = [
-    '치매', '섬망', '욕창', '하반신마비', '상반신마비', '전신마비', '와상환자', '기저귀케어',
-    '의식없음', '석션', '피딩', '소변줄', '장루', '야간집중돌봄', '전염성', '파킨슨', '정신질환', '투석', '재활'
+    '치매',
+    '섬망',
+    '욕창',
+    '하반신마비',
+    '상반신마비',
+    '전신마비',
+    '와상환자',
+    '기저귀케어',
+    '의식없음',
+    '석션',
+    '피딩',
+    '소변줄',
+    '장루',
+    '야간집중돌봄',
+    '전염성',
+    '파킨슨',
+    '정신질환',
+    '투석',
+    '재활'
   ];
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.patientData['name']?.toString() ?? '');
-    _heightController = TextEditingController(text: widget.patientData['height']?.toString() ?? '');
-    _weightController = TextEditingController(text: widget.patientData['weight']?.toString() ?? '');
+    _nameController = TextEditingController(
+        text: widget.patientData['name']?.toString() ?? '');
+    _heightController = TextEditingController(
+        text: widget.patientData['height']?.toString() ?? '');
+    _weightController = TextEditingController(
+        text: widget.patientData['weight']?.toString() ?? '');
 
     _birthday = _parseDate(widget.patientData['birthday']);
     _startDate = _parseDate(widget.patientData['startdate']);
@@ -62,7 +99,8 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
 
     _sex = widget.patientData['sex']?.toString() ?? '남성';
     _selectedRegions = _safeSplit(widget.patientData['region']);
-    _canWalkPatient = widget.patientData['canwalkpatient']?.toString() ?? '걸을 수 없음';
+    _canWalkPatient =
+        widget.patientData['canwalkpatient']?.toString() ?? '걸을 수 없음';
     _preferSex = widget.patientData['prefersex']?.toString() ?? '남성';
     _selectedSymptoms = _safeSplit(widget.patientData['symptoms']);
     _smoking = widget.patientData['smoking']?.toString() ?? '비흡연';
@@ -88,7 +126,8 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
     DateTime currentDate = DateTime.now();
     int age = currentDate.year - birthDate.year;
     if (currentDate.month < birthDate.month ||
-        (currentDate.month == birthDate.month && currentDate.day < birthDate.day)) {
+        (currentDate.month == birthDate.month &&
+            currentDate.day < birthDate.day)) {
       age--;
     }
     return age;
@@ -97,7 +136,8 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   /// 환자 정보 업데이트 함수
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
-      final url = Uri.parse('http://192.168.11.93:8000/patient-info/${widget.patientData['id']}');
+      final url = Uri.parse(
+          'http://192.168.11.93:8000/patient-info/${widget.patientData['id']}');
       Map<String, dynamic> data = {
         "birthday": DateFormat('yyyy-MM-dd').format(_birthday),
         "startdate": DateFormat('yyyy-MM-dd').format(_startDate),
@@ -140,7 +180,8 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
 
   /// 환자 정보 삭제 함수
   Future<void> _deletePatient() async {
-    final url = Uri.parse('http://192.168.11.93:8000/patient-info/${widget.patientData['id']}');
+    final url = Uri.parse(
+        'http://192.168.11.93:8000/patient-info/${widget.patientData['id']}');
 
     try {
       final response = await http.delete(
@@ -164,7 +205,6 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +252,10 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                     _preferSex,
                     ['남성', '여성', '상관없음'],
                     (value) => setState(() => _preferSex = value)),
-                _buildDropdownWithLabel("흡연 여부", _smoking, ['비흡연', '흡연', '상관없음'],
+                _buildDropdownWithLabel(
+                    "흡연 여부",
+                    _smoking,
+                    ['비흡연', '흡연', '상관없음'],
                     (value) => setState(() => _smoking = value)),
                 SizedBox(height: 20),
                 Row(

@@ -79,7 +79,8 @@ class _ProtectorPatientLogListScreenState
   /// 간병일지 리스트 UI (보호자는 수정 및 삭제 버튼 없음)
   Widget _buildCareLogList() {
     if (_careLogs.isEmpty) {
-      return Center(child: Text("등록된 간병일지가 없습니다.", style: TextStyle(color: Colors.grey)));
+      return Center(
+          child: Text("등록된 간병일지가 없습니다.", style: TextStyle(color: Colors.grey)));
     }
 
     return ListView.builder(
@@ -88,7 +89,8 @@ class _ProtectorPatientLogListScreenState
       itemBuilder: (context, index) {
         final log = _careLogs[index];
         return Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           elevation: 2,
           child: ListTile(
             title: Text("간병일지 ${index + 1}"),
@@ -105,8 +107,8 @@ class _ProtectorPatientLogListScreenState
   /// 날짜 포맷 변경 (연, 월, 일만 표시)
   String _formatDate(String dateTimeString) {
     DateTime dateTime = DateTime.parse(dateTimeString);
-    String month = dateTime.month.toString().padLeft(2, '0'); 
-    String day = dateTime.day.toString().padLeft(2, '0'); 
+    String month = dateTime.month.toString().padLeft(2, '0');
+    String day = dateTime.day.toString().padLeft(2, '0');
     return "${dateTime.year}-$month-$day";
   }
 

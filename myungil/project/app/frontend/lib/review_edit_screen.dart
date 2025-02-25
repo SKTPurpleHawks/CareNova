@@ -83,16 +83,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
     }
   }
 
-
-  Widget buildStarRating(String label, double currentRating,
-      Function(double) onRatingUpdate) {
+  Widget buildStarRating(
+      String label, double currentRating, Function(double) onRatingUpdate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         SizedBox(height: 8),
-
-
         GestureDetector(
           onHorizontalDragUpdate: (details) {
             // 슬라이드 거리 기반으로 별점 조정 (0~5 사이)
@@ -116,7 +114,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
                           ? Icons.star
                           : Icons.star_border),
                   color: Colors.amber,
-                  size: 40, 
+                  size: 40,
                 ),
               );
             }),
@@ -135,18 +133,18 @@ class _ReviewScreenState extends State<ReviewScreen> {
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            buildStarRating(
-                "간병일지 작성", diaryWriting, (rating) => setState(() => diaryWriting = rating)),
-            buildStarRating(
-                "근무 태도", workAttitude, (rating) => setState(() => workAttitude = rating)),
-            buildStarRating(
-                "환자 위생 관리", patientHygiene, (rating) => setState(() => patientHygiene = rating)),
-            buildStarRating(
-                "개인 위생 관리", personalHygiene, (rating) => setState(() => personalHygiene = rating)),
-            buildStarRating(
-                "요청 이해도", understandingRequests, (rating) => setState(() => understandingRequests = rating)),
-            buildStarRating(
-                "반응 정확도", responseAccuracy, (rating) => setState(() => responseAccuracy = rating)),
+            buildStarRating("간병일지 작성", diaryWriting,
+                (rating) => setState(() => diaryWriting = rating)),
+            buildStarRating("근무 태도", workAttitude,
+                (rating) => setState(() => workAttitude = rating)),
+            buildStarRating("환자 위생 관리", patientHygiene,
+                (rating) => setState(() => patientHygiene = rating)),
+            buildStarRating("개인 위생 관리", personalHygiene,
+                (rating) => setState(() => personalHygiene = rating)),
+            buildStarRating("요청 이해도", understandingRequests,
+                (rating) => setState(() => understandingRequests = rating)),
+            buildStarRating("반응 정확도", responseAccuracy,
+                (rating) => setState(() => responseAccuracy = rating)),
 
             SizedBox(height: 10),
 
@@ -165,7 +163,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
             // 버튼 그룹 (확인 / 취소)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
+              children: [
                 TextButton(
                   onPressed: submitReview,
                   child: Text("확인"),

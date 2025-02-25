@@ -141,8 +141,8 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                         (caregiverPatient) =>
                                             caregiverPatient['id'] ==
                                                 patientId &&
-                                            caregiverPatient
-                                                .containsKey('caregiver_phonenumber'),
+                                            caregiverPatient.containsKey(
+                                                'caregiver_phonenumber'),
                                         orElse: () => {
                                               'caregiver_phonenumber': "정보 없음"
                                             })['caregiver_phonenumber'] ??
@@ -152,8 +152,8 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                         (caregiverPatient) =>
                                             caregiverPatient['id'] ==
                                                 patientId &&
-                                            caregiverPatient
-                                                .containsKey('caregiver_startdate'),
+                                            caregiverPatient.containsKey(
+                                                'caregiver_startdate'),
                                         orElse: () => {
                                               'caregiver_startdate': "정보 없음"
                                             })['caregiver_startdate'] ??
@@ -163,10 +163,11 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                         (caregiverPatient) =>
                                             caregiverPatient['id'] ==
                                                 patientId &&
-                                            caregiverPatient
-                                                .containsKey('caregiver_enddate'),
-                                        orElse: () =>
-                                            {'caregiver_enddate': "정보 없음"})['caregiver_enddate'] ??
+                                            caregiverPatient.containsKey(
+                                                'caregiver_enddate'),
+                                        orElse: () => {
+                                              'caregiver_enddate': "정보 없음"
+                                            })['caregiver_enddate'] ??
                                     "정보 없음")
                                 .toString(),
                             protectorId:
