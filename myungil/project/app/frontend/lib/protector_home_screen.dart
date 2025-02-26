@@ -87,11 +87,21 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          content: Row(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text("추천 리스트를 생성중입니다.\n 잠시만 기다려 주세요!    😎 "),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12), // 모서리 둥글게
+          ),
+          contentPadding: const EdgeInsets.all(24), // 내부 패딩 추가
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // 다이얼로그 크기를 내용에 맞게 조정
+            children: const [
+              CircularProgressIndicator(color: Color(0xFF43C098)),
+              SizedBox(height: 20),
+              Text(
+                "추천 리스트를 생성 중입니다.\n잠시만 기다려 주세요! 🚀",
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
             ],
           ),
         );
@@ -169,74 +179,144 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("간병인 찾기")),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            Text(
-              "검색을 위해 불러올 환자 정보",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Image.asset(
+          'assets/images/textlogo.png',
+          height: 25,
+          fit: BoxFit.contain,
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Colors.black),
+            onPressed: () {
+              Navigator.pushReplacementNamed(context, "/");
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 120),
+          const Text(
+            "간병인 검색",
+            style: TextStyle(
+                fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black),
+          ),
+          const SizedBox(height: 30),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 6,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Column(
-                children: _patients.map((patient) {
-                  bool isSelected = _selectedPatientId == patient['id'];
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _selectedPatientId = patient['id'];
-                        _selectedPatientName = patient['name'];
-                      });
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      margin: EdgeInsets.symmetric(vertical: 5),
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.green[400] : Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.green, width: 2),
-                      ),
-                      child: Center(
-                        child: Text(
-                          patient['name'],
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: isSelected ? Colors.white : Colors.black,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "< 불러올 환자 선택 >",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 30),
+
+                // 환자 리스트
+                SizedBox(
+                  height: 200, // 높이 제한 설정
+                  child: ListView.builder(
+                    itemCount: _patients.length,
+                    itemBuilder: (context, index) {
+                      final patient = _patients[index];
+                      final bool isSelected =
+                          _selectedPatientId == patient['id'];
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _selectedPatientId = patient['id'];
+                              _selectedPatientName = patient['name'];
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSelected
+                                ? const Color(0xFF43C098)
+                                : Colors.white,
+                            foregroundColor:
+                                isSelected ? Colors.white : Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? const Color(0xFF43C098)
+                                    : Colors.grey.shade300,
+                                width: 1.5,
+                              ),
+                            ),
+                            elevation: isSelected ? 4 : 0,
+                          ),
+                          child: Text(
+                            patient['name'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // 검색 버튼
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed:
+                        _selectedPatientId == null ? null : _searchCaregivers,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF43C098),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                  );
-                }).toList(),
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: _searchCaregivers,
-              icon: Icon(Icons.search, color: Colors.white),
-              label: Text("검색하기",
-                  style: TextStyle(fontSize: 18, color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
+                      children: [
+                        const Text(
+                          "검색하기",
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(width: 8), // 텍스트와 아이콘 사이 간격 조정
+                        const Icon(
+                          Icons.search,
+                          color: Colors.white, // 아이콘 색상 변경
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,

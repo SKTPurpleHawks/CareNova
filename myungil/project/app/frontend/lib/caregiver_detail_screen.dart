@@ -140,11 +140,14 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
                         children: [
                           Icon(Icons.favorite, color: Colors.teal, size: 20),
                           SizedBox(width: 4),
-                          Text('${caregiver['matchingRate'] ?? 0}%',
-                              style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal)),
+                          Text(
+                            '${(caregiver['matchingRate'] ?? 0).toDouble().toStringAsFixed(2)}%',
+                            style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.teal,
+                            ),
+                          ),
                         ],
                       ),
                       Row(

@@ -45,7 +45,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
           _caregiverpatients = jsonDecode(utf8.decode(response.bodyBytes));
         });
       } else {
-        _showSnackBar('간병인과 연결된 환자 정보를 불러오는 데 실패했습니다.');
+        // _showSnackBar('간병인과 연결된 환자 정보를 불러오는 데 실패했습니다.');
       }
     } catch (e) {
       _showSnackBar('서버에 연결할 수 없습니다.');
@@ -116,155 +116,223 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: ListView.builder(
-          itemCount: _patients.length,
-          itemBuilder: (context, index) {
-            final patient = _patients[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
-              child: GestureDetector(
-                onTap: () {
-                  // 보호자가 맞는지 확인
-                  bool isProtector =
-                      patient['protector_id'].toString() == widget.token;
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(), // 내부 스크롤 비활성화
+                itemCount: _patients.length,
+                itemBuilder: (context, index) {
+                  final patient = _patients[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: GestureDetector(
+                      onTap: () {
+                        final patientId = _patients[index]['id'];
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PatientDetailScreen(
-                        patient: patient,
-                        token: widget.token,
-                        isCaregiver: false, // 보호자로 들어가야 하므로 false 유지
-                        hasCaregiver:
-                            patient['caregiver_id'] != null, // 간병인이 있는지 여부 확인
-                        caregiverName: patient['caregiver_name'] ?? "정보 없음",
-                        caregiverId: patient['caregiver_id']?.toString() ?? "",
-                        caregiverPhone: patient['caregiver_phone'] ?? "정보 없음",
-                        caregiverStartDate:
-                            patient['caregiver_start_date'] ?? "정보 없음",
-                        caregiverEndDate:
-                            patient['caregiver_end_date'] ?? "정보 없음",
-                        protectorId:
-                            isProtector ? widget.token : null, // 보호자 ID를 전달
+                        bool hasCaregiver = _caregiverpatients.any(
+                            (caregiverPatient) =>
+                                caregiverPatient['id'] == patientId &&
+                                caregiverPatient.containsKey('caregiver_id') &&
+                                caregiverPatient['caregiver_id'] != null &&
+                                caregiverPatient['caregiver_id']
+                                    .toString()
+                                    .isNotEmpty);
+
+                        String caregiverId = (_caregiverpatients.firstWhere(
+                                    (caregiverPatient) =>
+                                        caregiverPatient['id'] == patientId &&
+                                        caregiverPatient
+                                            .containsKey('caregiver_id'),
+                                    orElse: () => {
+                                          'caregiver_id': null
+                                        })['caregiver_id'] ??
+                                "")
+                            .toString();
+
+                        String caregiverName = (_caregiverpatients.firstWhere(
+                                    (caregiverPatient) =>
+                                        caregiverPatient['id'] == patientId &&
+                                        caregiverPatient
+                                            .containsKey('caregiver_name'),
+                                    orElse: () => {
+                                          'caregiver_name': null
+                                        })['caregiver_name'] ??
+                                "정보 없음")
+                            .toString();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PatientDetailScreen(
+                              patient: _patients[index],
+                              token: widget.token,
+                              isCaregiver: false,
+                              hasCaregiver: hasCaregiver,
+                              caregiverName: caregiverName,
+                              caregiverId: caregiverId,
+                              caregiverPhone: (_caregiverpatients.firstWhere(
+                                          (caregiverPatient) =>
+                                              caregiverPatient['id'] ==
+                                                  patientId &&
+                                              caregiverPatient.containsKey(
+                                                  'caregiver_phonenumber'),
+                                          orElse: () => {
+                                                'caregiver_phonenumber': "정보 없음"
+                                              })['caregiver_phonenumber'] ??
+                                      "정보 없음")
+                                  .toString(),
+                              caregiverStartDate:
+                                  (_caregiverpatients.firstWhere(
+                                              (caregiverPatient) =>
+                                                  caregiverPatient['id'] ==
+                                                      patientId &&
+                                                  caregiverPatient.containsKey(
+                                                      'caregiver_startdate'),
+                                              orElse: () => {
+                                                    'caregiver_startdate':
+                                                        "정보 없음"
+                                                  })['caregiver_startdate'] ??
+                                          "정보 없음")
+                                      .toString(),
+                              caregiverEndDate: (_caregiverpatients.firstWhere(
+                                          (caregiverPatient) =>
+                                              caregiverPatient['id'] ==
+                                                  patientId &&
+                                              caregiverPatient.containsKey(
+                                                  'caregiver_enddate'),
+                                          orElse: () => {
+                                                'caregiver_enddate': "정보 없음"
+                                              })['caregiver_enddate'] ??
+                                      "정보 없음")
+                                  .toString(),
+                              protectorId:
+                                  (_patients[index]['protector_id'] ?? "")
+                                      .toString(),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(100),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 5,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  padding: const EdgeInsets.all(5),
+                                  child: const Icon(Icons.person,
+                                      size: 40, color: Color(0xFF43C098)),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  patient['name'],
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            PopupMenuButton<String>(
+                              onSelected: (value) async {
+                                if (value == "edit") {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          PatientEditProfileScreen(
+                                        token: widget.token,
+                                        patientData: patient,
+                                      ),
+                                    ),
+                                  );
+
+                                  if (result == true) {
+                                    _refreshPatients();
+                                  }
+                                }
+                              },
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              color: Colors.white,
+                              elevation: 8,
+                              itemBuilder: (BuildContext context) => [
+                                PopupMenuItem(
+                                  value: "edit",
+                                  child: Text("환자 정보 수정하기",
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500)),
+                                ),
+                              ],
+                            )
+                          ],
+                        ),
                       ),
                     ),
                   );
                 },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(100),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 5,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+              ),
+              const SizedBox(height: 5), // 버튼과 리스트 사이 여백
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF43C098),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            padding: const EdgeInsets.all(5),
-                            child: const Icon(Icons.person,
-                                size: 40, color: Color(0xFF43C098)),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            patient['name'],
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PatientAddScreen(token: widget.token),
                       ),
-                      PopupMenuButton<String>(
-                        onSelected: (value) async {
-                          if (value == "edit") {
-                            final result = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PatientEditProfileScreen(
-                                  token: widget.token,
-                                  patientData: patient,
-                                ),
-                              ),
-                            );
-
-                            if (result == true) {
-                              _refreshPatients();
-                            }
-                          }
-                        },
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        color: Colors.white,
-                        elevation: 8,
-                        itemBuilder: (BuildContext context) => [
-                          PopupMenuItem(
-                            value: "edit",
-                            child: Text("환자 정보 수정하기",
-                                style: TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.w500)),
-                          ),
-                        ],
-                      )
-                    ],
+                    );
+                    if (result == true) {
+                      _refreshPatients();
+                    }
+                  },
+                  child: const Text(
+                    "환자 추가하기 +",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),
-            );
-          },
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF43C098),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                ),
-                onPressed: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          PatientAddScreen(token: widget.token),
-                    ),
-                  );
-                  if (result == true) {
-                    _refreshPatients();
-                  }
-                },
-                child: const Text(
-                  "환자 추가하기 +",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          ),
           NavigationBar(
             backgroundColor: Colors.white,
             selectedIndex: _selectedIndex,
@@ -274,19 +342,11 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
               });
 
               if (index == 0) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        ProtectorUserHomeScreen(token: widget.token),
-                  ),
-                );
-              } else if (index == 1) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        PatientManageScreen(token: widget.token),
+                        ProtectorUserHomeScreen(token: widget.token),
                   ),
                 );
               }

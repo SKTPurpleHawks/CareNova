@@ -44,7 +44,7 @@ class CaregiverRecommendListScreen extends StatelessWidget {
               child: Text(
                 '*조건에 맞춘 간병인 추천 순위 리스트입니다*',
                 style: const TextStyle(
-                    color: Color.fromARGB(195, 0, 0, 0), fontSize: 16),
+                    color: Color.fromARGB(195, 0, 0, 0), fontSize: 14),
               ),
             ),
             const SizedBox(height: 20),
@@ -85,9 +85,7 @@ class CaregiverRecommendListScreen extends StatelessWidget {
     );
   }
 
-
   Widget _buildCaregiverCard(BuildContext context, Map caregiver) {
-    
     final String name = caregiver['name'] ?? "이름 없음";
     final int age = (caregiver['age'] ?? 0).toInt();
     final String sex = caregiver['sex'] ?? "정보 없음";
@@ -98,8 +96,16 @@ class CaregiverRecommendListScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Container(
         decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              spreadRadius: 1,
+              blurRadius: 4,
+              offset: Offset(0, 3),
+            ),
+          ],
           color: Colors.grey.shade100,
-          borderRadius: BorderRadius.circular(80),
+          borderRadius: BorderRadius.circular(30),
         ),
         child: Stack(
           children: [
@@ -109,21 +115,30 @@ class CaregiverRecommendListScreen extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) => CaregiverDetailScreen(
-                      caregiver: Map<String, dynamic>.from(caregiver),
-                      token: token,
-                      protectorId: protectorId,
-                      patientId: patientId
-                    ),
+                        caregiver: Map<String, dynamic>.from(caregiver),
+                        token: token,
+                        protectorId: protectorId,
+                        patientId: patientId),
                   ),
                 );
               },
               contentPadding:
                   const EdgeInsets.only(right: 80, left: 16, bottom: 8),
-              leading: const Icon(Icons.account_circle,
-                  size: 40, color: Colors.teal),
+              leading: Theme(
+                data: Theme.of(context).copyWith(
+                    iconTheme:
+                        const IconThemeData(color: Colors.grey)), // 원하는 색상 적용
+                child: const Icon(
+                  Icons.account_circle,
+                  size: 60,
+                ),
+              ),
               title: Text(name,
                   style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('나이: ${age}세\n성별: ${sex}'),
+              subtitle: Text(
+                '나이: ${age}세\n성별: ${sex}',
+                style: TextStyle(fontSize: 12),
+              ),
             ),
             Positioned(
               top: 10,
@@ -137,7 +152,7 @@ class CaregiverRecommendListScreen extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w400)),
                       const SizedBox(width: 4),
-                      Text('${matchingRate.toStringAsFixed(1)}%',
+                      Text('${matchingRate.toStringAsFixed(2)}%',
                           style: const TextStyle(
                               fontSize: 22,
                               color: Colors.teal,
@@ -145,7 +160,7 @@ class CaregiverRecommendListScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
