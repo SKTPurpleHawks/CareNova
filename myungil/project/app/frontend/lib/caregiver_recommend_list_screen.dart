@@ -85,9 +85,9 @@ class CaregiverRecommendListScreen extends StatelessWidget {
     );
   }
 
-  /// ✅ 간병인 카드 UI
+
   Widget _buildCaregiverCard(BuildContext context, Map caregiver) {
-    // ✅ Null 값 처리
+    
     final String name = caregiver['name'] ?? "이름 없음";
     final int age = (caregiver['age'] ?? 0).toInt();
     final String sex = caregiver['sex'] ?? "정보 없음";
@@ -112,6 +112,7 @@ class CaregiverRecommendListScreen extends StatelessWidget {
                       caregiver: Map<String, dynamic>.from(caregiver),
                       token: token,
                       protectorId: protectorId,
+                      patientId: patientId
                     ),
                   ),
                 );

@@ -555,6 +555,7 @@ def get_caregiver_data(db: Session):
     caregiver_list = [
         {
             "caregiver_id": c.CaregiverUserInfo.id,
+            "name": c.CaregiverUserInfo.name,
             "startdate": c.CaregiverUserInfo.startdate.strftime('%Y-%m-%d') if c.CaregiverUserInfo.startdate else None,
             "enddate": c.CaregiverUserInfo.enddate.strftime('%Y-%m-%d') if c.CaregiverUserInfo.enddate else None,
             "region": c.CaregiverUserInfo.region,
@@ -573,6 +574,8 @@ def get_caregiver_data(db: Session):
     ]
 
     return pd.DataFrame(caregiver_list)
+
+
 
 
 # 매핑 함수들
@@ -627,12 +630,14 @@ def predict_matching_score(
     db: Session = Depends(get_db),
     current_user: models.ProtectorUserInfo = Depends(get_current_user)
 ):
+    # 원데이터를 가지는 caregiver_data -> flutter에서 활용하기 위함
+    caregiver_data = get_caregiver_data(db)  
     
-    caregiver_df = get_caregiver_data(db)  
+    
+    #모델 학습용 dataframe으로 사용
+    caregiver_df = caregiver_data.drop(labels='name',axis=1)
     patient_df = get_patient_data(db, protector_id, patient_id)
 
-    if caregiver_df.empty or patient_df.empty:
-        raise HTTPException(status_code=404, detail="간병인 또는 환자 데이터가 없습니다.")
     
     # 데이터 전처리
     caregiver_df['region'] = caregiver_df['region'].apply(map_region)
@@ -649,12 +654,14 @@ def predict_matching_score(
     patient_df['canwalk'] = patient_df['canwalk'].apply(map_pwalk)
     patient_df['prefersex'] = patient_df['prefersex'].apply(map_prefersex)
     patient_df['smoking'] = patient_df['smoking'].apply(map_smoking)
+    
+    
     # 데이터 병합
     caregiver_df["key"] = 1
     patient_df["key"] = 1
     merged_df = pd.merge(patient_df, caregiver_df, on="key").drop(columns=["key"])
 
-        # 지역 매칭 (One-hot Encoding)
+    # 지역 매칭 (One-hot Encoding)
     for i in range(19):  
         merged_df[f"region_x_{i}"] = (merged_df["region_x"] == i).astype(int)
         merged_df[f"region_y_{i}"] = merged_df["region_y"].apply(lambda x: 1 if str(i) in x.split(",") else 0)
@@ -708,11 +715,9 @@ def predict_matching_score(
     matching_rate = (preds/max(preds)) * 100
     
     # 결과 생성
-    result_df = caregiver_df.copy()
-    result_df['matching_rate'] = matching_rate
-    sorted_result = result_df.sort_values(by='matching_rate', ascending=False)
+    caregiver_data['matching_rate'] = matching_rate
+    sorted_result = caregiver_data.sort_values(by='matching_rate', ascending=False)
     sorted_result.rename(columns={'star_0': 'sincerity', 'star_1': 'communication', 'star_2': 'hygiene'}, inplace=True)
-    sorted_result.drop(labels='key',axis=1, inplace=True)
     
     # 결과 반환
     result = sorted_result.drop_duplicates()
