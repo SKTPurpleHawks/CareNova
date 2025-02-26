@@ -10,9 +10,19 @@ import logging
 from typing import List
 import uuid
 from typing import Union
-
+import pandas as pd
+from pytorch_tabnet.tab_model import TabNetRegressor
+import numpy as np
+import time
 
 router = APIRouter()
+
+
+MODEL_PATH = "./model/tabnet_model.zip"
+ai_model = TabNetRegressor()
+ai_model.load_model(MODEL_PATH)
+
+
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -151,6 +161,7 @@ def add_patient(
         enddate=patient.enddate,
         region=patient.region,
         spot=patient.spot,
+        preferstar=patient.preferstar,
     )
 
     db.add(new_patient)
@@ -212,7 +223,7 @@ def update_care_request_status(
     db: Session = Depends(get_db),
     current_user: models.CaregiverUserInfo = Depends(get_current_user)
 ):
-    logging.info(f"📥 Care request update received: {status_update.dict()}")  # ✅ 로그 추가
+    logging.info(f"📥 Care request update received: {status_update.dict()}")  # 로그 추가
 
     care_request = db.query(models.CareRequest).filter(models.CareRequest.id == request_id).first()
 
@@ -226,7 +237,7 @@ def update_care_request_status(
     db.commit()
     db.refresh(care_request)
 
-    logging.info(f"✅ Care request {request_id} updated to {care_request.status}")  # ✅ 로그 추가
+    logging.info(f"Care request {request_id} updated to {care_request.status}")  # 로그 추가
 
     return {"message": f"Care request {status_update.status}"}
 
@@ -290,7 +301,10 @@ def get_caregiver_patients(
                     "sex": patient.sex,
                     "height": patient.height,
                     "weight": patient.weight,
+                    "region": patient.region,
+                    "spot": patient.spot,
                     "symptoms": patient.symptoms,
+                    "canwalk": patient.canwalk,
                     "caregiver_id": caregiver_id,
                     "caregiver_name": caregiver_name,
                     "protector_id": patient.protector_id
@@ -322,6 +336,7 @@ def get_caregiver_patients(
                 "height": patient.height,
                 "weight": patient.weight,
                 "symptoms": patient.symptoms,
+                "canwalk": patient.canwalk,
                 "caregiver_id": caregiver_id,
                 "caregiver_name": caregiver_name,
                 "caregiver_phonenumber": caregiver.phonenumber,
@@ -382,10 +397,10 @@ def create_daily_record(
 
 @router.get("/dailyrecord/{patient_id}", response_model=List[schemas.DailyRecordResponse])
 def get_patient_records(patient_id: str, db: Session = Depends(get_db)):
-    """특정 환자의 간병일지를 작성순으로 조회하는 API"""
+    """특정 환자의 간병일지를 최신순으로 조회하는 API"""
     records = db.query(models.DailyRecordInfo).filter(
         models.DailyRecordInfo.patient_id == patient_id
-    ).order_by(models.DailyRecordInfo.created_at.asc()).all()
+    ).order_by(models.DailyRecordInfo.created_at.desc()).all()
 
     if not records:
         raise HTTPException(status_code=404, detail="해당 환자의 간병일지가 없습니다.")
@@ -434,7 +449,7 @@ def update_patient_info(patient_id: str, patient_update: schemas.PatientUpdate, 
         raise HTTPException(status_code=404, detail="환자를 찾을 수 없습니다.")
 
     # 요청된 데이터만 업데이트 (None 값은 제외)
-    update_data = patient_update.dict(exclude_unset=True)  # 🔹 None인 필드는 제외
+    update_data = patient_update.dict(exclude_unset=True)  # None인 필드는 제외
     for key, value in update_data.items():
         setattr(patient, key, value)
 
@@ -458,3 +473,227 @@ def delete_patient_info(patient_id: str, db: Session = Depends(get_db)):
     db.delete(patient)
     db.commit()
     return {"message": "환자 정보가 삭제되었습니다."}
+
+
+
+
+
+
+# AI 매칭 점수 계산 API (특정 보호자의 특정 환자 기준)
+# 데이터 매핑 테이블
+region_labels = {'서울': 0, '부산': 1, '대구': 2, '인천': 3, '광주': 4, '대전': 5, '울산': 6, '세종': 7, '경기남부': 8, '경기북부': 9, '강원영서': 10, '강원영동': 11, '충북': 12, '충남': 13, '전북': 14, '전남': 15, '경북': 16, '경남': 17, '제주': 18}
+sex_labels = {'남성': 0, '여성': 1, '상관 없음': 2}
+c_canwalk_labels = {'지원 가능': 0, '지원 불가능': 1, '둘 다 케어 가능': 2}
+p_canwalk_labels = {'걸을 수 없음': 0, '걸을 수 있음': 1}
+spot_label = {'병원': 0, '집': 1, '둘 다': 2}
+smoking_labels = {'비흡연': 0, '흡연': 1, '상관 없음': 2}
+symptom_labels = {'치매': 0, '섬망': 1, '욕창': 2, '하반신 마비': 3, '상반신 마비': 4, '전신 마비': 5, '와상 환자': 6, '기저귀 케어': 7, '의식 없음': 8, '석션': 9, '피딩': 10, '소변줄': 11, '장루': 12, '야간 집중 돌봄': 13, '전염성': 14, '파킨슨': 15, '정신질환': 16, '투석': 17, '재활': 18}
+
+# DB에서 간병인 데이터 가져오기
+def get_patient_data(db: Session, protector_id: str, patient_id: str):
+    patient = (
+        db.query(models.PatientUserInfo)
+        .filter(
+            models.PatientUserInfo.protector_id == protector_id,
+            models.PatientUserInfo.id == patient_id
+        )
+        .first()
+    )
+
+    if not patient:
+        raise HTTPException(status_code=404, detail="해당 보호자의 해당 환자를 찾을 수 없습니다.")
+
+    # DataFrame 변환
+    patient_data = {
+        "patient_id": patient.id,
+        "startdate": patient.startdate.strftime('%Y-%m-%d') if patient.startdate else None,
+        "enddate": patient.enddate.strftime('%Y-%m-%d') if patient.enddate else None,
+        "region": patient.region,
+        "spot": patient.spot,
+        "sex": patient.sex,
+        "age": patient.age,
+        "symptoms": patient.symptoms,
+        "canwalk": patient.canwalk,
+        "prefersex": patient.prefersex,
+        "smoking": patient.smoking,
+        "preferstar": patient.preferstar
+    }
+
+    return pd.DataFrame([patient_data])
+
+
+# 모든 간병인 데이터를 가져오는 함수
+def get_caregiver_data(db: Session):
+    caregivers = (
+        db.query(models.CaregiverUserInfo, models.Review)
+        .join(models.Review, models.CaregiverUserInfo.id == models.Review.caregiver_id)
+        .all()
+    )
+
+    if not caregivers:
+        raise HTTPException(status_code=404, detail="등록된 간병인이 없습니다.")
+
+    caregiver_list = [
+        {
+            "caregiver_id": c.CaregiverUserInfo.id,
+            "startdate": c.CaregiverUserInfo.startdate.strftime('%Y-%m-%d') if c.CaregiverUserInfo.startdate else None,
+            "enddate": c.CaregiverUserInfo.enddate.strftime('%Y-%m-%d') if c.CaregiverUserInfo.enddate else None,
+            "region": c.CaregiverUserInfo.region,
+            "spot": c.CaregiverUserInfo.spot,
+            "sex": c.CaregiverUserInfo.sex,
+            "age": c.CaregiverUserInfo.age,
+            "symptoms": c.CaregiverUserInfo.symptoms,
+            "canwalk": c.CaregiverUserInfo.canwalkpatient,
+            "prefersex": c.CaregiverUserInfo.prefersex,
+            "smoking": c.CaregiverUserInfo.smoking,
+            "star_0": c.Review.sincerity,
+            "star_1": c.Review.communication,
+            "star_2": c.Review.hygiene,
+        }
+        for c in caregivers
+    ]
+
+    return pd.DataFrame(caregiver_list)
+
+
+# 매핑 함수들
+def map_region(region):
+    regions = region.split(',')  # 여러 지역이 쉼표로 구분되어 있음
+    a = [str(region_labels[r]) for r in regions if r in region_labels]
+    return ','.join(a)
+
+def map_sex(sex):
+    sexx = sex.split(',')  # 여러 성별이 쉼표로 구분되어 있음
+    a = [str(sex_labels[r]) for r in sexx if r in sex_labels]
+    return ','.join(a)
+
+def map_spot(spot):
+    spott = spot.split(',')  # 여러 장소가 쉼표로 구분되어 있음
+    a = [str(spot_label[r]) for r in spott if r in spot_label]
+    return ','.join(a)
+
+def map_canwalk(canwalk):
+    canwalkk = canwalk.split(',')  # 여러 지원 여부가 쉼표로 구분되어 있음
+    a=[str(c_canwalk_labels[r]) for r in canwalkk if r in c_canwalk_labels]
+    return ','.join(a)
+    
+def map_symtoms(symptom):
+    symptomm = symptom.split(',')  # 여러 증상이 쉼표로 구분되어 있음
+    a= [str(symptom_labels[r]) for r in symptomm if r in symptom_labels] 
+    return ','.join(a)
+
+def map_prefersex(prefersex):
+    prefersexx = prefersex.split(',')  # 여러 성별 선호가 쉼표로 구분되어 있음
+    a= [str(sex_labels[r]) for r in prefersexx if r in sex_labels] 
+    return ','.join(a)
+
+def map_smoking(smoking):
+    smokingg = smoking.split(',')  # 여러 흡연 여부가 쉼표로 구분되어 있음
+    a = [str(smoking_labels[r]) for r in smokingg if r in smoking_labels] 
+    return ','.join(a)
+
+def map_pwalk(pwalk):
+    pwalkk = pwalk.split(',')  # 여러 걸을 수 있음/없음이 쉼표로 구분되어 있음
+    a= [str(p_canwalk_labels[r]) for r in pwalkk if r in p_canwalk_labels]
+    return ','.join(a)
+
+
+
+
+# AI 매칭 점수 계산 API
+@router.post("/predict/{protector_id}/{patient_id}")
+def predict_matching_score(
+    patient_id: str,  
+    protector_id: str,
+    db: Session = Depends(get_db),
+    current_user: models.ProtectorUserInfo = Depends(get_current_user)
+):
+    
+    caregiver_df = get_caregiver_data(db)  
+    patient_df = get_patient_data(db, protector_id, patient_id)
+
+    if caregiver_df.empty or patient_df.empty:
+        raise HTTPException(status_code=404, detail="간병인 또는 환자 데이터가 없습니다.")
+    
+    # 데이터 전처리
+    caregiver_df['region'] = caregiver_df['region'].apply(map_region)
+    caregiver_df['sex'] = caregiver_df['sex'].apply(map_sex)
+    caregiver_df['spot'] = caregiver_df['spot'].apply(map_spot)
+    caregiver_df['canwalk'] = caregiver_df['canwalk'].apply(map_canwalk)
+    caregiver_df['symptoms'] = caregiver_df['symptoms'].apply(map_symtoms)
+    caregiver_df['prefersex'] = caregiver_df['prefersex'].apply(map_prefersex)
+    caregiver_df['smoking'] = caregiver_df['smoking'].apply(map_smoking)
+    patient_df['region'] = patient_df['region'].apply(map_region)
+    patient_df['spot'] = patient_df['spot'].apply(map_spot)
+    patient_df['sex'] = patient_df['sex'].apply(map_sex)
+    patient_df['symptoms'] = patient_df['symptoms'].apply(map_symtoms)
+    patient_df['canwalk'] = patient_df['canwalk'].apply(map_pwalk)
+    patient_df['prefersex'] = patient_df['prefersex'].apply(map_prefersex)
+    patient_df['smoking'] = patient_df['smoking'].apply(map_smoking)
+    # 데이터 병합
+    caregiver_df["key"] = 1
+    patient_df["key"] = 1
+    merged_df = pd.merge(patient_df, caregiver_df, on="key").drop(columns=["key"])
+
+        # 지역 매칭 (One-hot Encoding)
+    for i in range(19):  
+        merged_df[f"region_x_{i}"] = (merged_df["region_x"] == i).astype(int)
+        merged_df[f"region_y_{i}"] = merged_df["region_y"].apply(lambda x: 1 if str(i) in x.split(",") else 0)
+
+    # 지역 매칭 여부
+    merged_df["region_match"] = merged_df.apply(lambda row: 1 if row["region_x"] in map(int, row["region_y"].split(",")) else 0, axis=1)
+
+    # Boolean Feature → 0/1 변환
+    merged_df["spot_match"] = (merged_df["spot_x"] == merged_df["spot_y"]) | (merged_df["spot_y"] == 2)
+    merged_df["gender_match"] = (merged_df["prefersex_x"].isin([merged_df["sex_y"], 2])) & \
+                                (merged_df["prefersex_y"].isin([merged_df["sex_x"], 2]))
+    merged_df["canwalk_match"] = (merged_df["canwalk_x"] == merged_df["canwalk_y"]) | (merged_df["canwalk_y"] == 2)
+    merged_df["smoking_match"] = (merged_df["smoking_x"] == 2) | (merged_df["smoking_x"] == merged_df["smoking_y"])
+    merged_df["date_overlap"] = (pd.to_datetime(merged_df["startdate_x"]) <= pd.to_datetime(merged_df["enddate_y"])) & \
+                                (pd.to_datetime(merged_df["startdate_y"]) <= pd.to_datetime(merged_df["enddate_x"]))
+
+    # Boolean 데이터를 0 또는 1로 변환
+    for col in ["region_match", "spot_match", "gender_match", "canwalk_match", "smoking_match", "date_overlap"]:
+        merged_df[col] = merged_df[col].astype(int)
+
+    # 증상 매칭 점수 계산
+    def compute_symptom_score(row):
+        patient_symptoms = set(map(int, row["symptoms_x"].split(",")))
+        caregiver_symptoms = set(map(int, row["symptoms_y"].split(",")))
+        return len(patient_symptoms & caregiver_symptoms) / len(patient_symptoms)
+
+    merged_df["symptom_match_score"] = merged_df.apply(compute_symptom_score, axis=1)
+
+    # 최종 Feature 선택
+    feature_cols = (
+        ["patient_id", "caregiver_id"] +
+        [f"region_x_{i}" for i in range(19)] +
+        [f"region_y_{i}" for i in range(19)] +
+        ["spot_x", "spot_y", "sex_x", "sex_y", "prefersex_x", "prefersex_y", 
+            "canwalk_x", "canwalk_y", "smoking_x", "smoking_y", "region_match", 
+            "spot_match", "gender_match", "canwalk_match", "smoking_match", 
+            "symptom_match_score", "date_overlap", 'preferstar', "star_0", 'star_1', 'star_2']
+    )
+
+    # 최종 데이터 변환 (numpy array)
+    final_data = merged_df[feature_cols].drop(columns=["patient_id", "caregiver_id"]).to_numpy()
+    final_data = final_data.astype(np.float32)
+
+
+    # 모델 로드
+    best_model = TabNetRegressor()
+    # best_model.load_model("C:/git_source/OptimusPrime/myungil/project/app/backend/model/tabnet_model.zip")
+    best_model.load_model("./model/gpt_1000_tabnet_model.zip")
+    # 예측 수행
+    preds = best_model.predict(final_data)
+    matching_rate = (preds/max(preds)) * 100
+    # 결과 생성
+    result_df = merged_df[['caregiver_id']].copy()
+    result_df['matching_rate'] = matching_rate
+    sorted_result = result_df.sort_values(by='matching_rate', ascending=False)
+    # 결과 반환
+    result = sorted_result[['caregiver_id', 'matching_rate']].drop_duplicates()
+
+
+    print(result.head(30)['caregiver_id'])
+    return result.to_dict(orient="records")

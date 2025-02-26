@@ -67,6 +67,7 @@ class PatientBase(BaseModel):
     canwalk: Optional[str] = None
     prefersex: Optional[str] = None
     smoking: Optional[str] = None
+    preferstar: Optional[int] = None
 
 
 # 업데이트 모델을 수정하여 모든 필드를 선택적(Optional)으로 변경
@@ -85,6 +86,7 @@ class PatientUpdate(BaseModel):
     canwalk: Optional[str] = None
     prefersex: Optional[str] = None
     smoking: Optional[str] = None
+    preferstar: Optional[int] = None
 
 
 

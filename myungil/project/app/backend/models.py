@@ -82,7 +82,7 @@ class PatientUserInfo(Base):
     protector_id = Column(String, ForeignKey("protector_user_info.id"))  # Foreign Key 추가
     name = Column(String)
     birthday = Column(DateTime)
-    age = Column(String)
+    age = Column(Integer)
     sex = Column(String)
     height = Column(String)
     weight = Column(String)
@@ -94,6 +94,7 @@ class PatientUserInfo(Base):
     enddate = Column(DateTime, nullable=True)  
     region = Column(String, nullable=True) 
     spot = Column(String, nullable=True) 
+    preferstar = Column(Integer, nullable=True) 
 
     protector = relationship("ProtectorUserInfo", back_populates="patients")
     caregiver = relationship("CareRequest", back_populates="patient")
