@@ -23,13 +23,21 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   final _weightController = TextEditingController();
   int _age = 0;
   String _canWalk = '걸을 수 있음';
-  String _preferSex = '상관없음';
+  String _preferSex = '상관 없음';
   String _smoking = '비흡연';
   DateTime? _startDate;
   DateTime? _endDate;
   List<String> _selectedRegions = [];
   String _spot = '병원';
-  List<String> _selectedSymptoms = [];
+  List<String> _selectedSymptoms = [];  
+  int? _preferStar; 
+
+  final List<String> _messages = [
+    "성실하게 환자를 돌봐주세요.",
+    "의사소통을 중요하게 생각해요.",
+    "위생/청결 관리에 신경 써주세요."
+  ];
+  String? _selectedMessage;
 
   final List<String> _regions = [
     '서울',
@@ -57,17 +65,17 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
     '치매',
     '섬망',
     '욕창',
-    '하반신마비',
-    '상반신마비',
-    '전신마비',
-    '와상환자',
-    '기저귀케어',
-    '의식없음',
+    '하반신 마비',
+    '상반신 마비',
+    '전신 마비',
+    '와상 환자',
+    '기저귀 케어',
+    '의식 없음',
     '석션',
     '피딩',
     '소변줄',
     '장루',
-    '야간집중돌봄',
+    '야간 집중 돌봄',
     '전염성',
     '파킨슨',
     '정신질환',
@@ -98,6 +106,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
           'enddate': _endDate?.toIso8601String().split('T')[0] ?? '',
           'region': _selectedRegions.join(','),
           'spot': _spot,
+          'preferstar': _preferStar,
         }),
       );
 
@@ -109,6 +118,18 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
         );
       }
     }
+  }
+
+  void _updatePreferStar() {
+    setState(() {
+      _preferStar = _selectedMessage == _messages[0]
+          ? 0
+          : _selectedMessage == _messages[1]
+              ? 1
+              : _selectedMessage == _messages[2]
+                  ? 2
+                  : null;
+    });
   }
 
   int _calculateAge(DateTime? birthDate) {
@@ -202,21 +223,57 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               _buildDropdownWithLabel(
                   "보행 가능 여부",
                   _canWalk,
-                  ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                  ['걸을 수 있음', '걸을 수 없음'],
                   (value) => setState(() => _canWalk = value)),
               SizedBox(height: 10),
               _buildDropdownWithLabel(
                   "선호하는 간병인 성별",
                   _preferSex,
-                  ['남성', '여성', '상관없음'],
+                  ['남성', '여성', '상관 없음'],
                   (value) => setState(() => _preferSex = value)),
               SizedBox(height: 10),
               _buildDropdownWithLabel(
                   "간병인의 흡연 여부",
                   _smoking,
-                  ['비흡연', '흡연', '상관없음'],
+                  ['비흡연', '흡연', '상관 없음'],
                   (value) => setState(() => _smoking = value)),
-              const SizedBox(height: 20),
+              SizedBox(height: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(
+                      "간병인에게 전하고 싶은 말",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 200,
+                    child: ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: _messages.length,
+                      itemBuilder: (context, index) {
+                        final message = _messages[index];
+                        return RadioListTile<String>(
+                          title: Text(message),
+                          value: message,
+                          groupValue: _selectedMessage,
+                          onChanged: (String? value) {
+                            setState(() {
+                              _selectedMessage = value;
+                              _updatePreferStar(); // 선택 시 preferstar 업데이트
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -418,7 +475,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               .toList(),
           onChanged: onChanged,
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );

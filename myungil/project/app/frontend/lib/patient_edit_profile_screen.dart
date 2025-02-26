@@ -26,8 +26,8 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   late TextEditingController _ageController;
 
   late DateTime _birthday;
-  late DateTime _startDate;
-  late DateTime _endDate;
+  late DateTime? _startDate;
+  late DateTime? _endDate;
   late int _age;
 
   String _sex = '남성';
@@ -36,6 +36,14 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   String _preferSex = '남성';
   late List<String> _selectedSymptoms;
   String _smoking = '비흡연';
+  int? _preferStar;
+
+  final List<String> _messages = [
+    "성실하게 환자를 돌봐주세요.",
+    "의사소통을 중요하게 생각해요.",
+    "위생/청결 관리에 신경 써주세요."
+  ];
+  String? _selectedMessage;
 
   final List<String> _regions = [
     '서울',
@@ -63,17 +71,17 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
     '치매',
     '섬망',
     '욕창',
-    '하반신마비',
-    '상반신마비',
-    '전신마비',
-    '와상환자',
-    '기저귀케어',
-    '의식없음',
+    '하반신 마비',
+    '상반신 마비',
+    '전신 마비',
+    '와상 환자',
+    '기저귀 케어',
+    '의식 없음',
     '석션',
     '피딩',
     '소변줄',
     '장루',
-    '야간집중돌봄',
+    '야간 집중 돌봄',
     '전염성',
     '파킨슨',
     '정신질환',
@@ -104,6 +112,14 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
     _preferSex = widget.patientData['prefersex']?.toString() ?? '남성';
     _selectedSymptoms = _safeSplit(widget.patientData['symptoms']);
     _smoking = widget.patientData['smoking']?.toString() ?? '비흡연';
+    _preferStar = widget.patientData['preferstar'];
+    _selectedMessage = (_preferStar == 0)
+        ? _messages[0]
+        : (_preferStar == 1)
+            ? _messages[1]
+            : (_preferStar == 2)
+                ? _messages[2]
+                : null;
   }
 
   /// `null` 값이 들어오면 안전하게 현재 날짜 반환
@@ -139,9 +155,9 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
       final url = Uri.parse(
           'http://172.23.250.30:8000/patient-info/${widget.patientData['id']}');
       Map<String, dynamic> data = {
-        "birthday": DateFormat('yyyy-MM-dd').format(_birthday),
-        "startdate": DateFormat('yyyy-MM-dd').format(_startDate),
-        "enddate": DateFormat('yyyy-MM-dd').format(_endDate),
+        "birthday": _birthday?.toIso8601String().split('T')[0] ?? '',
+        "startdate": _startDate?.toIso8601String().split('T')[0] ?? '',
+        "enddate": _endDate?.toIso8601String().split('T')[0] ?? '',
         "age": _age,
         "sex": _sex,
         "region": _selectedRegions.join(','),
@@ -151,6 +167,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
         "canwalkpatient": _canWalkPatient,
         "prefersex": _preferSex,
         "smoking": _smoking,
+        "preferstar": _preferStar
       };
 
       try {
@@ -206,6 +223,18 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
     }
   }
 
+  void _updatePreferStar() {
+    setState(() {
+      _preferStar = _selectedMessage == _messages[0]
+          ? 0
+          : _selectedMessage == _messages[1]
+              ? 1
+              : _selectedMessage == _messages[2]
+                  ? 2
+                  : null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -227,11 +256,16 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                   });
                 }),
                 _buildTextFieldWithLabel(_ageController, "나이", readOnly: true),
-                _buildDateSelectionWithLabel("간병 시작일", _startDate, (date) {
-                  setState(() => _startDate = date);
+                _buildDateSelectionWithLabel2("간병 시작일", _startDate, (date) {
+                  setState(() {
+                    _startDate = date;
+                  });
                 }),
-                _buildDateSelectionWithLabel("간병 종료일", _endDate, (date) {
-                  setState(() => _endDate = date);
+                SizedBox(height: 10),
+                _buildDateSelectionWithLabel2("간병 종료일", _endDate, (date) {
+                  setState(() {
+                    _endDate = date;
+                  });
                 }),
                 _buildGenderSelectionWithLabel(),
                 _buildTextFieldWithLabel(_heightController, "키 (cm)",
@@ -245,7 +279,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                 _buildDropdownWithLabel(
                     "보행 가능 여부",
                     _canWalkPatient,
-                    ['걸을 수 있음', '걸을 수 없음', '상관없음'],
+                    ['걸을 수 있음', '걸을 수 없음'],
                     (value) => setState(() => _canWalkPatient = value)),
                 _buildDropdownWithLabel(
                     "선호하는 간병인 성별",
@@ -257,6 +291,42 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                     _smoking,
                     ['비흡연', '흡연', '상관없음'],
                     (value) => setState(() => _smoking = value)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      child: Text(
+                        "간병인에게 전하고 싶은 말",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 200,
+                      child: ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: _messages.length,
+                        itemBuilder: (context, index) {
+                          final message = _messages[index];
+                          return RadioListTile<String>(
+                            title: Text(message),
+                            value: message,
+                            groupValue: _selectedMessage,
+                            onChanged: (String? value) {
+                              setState(() {
+                                _selectedMessage = value;
+                                _updatePreferStar(); // 선택 시 preferstar 업데이트
+                              });
+                            },
+                            controlAffinity: ListTileControlAffinity.leading,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 20),
                 Row(
                   children: [
@@ -375,6 +445,30 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
     );
   }
 
+  Widget _buildDateSelectionWithLabel2(
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildDropdownYear2(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownMonth(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownDay(selectedDate, onDateChanged)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDropdownYear(
       DateTime selectedDate, Function(DateTime) onDateChanged) {
     return Container(
@@ -398,6 +492,52 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
             }
           },
           isExpanded: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownYear2(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    int currentYear = DateTime.now().year;
+
+    return _buildDropdown<int>(
+      selectedValue: selectedDate?.year,
+      hintText: "년도",
+      items: List.generate(
+          100, (index) => currentYear + index), // 현재 연도부터 100년 뒤까지
+      onChanged: (int? newValue) {
+        if (newValue != null) {
+          onDateChanged(DateTime(
+              newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
+        }
+      },
+    );
+  }
+
+  Widget _buildDropdown<T>(
+      {T? selectedValue,
+      required String hintText,
+      required List<T> items,
+      required Function(T?) onChanged}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: selectedValue,
+          hint: Text(hintText, style: TextStyle(color: Colors.grey)),
+          items: items
+              .map((T item) =>
+                  DropdownMenuItem(value: item, child: Text(item.toString())))
+              .toList(),
+          onChanged: onChanged,
+          isExpanded: true,
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
