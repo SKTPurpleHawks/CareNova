@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'caregiver_recommend_list_screen.dart';
 import 'patient_manage_screen.dart';
 
 class ProtectorUserHomeScreen extends StatefulWidget {
   final String token;
 
-  const ProtectorUserHomeScreen({Key? key, required this.token})
-      : super(key: key);
+  const ProtectorUserHomeScreen({
+    Key? key,
+    required this.token,
+  }) : super(key: key);
 
   @override
   _ProtectorUserHomeScreenState createState() =>
@@ -16,161 +19,10 @@ class ProtectorUserHomeScreen extends StatefulWidget {
 
 class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
   int _selectedIndex = 0;
-  List<dynamic> _caregivers = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchCaregivers();
-  }
-
-  Future<void> _fetchCaregivers() async {
-    final response = await http.get(
-      Uri.parse('http://172.23.250.30:8000/caregivers'),
-      headers: {
-        'Authorization': 'Bearer ${widget.token}',
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      setState(() {
-        _caregivers = jsonDecode(utf8.decode(response.bodyBytes));
-      });
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('간병인 목록을 불러오는 데 실패했습니다.')),
-      );
-    }
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("간병인 찾기"), // ✅ 제목을 고정
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              Navigator.pushReplacementNamed(context, "/");
-            },
-          ),
-        ],
-      ),
-      body: _buildCaregiverList(), // ✅ 간병인 리스트 화면만 표시
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: Colors.white,
-        selectedIndex: selectedIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    ForeignManagePatientScreen(token: widget.token),
-              ),
-            );
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: Color(0xFF43C098)),
-            label: "간병인 찾기",
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.list_alt),
-            selectedIcon: Icon(Icons.list_alt, color: Color(0xFF43C098)),
-            label: "환자 관리",
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCaregiverList() {
-    return _caregivers.isEmpty
-        ? Center(child: Text("등록된 간병인이 없습니다."))
-        : ListView.builder(
-            itemCount: _caregivers.length,
-            itemBuilder: (context, index) {
-              final caregiver = _caregivers[index];
-              return Card(
-                elevation: 3,
-                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: Colors.blueAccent,
-                    child: Text(caregiver['name'][0],
-                        style: TextStyle(color: Colors.white)),
-                  ),
-                  title: Text(caregiver['name']),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("나이: ${caregiver['age']}세"),
-                      // Text("경력: ${caregiver['experience']}년"),
-                      Text("근무 지역: ${caregiver['region']}"),
-                      // Text("급여: ${caregiver['salary']}만원"),
-                    ],
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.star, color: Colors.amber),
-                      // Text(caregiver['rating'].toString()),
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => CaregiverDetailScreen(
-                                caregiver: caregiver,
-                                token: widget.token,
-                              )),
-                    );
-                  },
-                ),
-              );
-            },
-          );
-  }
-}
-
-class CaregiverDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> caregiver;
-  final String token; // 로그인 토큰 추가
-
-  const CaregiverDetailScreen(
-      {Key? key, required this.caregiver, required this.token})
-      : super(key: key);
-
-  @override
-  _CaregiverDetailScreenState createState() => _CaregiverDetailScreenState();
-}
-
-class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   List<dynamic> _patients = [];
-  String? _selectedPatientId; // 선택된 환자의 ID
-  String? _selectedPatientName; // 선택된 환자의 이름
+  String? _selectedPatientId;
+  String? _selectedPatientName;
+  String? _protectorId;
 
   @override
   void initState() {
@@ -192,8 +44,17 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
       );
 
       if (response.statusCode == 200) {
+        List<dynamic> patientsData =
+            jsonDecode(utf8.decode(response.bodyBytes));
+
         setState(() {
-          _patients = jsonDecode(utf8.decode(response.bodyBytes));
+          _patients = patientsData;
+
+          // 첫 번째 환자의 보호자 ID를 가져옴 (보호자가 동일하다는 가정)
+          if (patientsData.isNotEmpty &&
+              patientsData.first.containsKey('protector_id')) {
+            _protectorId = patientsData.first['protector_id'].toString();
+          }
         });
       } else {
         _showSnackBar('환자 정보를 불러오는 데 실패했습니다.');
@@ -203,62 +64,90 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
     }
   }
 
-  /// 간병 신청 보내기 (환자 선택 후)
-  Future<void> _sendCareRequest(BuildContext context) async {
+  /// API 요청을 보내고 검색 결과 화면으로 이동
+  Future<void> _searchCaregivers() async {
     if (_selectedPatientId == null) {
       _showSnackBar("환자를 선택하세요.");
       return;
     }
 
-    final url = Uri.parse("http://172.23.250.30:8000/care-request");
-    final response = await http.post(
-      url,
-      headers: {
-        'Authorization': 'Bearer ${widget.token}',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        'caregiver_id': widget.caregiver['id'],
-        'patient_id': _selectedPatientId, // 선택한 환자의 ID 포함
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      _showSnackBar("간병 신청이 성공적으로 전송되었습니다.");
-    } else {
-      _showSnackBar("간병 신청에 실패했습니다.");
+    if (_protectorId == null) {
+      _showSnackBar("보호자 정보를 불러올 수 없습니다.");
+      return;
     }
-  }
 
-  /// 환자 선택 다이얼로그 표시
-  void _showPatientSelectionDialog(BuildContext context) {
+    // 로딩 화면 표시
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("환자 선택"),
-          content: SingleChildScrollView(
-            child: Column(
-              children: _patients.map((patient) {
-                return RadioListTile<String>(
-                  title: Text(patient['name']),
-                  subtitle: Text("나이: ${patient['age']}세"),
-                  value: patient['id'],
-                  groupValue: _selectedPatientId,
-                  onChanged: (String? value) {
-                    setState(() {
-                      _selectedPatientId = value;
-                      _selectedPatientName = patient['name']; // 환자 이름 저장
-                    });
-                    Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-            ),
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text("추천 리스트를 생성중입니다.\n 잠시만 기다려 주세요!    😎 "),
+            ],
           ),
         );
       },
     );
+
+    final url = Uri.parse(
+        "http://172.23.250.30:8000/predict/$_protectorId/$_selectedPatientId");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer ${widget.token}',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      Navigator.pop(context); // 로딩 다이얼로그 닫기
+
+      if (response.statusCode == 200) {
+        List<dynamic> data = jsonDecode(response.body);
+
+        List<Map<String, dynamic>> caregivers = data.map((item) {
+          return {
+            'id': item['caregiver_id'],
+            'name': item['name'],
+            'age': item['age'],
+            'sex': item['sex'] == "M" ? "남성" : "여성",
+            'region': item['region'],
+            'rating': _calculateAverageRating(item),
+            'matchingRate': item['matching_rate'].toDouble(),
+          };
+        }).toList();
+
+        // 검색 결과 화면으로 이동
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CaregiverRecommendListScreen(
+              token: widget.token,
+              protectorId: _protectorId!,
+              patientId: _selectedPatientId!,
+              caregivers: caregivers,
+            ),
+          ),
+        );
+      } else {
+        _showSnackBar("간병인 추천을 불러오는 데 실패했습니다.");
+      }
+    } catch (e) {
+      Navigator.pop(context); // 로딩 다이얼로그 닫기
+      _showSnackBar("서버에 연결할 수 없습니다.");
+    }
+  }
+
+  double _calculateAverageRating(Map<String, dynamic> caregiver) {
+    double total = (caregiver['sincerity'] ?? 0) +
+        (caregiver['communication'] ?? 0) +
+        (caregiver['hygiene'] ?? 0);
+    return total / 3;
   }
 
   void _showSnackBar(String message) {
@@ -270,35 +159,101 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.caregiver['name'])),
+      appBar: AppBar(title: const Text("간병인 찾기")),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("이름: ${widget.caregiver['name']}",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text("나이: ${widget.caregiver['age']}세"),
-            Text("성별: ${widget.caregiver['sex']}"),
-            Text("근무 가능 지역: ${widget.caregiver['region']}"),
-            SizedBox(height: 20),
-
-            /// 환자 선택 버튼
-            ElevatedButton(
-              onPressed: () => _showPatientSelectionDialog(context),
-              child: Text(_selectedPatientId == null
-                  ? "환자 선택하기"
-                  : "선택된 환자: $_selectedPatientName"), // 환자 이름 표시
+            const SizedBox(height: 20),
+            Text(
+              "검색을 위해 불러올 환자 정보",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 10),
-
-            /// 간병 신청 버튼
-            ElevatedButton(
-              onPressed: () => _sendCareRequest(context),
-              child: Text("간병 신청 보내기"),
+            const SizedBox(height: 20),
+            Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: _patients.map((patient) {
+                  bool isSelected = _selectedPatientId == patient['id'];
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedPatientId = patient['id'];
+                        _selectedPatientName = patient['name'];
+                      });
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      margin: EdgeInsets.symmetric(vertical: 5),
+                      padding: EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.green[400] : Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.green, width: 2),
+                      ),
+                      child: Center(
+                        child: Text(
+                          patient['name'],
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _searchCaregivers,
+              icon: Icon(Icons.search, color: Colors.white),
+              label: Text("검색하기",
+                  style: TextStyle(fontSize: 18, color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 40),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PatientManageScreen(token: widget.token),
+              ),
+            );
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: "간병인 찾기",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: "내 환자 정보",
+          ),
+        ],
       ),
     );
   }

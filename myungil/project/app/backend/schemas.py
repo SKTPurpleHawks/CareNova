@@ -51,6 +51,14 @@ class UserUpdate(BaseModel):
     canwalkpatient: str
     prefersex: str
     smoking: str
+    
+class ProtectorInfoSchema(BaseModel):
+    id: str
+    name: str
+    email: str
+
+    class Config:
+        orm_mode = True
 
 class PatientBase(BaseModel):
     name: str

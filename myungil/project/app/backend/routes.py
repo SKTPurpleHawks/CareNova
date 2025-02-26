@@ -14,6 +14,8 @@ import pandas as pd
 from pytorch_tabnet.tab_model import TabNetRegressor
 import numpy as np
 import time
+from schemas import ProtectorInfoSchema
+from fastapi.encoders import jsonable_encoder
 
 router = APIRouter()
 
@@ -64,6 +66,24 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
     )
 
     return {"access_token": access_token, "token_type": "bearer", "user_type": user_type}
+
+@router.get("/protector-info", response_model=ProtectorInfoSchema)
+def get_protector_info(
+    db: Session = Depends(get_db),
+    current_user: ProtectorUserInfo = Depends(get_current_user)
+):
+    """
+    현재 로그인된 보호자의 정보를 반환하는 API
+    """
+    protector = db.query(ProtectorUserInfo).filter(ProtectorUserInfo.id == current_user.id).first()
+    
+    print(protector)
+
+    if not protector:
+        raise HTTPException(status_code=404, detail="보호자 정보를 찾을 수 없습니다.")
+
+    return protector
+
 
 @router.get("/user-info")
 def get_user_info(token_data=Depends(get_current_user), db=Depends(get_db)):
@@ -489,7 +509,6 @@ spot_label = {'병원': 0, '집': 1, '둘 다': 2}
 smoking_labels = {'비흡연': 0, '흡연': 1, '상관 없음': 2}
 symptom_labels = {'치매': 0, '섬망': 1, '욕창': 2, '하반신 마비': 3, '상반신 마비': 4, '전신 마비': 5, '와상 환자': 6, '기저귀 케어': 7, '의식 없음': 8, '석션': 9, '피딩': 10, '소변줄': 11, '장루': 12, '야간 집중 돌봄': 13, '전염성': 14, '파킨슨': 15, '정신질환': 16, '투석': 17, '재활': 18}
 
-# DB에서 간병인 데이터 가져오기
 def get_patient_data(db: Session, protector_id: str, patient_id: str):
     patient = (
         db.query(models.PatientUserInfo)
@@ -526,7 +545,7 @@ def get_patient_data(db: Session, protector_id: str, patient_id: str):
 def get_caregiver_data(db: Session):
     caregivers = (
         db.query(models.CaregiverUserInfo, models.Review)
-        .join(models.Review, models.CaregiverUserInfo.id == models.Review.caregiver_id)
+        .outerjoin(models.Review, models.CaregiverUserInfo.id == models.Review.caregiver_id)
         .all()
     )
 
@@ -546,9 +565,9 @@ def get_caregiver_data(db: Session):
             "canwalk": c.CaregiverUserInfo.canwalkpatient,
             "prefersex": c.CaregiverUserInfo.prefersex,
             "smoking": c.CaregiverUserInfo.smoking,
-            "star_0": c.Review.sincerity,
-            "star_1": c.Review.communication,
-            "star_2": c.Review.hygiene,
+            "star_0": c.Review.sincerity if c.Review else 0,  # 리뷰가 없으면 0
+            "star_1": c.Review.communication if c.Review else 0,  # 리뷰가 없으면 0
+            "star_2": c.Review.hygiene if c.Review else 0,  # 리뷰가 없으면 0
         }
         for c in caregivers
     ]
@@ -682,18 +701,22 @@ def predict_matching_score(
 
     # 모델 로드
     best_model = TabNetRegressor()
-    # best_model.load_model("C:/git_source/OptimusPrime/myungil/project/app/backend/model/tabnet_model.zip")
     best_model.load_model("./model/gpt_1000_tabnet_model.zip")
+    
     # 예측 수행
     preds = best_model.predict(final_data)
     matching_rate = (preds/max(preds)) * 100
+    
     # 결과 생성
-    result_df = merged_df[['caregiver_id']].copy()
+    result_df = caregiver_df.copy()
     result_df['matching_rate'] = matching_rate
     sorted_result = result_df.sort_values(by='matching_rate', ascending=False)
+    sorted_result.rename(columns={'star_0': 'sincerity', 'star_1': 'communication', 'star_2': 'hygiene'}, inplace=True)
+    sorted_result.drop(labels='key',axis=1, inplace=True)
+    
     # 결과 반환
-    result = sorted_result[['caregiver_id', 'matching_rate']].drop_duplicates()
+    result = sorted_result.drop_duplicates()
+    
+    print(result.head(10))
 
-
-    print(result.head(30)['caregiver_id'])
-    return result.to_dict(orient="records")
+    return jsonable_encoder(result.to_dict(orient="records"))
