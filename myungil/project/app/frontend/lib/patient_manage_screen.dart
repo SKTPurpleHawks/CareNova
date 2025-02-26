@@ -84,6 +84,18 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('환자 관리'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              // 로그아웃 → 로그인 화면으로 이동
+              Navigator.pushReplacementNamed(context, "/");
+            },
+          ),
+        ],
+      ),
       body: _patients.isEmpty
           ? Center(child: Text("등록된 환자가 없습니다."))
           : ListView.builder(

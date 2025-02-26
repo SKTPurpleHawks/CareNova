@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'patient_manage_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class PatientAddScreen extends StatefulWidget {
   final String token;
@@ -125,14 +126,35 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("환자 추가")),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "환자 추가",
+            style: GoogleFonts.notoSansKr(
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+              color: Colors.black,
+            ),
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
               _buildTextFieldWithLabel(_nameController, "이름"),
+              SizedBox(height: 10),
               _buildDateSelectionWithLabel("생년월일", _birthday, (date) {
                 setState(() {
                   _birthday = date;
@@ -148,17 +170,18 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
                 readOnly: true,
               ),
               SizedBox(height: 10),
-              _buildDateSelectionWithLabel("간병 시작일", _startDate, (date) {
+              _buildDateSelectionWithLabel2("간병 시작일", _startDate, (date) {
                 setState(() {
                   _startDate = date;
                 });
               }),
               SizedBox(height: 10),
-              _buildDateSelectionWithLabel("간병 종료일", _endDate, (date) {
+              _buildDateSelectionWithLabel2("간병 종료일", _endDate, (date) {
                 setState(() {
                   _endDate = date;
                 });
               }),
+              SizedBox(height: 10),
               _buildGenderSelectionWithLabel(),
               SizedBox(height: 10),
               _buildTextFieldWithLabel(_heightController, "키 (cm)",
@@ -175,6 +198,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               SizedBox(height: 10),
               _buildMultiSelectWithLabel(
                   "환자 보유 질환", _symptoms, _selectedSymptoms),
+              SizedBox(height: 10),
               _buildDropdownWithLabel(
                   "보행 가능 여부",
                   _canWalk,
@@ -193,17 +217,25 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
                   ['비흡연', '흡연', '상관없음'],
                   (value) => setState(() => _smoking = value)),
               const SizedBox(height: 20),
-              Container(
+              SizedBox(
                 width: double.infinity,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: TextButton(
+                child: ElevatedButton(
                   onPressed: _addPatient,
-                  child: const Text("환자 추가",
-                      style: TextStyle(color: Colors.white, fontSize: 18)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF43C098),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    "환자 추가",
+                    style: GoogleFonts.notoSansKr(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -220,7 +252,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text("성별",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -306,7 +338,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
           SizedBox(height: 10),
           Row(
             children: [
@@ -318,6 +350,76 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDateSelectionWithLabel2(
+      String label, DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(child: _buildDropdownYear2(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownMonth(selectedDate, onDateChanged)),
+              SizedBox(width: 10),
+              Expanded(child: _buildDropdownDay(selectedDate, onDateChanged)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownYear2(
+      DateTime? selectedDate, Function(DateTime?) onDateChanged) {
+    int currentYear = DateTime.now().year;
+
+    return _buildDropdown<int>(
+      selectedValue: selectedDate?.year,
+      hintText: "년도",
+      items: List.generate(
+          100, (index) => currentYear + index), // 현재 연도부터 100년 뒤까지
+      onChanged: (int? newValue) {
+        if (newValue != null) {
+          onDateChanged(DateTime(
+              newValue, selectedDate?.month ?? 1, selectedDate?.day ?? 1));
+        }
+      },
+    );
+  }
+
+  Widget _buildDropdown<T>(
+      {T? selectedValue,
+      required String hintText,
+      required List<T> items,
+      required Function(T?) onChanged}) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: selectedValue,
+          hint: Text(hintText, style: TextStyle(color: Colors.grey)),
+          items: items
+              .map((T item) =>
+                  DropdownMenuItem(value: item, child: Text(item.toString())))
+              .toList(),
+          onChanged: onChanged,
+          isExpanded: true,
+          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+        ),
       ),
     );
   }
@@ -346,6 +448,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white,
         ),
       ),
     );
@@ -376,6 +479,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white,
         ),
       ),
     );
@@ -405,6 +509,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
             }
           },
           isExpanded: true,
+          dropdownColor: Colors.white,
         ),
       ),
     );
@@ -416,12 +521,12 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
       bool readOnly = false,
       TextInputType keyboardType = TextInputType.text}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
           SizedBox(height: 5),
           TextFormField(
             controller: controller,
@@ -461,7 +566,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
           SizedBox(height: 5),
           Container(
             decoration: BoxDecoration(
@@ -474,10 +579,15 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               decoration: InputDecoration(
                 hintText: label, // 문자열만 넣기
                 hintStyle: TextStyle(color: Colors.grey),
-                border: InputBorder.none,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10), // 둥근 모서리 유지
+                  borderSide: BorderSide.none, // 기본 테두리 제거
+                ),
+                fillColor: Colors.white,
                 contentPadding:
                     EdgeInsets.symmetric(horizontal: 20, vertical: 15),
               ),
+              dropdownColor: Colors.white,
               items: items
                   .map((String item) =>
                       DropdownMenuItem(value: item, child: Text(item)))
@@ -492,27 +602,6 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items,
-      Function(String) onChanged) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: DropdownButtonFormField<String>(
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
-        value: value,
-        items: items.map((String item) {
-          return DropdownMenuItem<String>(
-            value: item,
-            child: Text(item),
-          );
-        }).toList(),
-        onChanged: (String? newValue) {
-          if (newValue != null) onChanged(newValue);
-        },
-      ),
-    );
-  }
-
   Widget _buildMultiSelectWithLabel(
       String label, List<String> allItems, List<String> selectedItems) {
     return Padding(
@@ -521,7 +610,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
           SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
@@ -530,7 +619,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               border: Border.all(color: Colors.grey.shade300),
             ),
             child: ExpansionTile(
-              title: Text('${selectedItems.length} 선택됨',
+              title: Text('${selectedItems.length}개 선택됨',
                   style: TextStyle(fontSize: 16)),
               children: allItems.map((item) {
                 return CheckboxListTile(

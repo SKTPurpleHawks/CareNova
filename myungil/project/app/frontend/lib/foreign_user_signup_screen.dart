@@ -148,11 +148,11 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true, // 중앙 정렬 필수
-        title: Image.asset(
-          'assets/images/textlogo.png', // 여기에 로고 이미지 경로 입력
-          height: 25, // 원하는 높이 조정 가능
-          fit: BoxFit.contain,
-        ),
+        // title: Image.asset(
+        //   'assets/images/textlogo.png', // 여기에 로고 이미지 경로 입력
+        //   height: 25, // 원하는 높이 조정 가능
+        //   fit: BoxFit.contain,
+        // ),
         iconTheme: IconThemeData(color: Colors.black),
       ),
       body: Padding(
