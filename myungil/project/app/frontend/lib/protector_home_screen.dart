@@ -108,15 +108,20 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
       Navigator.pop(context); // 로딩 다이얼로그 닫기
 
       if (response.statusCode == 200) {
-        List<dynamic> data = jsonDecode(response.body);
+        List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
 
         List<Map<String, dynamic>> caregivers = data.map((item) {
           return {
             'id': item['caregiver_id'],
             'name': item['name'],
             'age': item['age'],
-            'sex': item['sex'] == "M" ? "남성" : "여성",
+            'sex': item['sex'],
             'region': item['region'],
+            'spot': item['spot'],
+            'symptoms': item['symptoms'],
+            'canwalk': item['canwalk'],
+            'prefersex': item['prefersex'],
+            'smoking': item['smoking'],
             'rating': _calculateAverageRating(item),
             'matchingRate': item['matching_rate'].toDouble(),
           };
