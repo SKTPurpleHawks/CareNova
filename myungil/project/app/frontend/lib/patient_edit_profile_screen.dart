@@ -284,12 +284,12 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                 _buildDropdownWithLabel(
                     "선호하는 간병인 성별",
                     _preferSex,
-                    ['남성', '여성', '상관없음'],
+                    ['남성', '여성', '상관 없음'],
                     (value) => setState(() => _preferSex = value)),
                 _buildDropdownWithLabel(
                     "흡연 여부",
                     _smoking,
-                    ['비흡연', '흡연', '상관없음'],
+                    ['비흡연', '흡연', '상관 없음'],
                     (value) => setState(() => _smoking = value)),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,7 +335,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                         onPressed: _deletePatient,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor: Colors.white, // 삭제 버튼은 빨간색
+                          backgroundColor: Colors.white,
                           foregroundColor:
                               const Color.fromARGB(255, 212, 15, 0),
                           shape: RoundedRectangleBorder(
@@ -355,8 +355,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
                         onPressed: _updateProfile,
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          backgroundColor:
-                              const Color(0xFF43C098), // 업데이트 버튼은 민트색
+                          backgroundColor: const Color(0xFF43C098),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),

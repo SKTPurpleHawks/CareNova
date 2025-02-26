@@ -85,7 +85,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('환자 관리'),
+        title: const Text("환자 관리"), // 제목을 고정
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

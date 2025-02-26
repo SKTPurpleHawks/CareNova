@@ -29,8 +29,8 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   DateTime? _endDate;
   List<String> _selectedRegions = [];
   String _spot = '병원';
-  List<String> _selectedSymptoms = [];  
-  int? _preferStar; 
+  List<String> _selectedSymptoms = [];
+  int? _preferStar;
 
   final List<String> _messages = [
     "성실하게 환자를 돌봐주세요.",
@@ -245,7 +245,8 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     child: Text(
                       "간병인에게 전하고 싶은 말",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                   SizedBox(
@@ -364,25 +365,6 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String label,
-      {TextInputType keyboardType = TextInputType.text}) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration:
-            InputDecoration(labelText: label, border: OutlineInputBorder()),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return '$label을 입력해주세요';
-          }
-          return null;
-        },
       ),
     );
   }

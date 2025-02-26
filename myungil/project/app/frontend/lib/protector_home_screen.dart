@@ -58,34 +58,49 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> _screens = [
-      _buildCaregiverList(),
-      PatientManageScreen(token: widget.token),
-    ];
-
-    List<String> _titles = ["간병인 찾기", "환자 관리"];
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
+        title: const Text("간병인 찾기"), // ✅ 제목을 고정
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () {
-              // 로그아웃 → 로그인 화면으로 이동
               Navigator.pushReplacementNamed(context, "/");
             },
           ),
         ],
       ),
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: '간병인 찾기'),
-          BottomNavigationBarItem(icon: Icon(Icons.list), label: '환자 관리'),
+      body: _buildCaregiverList(), // ✅ 간병인 리스트 화면만 표시
+      bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+        selectedIndex: selectedIndex,
+        onDestinationSelected: (index) {
+          setState(() {
+            selectedIndex = index;
+          });
+
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ForeignManagePatientScreen(token: widget.token),
+              ),
+            );
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: Color(0xFF43C098)),
+            label: "간병인 찾기",
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.list_alt),
+            selectedIcon: Icon(Icons.list_alt, color: Color(0xFF43C098)),
+            label: "환자 관리",
+          ),
         ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
       ),
     );
   }

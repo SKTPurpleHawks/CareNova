@@ -35,7 +35,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
   String _sex = '남성';
   String _spot = '병원';
   late List<String> _selectedRegions;
-  String _canWalkPatient = '지원불가능';
+  String _canWalkPatient = '지원 불가능';
   String _preferSex = '남성';
   late List<String> _selectedSymptoms;
   String _smoking = '비흡연';
@@ -67,17 +67,17 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
     '치매',
     '섬망',
     '욕창',
-    '하반신마비',
-    '상반신마비',
-    '전신마비',
-    '와상환자',
-    '기저귀케어',
-    '의식없음',
+    '하반신 마비',
+    '상반신 마비',
+    '전신 마비',
+    '와상 환자',
+    '기저귀 케어',
+    '의식 없음',
     '석션',
     '피딩',
     '소변줄',
     '장루',
-    '야간집중돌봄',
+    '야간 집중 돌봄',
     '전염성',
     '파킨슨',
     '정신질환',
@@ -108,7 +108,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
     _sex = widget.userData['sex'] ?? '남성';
     _spot = widget.userData['spot'] ?? '병원';
     _selectedRegions = (widget.userData['region'] as String?)?.split(',') ?? [];
-    _canWalkPatient = widget.userData['canwalkpatient'] ?? '걸을 수 없음';
+    _canWalkPatient = widget.userData['canwalkpatient'] ?? '지원 불가능';
     _preferSex = widget.userData['prefersex'] ?? '남성';
     _selectedSymptoms =
         (widget.userData['symptoms'] as String?)?.split(',') ?? [];
