@@ -4,6 +4,7 @@ import 'caregiver_patient_log_list.dart';
 import 'protector_patient_log_list.dart';
 import 'review_edit_screen.dart';
 import 'recorder_screen.dart';
+import 'patient_record_screen.dart';
 
 class PatientDetailScreen extends StatelessWidget {
   final Map<String, dynamic> patient;
@@ -182,15 +183,15 @@ class PatientDetailScreen extends StatelessWidget {
       child: Row(
         children: [
           if (!isCaregiver) ...[
-            // ✅ 보호자 로그인 시: "환자와 대화하기" 버튼 표시
+            // 보호자 로그인 시: "환자와 대화하기" 버튼 표시
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          const RecorderScreen(), // 🔹 대화 화면으로 이동
+                      builder: (context) => PatientRecordScreen(
+                          patientId: patient['id'] ?? ""), // patientId 전달
                     ),
                   );
                 },

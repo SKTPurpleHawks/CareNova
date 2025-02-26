@@ -5,7 +5,7 @@ import schemas, crud, models
 from models import ProtectorUserInfo, CaregiverUserInfo
 from security import verify_password, create_access_token, get_current_user, get_password_hash
 from datetime import datetime
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 import logging
 from typing import List
 import uuid
@@ -16,14 +16,26 @@ import numpy as np
 import time
 from schemas import ProtectorInfoSchema
 from fastapi.encoders import jsonable_encoder
+from openai import OpenAI
+import json
+import requests
+import os
+from fastapi import FastAPI, File, UploadFile
+from typing import Optional
+import shutil
+from dotenv import load_dotenv
 
+
+load_dotenv()
 router = APIRouter()
 
 
-MODEL_PATH = "./model/tabnet_model.zip"
-ai_model = TabNetRegressor()
-ai_model.load_model(MODEL_PATH)
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+TYPECAST_API_KEY = os.getenv("TYPECAST_API_KEY")
 
+
+API_URL = "https://typecast.ai/api/speak"
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 
 # 로깅 설정
@@ -324,9 +336,10 @@ def get_caregiver_patients(
                     "region": patient.region,
                     "spot": patient.spot,
                     "symptoms": patient.symptoms,
-                    "canwalk": patient.canwalk,
+                    "canwalk": patient.canwalk,                    
                     "caregiver_id": caregiver_id,
-                    "caregiver_name": caregiver_name,
+                    "caregiver_name": caregiver.name if caregiver else "알 수 없음",
+                    "caregiver_phonenumber": caregiver.phonenumber if caregiver else "정보 없음",
                     "protector_id": patient.protector_id
                 })
 
@@ -580,48 +593,133 @@ def get_caregiver_data(db: Session):
 
 # 매핑 함수들
 def map_region(region):
-    regions = region.split(',')  # 여러 지역이 쉼표로 구분되어 있음
+    regions = region.split(',')  
     a = [str(region_labels[r]) for r in regions if r in region_labels]
     return ','.join(a)
 
 def map_sex(sex):
-    sexx = sex.split(',')  # 여러 성별이 쉼표로 구분되어 있음
+    sexx = sex.split(',') 
     a = [str(sex_labels[r]) for r in sexx if r in sex_labels]
     return ','.join(a)
 
 def map_spot(spot):
-    spott = spot.split(',')  # 여러 장소가 쉼표로 구분되어 있음
+    spott = spot.split(',')  
     a = [str(spot_label[r]) for r in spott if r in spot_label]
     return ','.join(a)
 
 def map_canwalk(canwalk):
-    canwalkk = canwalk.split(',')  # 여러 지원 여부가 쉼표로 구분되어 있음
+    canwalkk = canwalk.split(',')  
     a=[str(c_canwalk_labels[r]) for r in canwalkk if r in c_canwalk_labels]
     return ','.join(a)
     
 def map_symtoms(symptom):
-    symptomm = symptom.split(',')  # 여러 증상이 쉼표로 구분되어 있음
+    symptomm = symptom.split(',') 
     a= [str(symptom_labels[r]) for r in symptomm if r in symptom_labels] 
     return ','.join(a)
 
 def map_prefersex(prefersex):
-    prefersexx = prefersex.split(',')  # 여러 성별 선호가 쉼표로 구분되어 있음
+    prefersexx = prefersex.split(',') 
     a= [str(sex_labels[r]) for r in prefersexx if r in sex_labels] 
     return ','.join(a)
 
 def map_smoking(smoking):
-    smokingg = smoking.split(',')  # 여러 흡연 여부가 쉼표로 구분되어 있음
+    smokingg = smoking.split(',') 
     a = [str(smoking_labels[r]) for r in smokingg if r in smoking_labels] 
     return ','.join(a)
 
 def map_pwalk(pwalk):
-    pwalkk = pwalk.split(',')  # 여러 걸을 수 있음/없음이 쉼표로 구분되어 있음
+    pwalkk = pwalk.split(',')  
     a= [str(p_canwalk_labels[r]) for r in pwalkk if r in p_canwalk_labels]
     return ','.join(a)
 
+def check_spot_match(row):
+    if row['spot_x'] == row['spot_y']:
+        return True
+    
+    if int(row['spot_y']) == 2:
+        return True
+    
+    return False
+
+# gender_match 계산을 위한 함수 정의 (if문 사용)
+def check_gender_match(row):
+    # prefersex_x와 sex_y, prefersex_y와 sex_x가 조건을 만족하는지 확인
+    if (int(row['prefersex_x']) == int(row['sex_y'])) or (int(row['prefersex_x']) == 2):
+        if (int(row['prefersex_y']) == int(row['sex_x'])) or (int(row['prefersex_y']) == 2):
+            return True
+        else:
+            return False
+    else:
+        return False
+    
+    
+# canwalk_x와 canwalk_y가 일치하거나 canwalk_y가 2인 경우 True 반환하는 함수 정의
+def check_canwalk_match(row):
+    if int(row['canwalk_x']) == int(row['canwalk_y']):
+        return True
+    if int(row['canwalk_y']) == 2:
+        return True
+    return False
+
+def check_smoking_match(row):
+    if int(row['smoking_x']) == 2:
+        return True
+    if int(row['smoking_x'])==int(row['smoking_y']):
+        return True
+    return False
 
 
 
+def calculate_matching_rate1(row):
+    matching_features = 0
+    
+    # 지역 매칭
+    if row["region_match"] == 1:
+        matching_features += 2
+    
+    # 장소 매칭
+    if row["spot_match"] == 1:
+        matching_features += 2
+  
+    # 성별 매칭
+    if row["gender_match"] == 1:
+        matching_features += 2
+    
+    # 걷기 가능 여부 매칭
+    if row["canwalk_match"] == 1:
+        matching_features += 2
+    
+    # 흡연 여부 매칭
+    if row["smoking_match"] == 1:
+        matching_features += 1
+    
+    # 증상 매칭
+    if row["symptom_match_score"] == 1:  
+        matching_features += 2
+        
+    if 0.5<=row["symptom_match_score"]<1:
+        matching_features += 1
+    if row["symptom_match_score"]<0.5:
+        matching_features += row["symptom_match_score"]
+
+    # 날짜 겹침 여부
+    if row["date_overlap"] == 1:
+        matching_features += 2
+    
+    # 특성 매칭 비율 계산
+    return matching_features / 13
+
+
+
+
+def calculate_matching_rate2(row):
+    if row['hard_matching_rate'] == 1:              
+        return 99.9  
+    else:
+        return row['tab_matching_rate']*100 
+    
+
+    
 # AI 매칭 점수 계산 API
 @router.post("/predict/{protector_id}/{patient_id}")
 def predict_matching_score(
@@ -640,13 +738,14 @@ def predict_matching_score(
 
     
     # 데이터 전처리
-    caregiver_df['region'] = caregiver_df['region'].apply(map_region)
+    caregiver_df['region'] = caregiver_df['region'].apply(map_region) 
     caregiver_df['sex'] = caregiver_df['sex'].apply(map_sex)
     caregiver_df['spot'] = caregiver_df['spot'].apply(map_spot)
     caregiver_df['canwalk'] = caregiver_df['canwalk'].apply(map_canwalk)
     caregiver_df['symptoms'] = caregiver_df['symptoms'].apply(map_symtoms)
     caregiver_df['prefersex'] = caregiver_df['prefersex'].apply(map_prefersex)
     caregiver_df['smoking'] = caregiver_df['smoking'].apply(map_smoking)
+
     patient_df['region'] = patient_df['region'].apply(map_region)
     patient_df['spot'] = patient_df['spot'].apply(map_spot)
     patient_df['sex'] = patient_df['sex'].apply(map_sex)
@@ -654,8 +753,9 @@ def predict_matching_score(
     patient_df['canwalk'] = patient_df['canwalk'].apply(map_pwalk)
     patient_df['prefersex'] = patient_df['prefersex'].apply(map_prefersex)
     patient_df['smoking'] = patient_df['smoking'].apply(map_smoking)
-    
-    
+    # patient_df['preferstar'] = patient_df['preferstar'].apply(map_preferstar)
+
+
     # 데이터 병합
     caregiver_df["key"] = 1
     patient_df["key"] = 1
@@ -663,19 +763,24 @@ def predict_matching_score(
 
     # 지역 매칭 (One-hot Encoding)
     for i in range(19):  
-        merged_df[f"region_x_{i}"] = (merged_df["region_x"] == i).astype(int)
+        merged_df[f"region_x_{i}"] = merged_df["region_x"].apply(lambda x: 1 if str(i) in x else 0)
         merged_df[f"region_y_{i}"] = merged_df["region_y"].apply(lambda x: 1 if str(i) in x.split(",") else 0)
 
-    # 지역 매칭 여부
-    merged_df["region_match"] = merged_df.apply(lambda row: 1 if row["region_x"] in map(int, row["region_y"].split(",")) else 0, axis=1)
 
+    merged_df['region_match'] = 0
+
+    # 지역 매칭 여부
+    for i in range(19):  # region_x_0 ~ region_x_18, region_y_0 ~ region_y_18 비교
+        merged_df['region_match'] = merged_df['region_match'] | (
+            (merged_df[f"region_x_{i}"] == 1) & (merged_df[f"region_y_{i}"] == 1)
+        )
+              
     # Boolean Feature → 0/1 변환
-    merged_df["spot_match"] = (merged_df["spot_x"] == merged_df["spot_y"]) | (merged_df["spot_y"] == 2)
-    merged_df["gender_match"] = (merged_df["prefersex_x"].isin([merged_df["sex_y"], 2])) & \
-                                (merged_df["prefersex_y"].isin([merged_df["sex_x"], 2]))
-    merged_df["canwalk_match"] = (merged_df["canwalk_x"] == merged_df["canwalk_y"]) | (merged_df["canwalk_y"] == 2)
-    merged_df["smoking_match"] = (merged_df["smoking_x"] == 2) | (merged_df["smoking_x"] == merged_df["smoking_y"])
-    merged_df["date_overlap"] = (pd.to_datetime(merged_df["startdate_x"]) <= pd.to_datetime(merged_df["enddate_y"])) & \
+    merged_df["spot_match"] = merged_df.apply(check_spot_match, axis=1)
+    merged_df["gender_match"] = merged_df.apply(check_gender_match, axis=1)
+    merged_df["canwalk_match"] = merged_df.apply(check_canwalk_match, axis=1)
+    merged_df["smoking_match"] = merged_df.apply(check_smoking_match, axis=1)
+    merged_df["date_overlap"] = (pd.to_datetime(merged_df["startdate_x"]) <= pd.to_datetime(merged_df["enddate_y"])) &\
                                 (pd.to_datetime(merged_df["startdate_y"]) <= pd.to_datetime(merged_df["enddate_x"]))
 
     # Boolean 데이터를 0 또는 1로 변환
@@ -690,15 +795,14 @@ def predict_matching_score(
 
     merged_df["symptom_match_score"] = merged_df.apply(compute_symptom_score, axis=1)
 
+
+
     # 최종 Feature 선택
     feature_cols = (
         ["patient_id", "caregiver_id"] +
-        [f"region_x_{i}" for i in range(19)] +
-        [f"region_y_{i}" for i in range(19)] +
-        ["spot_x", "spot_y", "sex_x", "sex_y", "prefersex_x", "prefersex_y", 
-            "canwalk_x", "canwalk_y", "smoking_x", "smoking_y", "region_match", 
-            "spot_match", "gender_match", "canwalk_match", "smoking_match", 
-            "symptom_match_score", "date_overlap", 'preferstar', "star_0", 'star_1', 'star_2']
+        ["region_match", 
+        "spot_match", "gender_match", "canwalk_match", "smoking_match", 
+        "symptom_match_score", "date_overlap", 'preferstar', "star_0", 'star_1', 'star_2']
     )
 
     # 최종 데이터 변환 (numpy array)
@@ -706,22 +810,237 @@ def predict_matching_score(
     final_data = final_data.astype(np.float32)
 
 
+
     # 모델 로드
     best_model = TabNetRegressor()
-    best_model.load_model("./model/gpt_1000_tabnet_model.zip")
+    best_model.load_model("./model/gpt_10000_tabnet_model.zip")
     
+
     # 예측 수행
     preds = best_model.predict(final_data)
-    matching_rate = (preds/max(preds)) * 100
+    matching_rate = (preds/19.5) 
     
     # 결과 생성
-    caregiver_data['matching_rate'] = matching_rate
-    sorted_result = caregiver_data.sort_values(by='matching_rate', ascending=False)
-    sorted_result.rename(columns={'star_0': 'sincerity', 'star_1': 'communication', 'star_2': 'hygiene'}, inplace=True)
+    result_df = merged_df[['caregiver_id', 'preferstar', 'star_0', 'star_1', 'star_2']].copy()
+
+    result_df['star'] = result_df.apply(lambda row: row['star_0'] if row['preferstar'] == 0 else (row['star_1'] if row['preferstar'] == 1 else row['star_2']), axis=1)
+
+    result_df["hard_matching_rate"] = merged_df.apply(calculate_matching_rate1, axis=1)
+    result_df['tab_matching_rate'] = matching_rate
+
+
+    # apply를 사용하여 각 행에 대해 matching_rate 계산
+    result_df['matching_rate'] = result_df.apply(calculate_matching_rate2, axis=1)
     
+    
+    caregiver_data['matching_rate'] = result_df['matching_rate']
+    caregiver_data['star'] = result_df['star']
+    print(caregiver_data.head(10))
+    sorted_result = caregiver_data.sort_values(by=['matching_rate', 'star'], ascending=[False, False])
+    sorted_result.rename(columns={'star_0': 'sincerity', 'star_1': 'communication', 'star_2': 'hygiene'}, inplace=True)
+    sorted_result.drop('star', axis = 1, inplace = True)
     # 결과 반환
     result = sorted_result.drop_duplicates()
     
     print(result.head(10))
 
     return jsonable_encoder(result.to_dict(orient="records"))
+
+
+# 음성 AI API 정의 및 관련 함수
+
+
+def transcribe_audio(file_path):
+    """Whisper를 이용하여 음성을 텍스트로 변환"""
+    try:
+        with open(file_path, "rb") as audio_file:
+            response = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file,
+                temperature=0.2
+            )
+        transcript = response.text.strip()
+        print(f"🎤 Whisper 변환 완료: {transcript}")
+        return transcript
+    except Exception as e:
+        print(f"❌ Whisper 변환 오류: {str(e)}")
+        return None
+
+
+def correct_text(input_text):
+    """GPT-4o-mini를 이용하여 텍스트 교정"""
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "너는 한국어 텍스트 교정 및 중국어 통역 전문가야. "
+                                              "한국인 환자와 중국인 간병인 사이 환자의 발화를 맞춤법과 문맥에 맞게 교정하고, 반말을 존댓말로 공손하게 변경해."
+                                              "만약 텍스트에 '중국어'라는 단어가 마지막에 포함되어 있으면 중국어로 교정된 발화만 제공해."},
+                {"role": "user", "content": f"다음 문장을 교정해: {input_text}"},
+            ],
+            temperature=0.2
+        )
+        corrected_text = response.choices[0].message.content.strip()
+        print(f"📝 GPT 교정 완료: {corrected_text}")
+        return corrected_text
+    except Exception as e:
+        print(f"❌ GPT 변환 오류: {str(e)}")
+        return None
+
+
+def request_tts(sentence, actor_id):
+    """TTS 요청"""
+    try:
+        headers = {
+            "Authorization": f"Bearer {TYPECAST_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        data = json.dumps({
+            "text": sentence.strip(),
+            "lang": "auto",
+            "actor_id": "60ad0841061ee28740ec2e1c",
+            "xapi_hd": True,
+            "model_version": "latest"
+        })
+
+        response = requests.post(API_URL, headers=headers, data=data)
+        if response.status_code == 200:
+            response_json = response.json()
+            speak_v2_url = response_json.get("result", {}).get("speak_v2_url")
+            if speak_v2_url:
+                print(f"🔊 TTS 변환 URL 획득: {speak_v2_url}")
+                return speak_v2_url
+            else:
+                print("❌ TTS 변환 URL 없음")
+                return None
+        else:
+            print(f"❌ TTS 요청 실패: {response.status_code}, {response.text}")
+            return None
+    except Exception as e:
+        print(f"❌ TTS 요청 오류: {str(e)}")
+        return None
+
+
+def wait_for_audio(speak_v2_url):
+    """TTS 변환이 완료될 때까지 대기 후 다운로드 URL 반환"""
+    headers = {"Authorization": f"Bearer {TYPECAST_API_KEY}"}
+    for _ in range(10):  # 최대 10초 동안 상태 체크
+        response = requests.get(speak_v2_url, headers=headers)
+        if response.status_code == 200:
+            response_json = response.json()
+            status = response_json["result"].get("status", "")
+            if status == "done":
+                audio_url = response_json["result"].get("audio_download_url")
+                print(f"🎵 음성 다운로드 URL: {audio_url}")
+                return audio_url
+        time.sleep(1)
+    print("❌ 음성 생성 시간 초과")
+    return None
+
+
+def download_audio(audio_url, file_path):
+    """음성 파일을 다운로드"""
+    try:
+        if not audio_url:
+            print("❌ 다운로드 오류: audio_url이 None 또는 비어 있음")
+            return None
+
+        print(f"📥 다운로드 시작: {audio_url}")
+
+        response = requests.get(audio_url, stream=True)
+        if response.status_code == 200:
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            with open(file_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+            print(f"✅ 다운로드 완료: {file_path}")
+            return file_path
+        else:
+            print(f"❌ 다운로드 실패: {response.status_code}, {response.text}")
+            return None
+    except Exception as e:
+        print(f"❌ 다운로드 오류: {str(e)}")
+        return None
+
+
+def process_audio_to_tts(input_audio, output_file, actor_voice):
+    """Whisper → GPT → TTS 순으로 실행"""
+    try:
+        start_time = time.time()
+
+        # Whisper (음성 → 텍스트)
+        transcript = transcribe_audio(input_audio)
+        if transcript is None:
+            print("❌ Whisper 변환 실패")
+            return None
+
+        # GPT (텍스트 교정)
+        corrected_text = correct_text(transcript)
+        if corrected_text is None:
+            print("❌ GPT 교정 실패")
+            return None
+
+        # Typecast TTS (텍스트 → 음성)
+        speak_v2_url = request_tts(corrected_text, actor_voice)
+        if not speak_v2_url:
+            print("❌ TTS 변환 실패")
+            return None
+
+        audio_url = wait_for_audio(speak_v2_url)
+        if not audio_url:
+            print("❌ 최종 음성 변환 실패")
+            return None
+
+        print(f"🎵 음성 다운로드 URL 획득: {audio_url}")
+
+        # 음성 다운로드 후 파일 저장
+        downloaded_file = download_audio(audio_url, output_file)
+        if not downloaded_file:
+            print("❌ 음성 다운로드 실패")
+            return None
+
+        print(f"✅ 전체 변환 완료 (총 소요 시간: {time.time() - start_time:.2f}s)")
+        return downloaded_file
+
+    except Exception as e:
+        print(f"❌ 전체 변환 중 오류 발생: {str(e)}")
+        return None
+
+@router.post("/process_audio/{patient_id}")
+async def process_audio(patient_id: str, 
+    db: Session = Depends(get_db), file: UploadFile = File(...)):
+    """
+    클라이언트로부터 음성 파일을 받아 Whisper -> GPT -> TTS 순으로 처리 후 음성 파일 반환
+    """
+    
+    # 환자의 성별 따라서 TTS 목소리 설정
+    patient = (db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == patient_id).first())
+    actor_voice_code = ""
+    
+    
+    if patient.sex == '남성':
+        actor_voice_code = "5ebea13564afaf00087fc2e7"
+    else:
+        actor_voice_code = "60ad0841061ee28740ec2e1c"
+
+    input_audio_path = f"temp_{file.filename}"
+    output_audio_path = "./audio/output_audio.wav"
+
+    with open(input_audio_path, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    try:
+        print(f"📂 입력 파일 저장 완료: {input_audio_path}")
+
+        result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code)
+
+        if result and os.path.exists(output_audio_path):
+            print(f"✅ 변환된 음성 파일 존재: {output_audio_path}")
+            return FileResponse(output_audio_path, media_type="audio/wav", filename="processed_audio.wav")
+        else:
+            print(f"❌ 변환된 음성 파일이 존재하지 않음: {output_audio_path}")
+            return JSONResponse(content={"error": "변환된 음성이 없습니다."}, status_code=500)
+
+    except Exception as e:
+        print(f"⚠️ 음성 처리 중 오류 발생: {str(e)}")
+        return JSONResponse(content={"error": f"음성 처리 중 오류 발생: {str(e)}"}, status_code=500)
