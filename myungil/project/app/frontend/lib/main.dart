@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: "assets/.env");
+    print(".env 파일 로드 성공");
+  } catch (e) {
+    print(".env 파일 로드 실패: $e");
+  }
   runApp(const MyApp());
 }
 

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'caregiver_patient_log_list.dart';
 import 'protector_patient_log_list.dart';
 import 'review_edit_screen.dart';
+import 'recorder_screen.dart';
 
 class PatientDetailScreen extends StatelessWidget {
   final Map<String, dynamic> patient;
@@ -162,78 +163,89 @@ class PatientDetailScreen extends StatelessWidget {
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 8,
-                    offset: Offset(0, -2)),
-              ],
+          _buildBottomButtons(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomButtons(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black12, blurRadius: 8, offset: Offset(0, -2)),
+        ],
+      ),
+      child: Row(
+        children: [
+          if (!isCaregiver) ...[
+            // ✅ 보호자 로그인 시: "환자와 대화하기" 버튼 표시
+            Expanded(
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const RecorderScreen(), // 🔹 대화 화면으로 이동
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: Colors.black12),
+                  ),
+                ),
+                child: Text(
+                  "환자와 대화하기",
+                  style: GoogleFonts.notoSansKr(fontSize: 18),
+                ),
+              ),
             ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // 대화 기능 추가
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Colors.black12),
-                      ),
-                    ),
-                    child: Text(
-                      isCaregiver ? "환자와 대화하기" : "간병인과 대화하기",
-                      style: GoogleFonts.notoSansKr(fontSize: 18),
-                    ),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => isCaregiver
+                        ? CaregiverPatientLogListScreen(
+                            patientName: patient['name'],
+                            caregiverId: caregiverId,
+                            protectorId: protectorId ?? "0",
+                            patientId: patient['id'],
+                            token: token,
+                          )
+                        : ProtectorPatientLogListScreen(
+                            patientName: patient['name'],
+                            patientId: patient['id'],
+                            token: token,
+                          ),
                   ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: const Color(0xFF43C098),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => isCaregiver
-                              ? CaregiverPatientLogListScreen(
-                                  patientName: patient['name'],
-                                  caregiverId: caregiverId,
-                                  protectorId: protectorId ?? "0",
-                                  patientId: patient['id'],
-                                  token: token,
-                                )
-                              : ProtectorPatientLogListScreen(
-                                  patientName: patient['name'],
-                                  patientId: patient['id'],
-                                  token: token,
-                                ),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: const Color(0xFF43C098),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      isCaregiver ? "간병일지 작성" : "간병일지 확인",
-                      style: GoogleFonts.notoSansKr(
-                          fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                  ),
-                ),
-              ],
+              ),
+              child: Text(
+                isCaregiver ? "간병일지 작성" : "간병일지 확인",
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 18, fontWeight: FontWeight.w500),
+              ),
             ),
           ),
         ],
