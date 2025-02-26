@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'caregiver_recommend_list_screen.dart';
 import 'patient_manage_screen.dart';
+import 'patient_add_screen.dart'; // 파일 존재 여부 확인 후 추가
 
 class ProtectorUserHomeScreen extends StatefulWidget {
   final String token;
@@ -28,6 +29,10 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
   void initState() {
     super.initState();
     fetchPatients();
+  }
+
+  void _refreshPatients() {
+    fetchPatients(); // 기존 환자 목록을 다시 불러오는 역할
   }
 
   /// 보호자가 등록한 환자 리스트 가져오기
@@ -228,30 +233,39 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NavigationBar(
+            backgroundColor: Colors.white,
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
 
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PatientManageScreen(token: widget.token),
+              if (index == 1) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        PatientManageScreen(token: widget.token),
+                  ),
+                );
+              }
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.search),
+                selectedIcon: Icon(Icons.search, color: Color(0xFF43C098)),
+                label: '간병인 찾기',
               ),
-            );
-          }
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "간병인 찾기",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "내 환자 정보",
+              NavigationDestination(
+                icon: Icon(Icons.edit),
+                selectedIcon: Icon(Icons.edit, color: Color(0xFF43C098)),
+                label: '내 환자 정보',
+              ),
+            ],
           ),
         ],
       ),

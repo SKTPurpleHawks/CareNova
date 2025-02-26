@@ -342,20 +342,23 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               Expanded(
                 child: GestureDetector(
                   onTap: () => setState(() => _sex = '여성'),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    decoration: BoxDecoration(
-                      color: _sex == '여성' ? Color(0xFF43C098) : Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: Color(0xFF43C098)),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "여성",
-                        style: TextStyle(
-                          color:
-                              _sex == '여성' ? Colors.white : Color(0xFF43C098),
-                          fontWeight: FontWeight.bold,
+                  child: SizedBox(
+                    height: 60, // 원하는 높이로 조정
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 20), // 위아래 패딩 증가
+                      decoration: BoxDecoration(
+                        color: _sex == '여성' ? Color(0xFF43C098) : Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Color(0xFF43C098)),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "여성",
+                          style: TextStyle(
+                            color:
+                                _sex == '여성' ? Colors.white : Color(0xFF43C098),
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
