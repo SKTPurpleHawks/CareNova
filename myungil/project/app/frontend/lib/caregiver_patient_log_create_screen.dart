@@ -192,7 +192,7 @@ class _CaregiverPatientLogCreateScreenState
               _buildField("기분", _mood, ["좋음", "보통", "안좋음"]),
               _buildField("수면 상태", _sleepQuality, ["좋음", "보통", "나쁨"]),
               _sectionTitle("식사 정보"),
-              _buildMealSection(
+              _buildFieldMEAL(
                   "아침",
                   _breakfastType,
                   _breakfastAmount,
@@ -200,7 +200,7 @@ class _CaregiverPatientLogCreateScreenState
                         _breakfastType = type;
                         _breakfastAmount = amount;
                       })),
-              _buildMealSection(
+              _buildFieldMEAL(
                   "점심",
                   _lunchType,
                   _lunchAmount,
@@ -208,7 +208,7 @@ class _CaregiverPatientLogCreateScreenState
                         _lunchType = type;
                         _lunchAmount = amount;
                       })),
-              _buildMealSection(
+              _buildFieldMEAL(
                   "저녁",
                   _dinnerType,
                   _dinnerAmount,
@@ -217,12 +217,14 @@ class _CaregiverPatientLogCreateScreenState
                         _dinnerAmount = amount;
                       })),
               _sectionTitle("소변 정보"),
-              _buildTextField("소변 횟수", _urineAmountController),
+              _buildFieldTEXT(
+                  "소변 횟수", _urineAmountController, widget.isReadOnly),
               _buildField("소변 색", _urineColor, ["붉은색", "정상"]),
               _buildField("소변 냄새", _urineSmell, ["있음", "없음"]),
               _buildCheckbox("거품 있음", _urineFoam, (val) => _urineFoam = val),
               _sectionTitle("대변 정보"),
-              _buildTextField("대변 횟수", _stoolTimesController),
+              _buildFieldTEXT(
+                  "소변 횟수", _urineAmountController, widget.isReadOnly),
               _buildField("대변 상태", _stool, ["설사", "보통", "변비"]),
               _sectionTitle("이동 및 활동"),
               _buildCheckbox(
@@ -233,7 +235,8 @@ class _CaregiverPatientLogCreateScreenState
                   (val) => _walkingAssistance = val),
               _buildCheckbox("산책", _outdoorWalk, (val) => _outdoorWalk = val),
               _sectionTitle("요청/특이사항"),
-              _buildTextField("요청/특이사항", _notesController, maxLines: 3),
+              _buildFieldTEXT("요청/특이사항", _notesController, widget.isReadOnly,
+                  maxLines: 3),
               widget.isReadOnly
                   ? ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -282,6 +285,49 @@ class _CaregiverPatientLogCreateScreenState
           });
   }
 
+  Widget _buildDisabledTextField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: TextFormField(
+        readOnly: true,
+        initialValue: value,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor:
+              const Color.fromARGB(0, 238, 238, 238), // ✅ 비활성화 느낌을 주기 위해 배경색 변경
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade400),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFieldMEAL(String label, String? type, String? amount,
+      void Function(String, String) onChanged) {
+    return widget.isReadOnly
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _sectionTitle(label),
+              Row(
+                children: [
+                  Expanded(
+                      child: _buildDisabledTextField(
+                          "$label 식사", type ?? "데이터 없음")),
+                  const SizedBox(width: 10),
+                  Expanded(
+                      child: _buildDisabledTextField(
+                          "$label 식사량", amount ?? "데이터 없음")),
+                ],
+              ),
+            ],
+          )
+        : _buildMealSection(label, type, amount, onChanged);
+  }
+
   Widget _buildReadOnlyTextField(String label, String value) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -307,31 +353,45 @@ class _CaregiverPatientLogCreateScreenState
         Row(
           children: [
             Expanded(
-              child: _buildDropdown(
-                  "$meal 식사", type, ["선택해주세요.", "일반식", "죽", "유동식(경관식)"],
-                  (value) {
-                if (value != null) {
-                  setState(() {
-                    onChanged(value, amount ?? "선택해주세요.");
-                  });
-                }
-              }),
+              child: widget.isReadOnly
+                  ? _buildDisabledTextField(
+                      "$meal 식사", type ?? "데이터 없음") // ✅ 읽기 모드: 텍스트 필드 사용
+                  : _buildDropdown(
+                      "$meal 식사",
+                      type,
+                      ["선택해주세요.", "일반식", "죽", "유동식(경관식)"],
+                      (value) {
+                        if (value != null) {
+                          setState(() {
+                            onChanged(value, amount ?? "선택해주세요.");
+                          });
+                        }
+                      },
+                    ),
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: _buildDropdown("$meal 식사량", amount, [
-                "선택해주세요.",
-                "완식 (100%)",
-                "반식 (50%)",
-                "소식 (25%)",
-                "거부 (0%)"
-              ], (value) {
-                if (value != null) {
-                  setState(() {
-                    onChanged(type ?? "선택해주세요.", value);
-                  });
-                }
-              }),
+              child: widget.isReadOnly
+                  ? _buildDisabledTextField(
+                      "$meal 식사량", amount ?? "데이터 없음") // ✅ 읽기 모드: 텍스트 필드 사용
+                  : _buildDropdown(
+                      "$meal 식사량",
+                      amount,
+                      [
+                        "선택해주세요.",
+                        "완식 (100%)",
+                        "반식 (50%)",
+                        "소식 (25%)",
+                        "거부 (0%)"
+                      ],
+                      (value) {
+                        if (value != null) {
+                          setState(() {
+                            onChanged(type ?? "선택해주세요.", value);
+                          });
+                        }
+                      },
+                    ),
             ),
           ],
         ),
@@ -413,13 +473,17 @@ Widget _buildDropdown(String label, String? value, List<String> items,
   );
 }
 
-Widget _buildTextField(String label, TextEditingController controller,
-    {int maxLines = 1}) {
+Widget _buildTextField(
+  String label,
+  TextEditingController controller,
+  Function(String) onChanged, {
+  int maxLines = 1,
+}) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 12.0),
     child: TextFormField(
       controller: controller,
-      maxLines: maxLines,
+      onChanged: onChanged,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey),
@@ -477,4 +541,33 @@ Widget _buildReadOnlyTextField(String label, String value) {
       ),
     ),
   );
+}
+
+Widget _buildReadOnlyTextField2(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 12.0),
+    child: TextFormField(
+      readOnly: true,
+      initialValue: value,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.grey),
+        hintText: "데이터 없음",
+        hintStyle: const TextStyle(color: Colors.grey),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildFieldTEXT(String label, TextEditingController controller,
+    bool isReadOnly, // 🔹 isReadOnly를 매개변수로 추가
+    {int maxLines = 1}) {
+  return isReadOnly
+      ? _buildReadOnlyTextField2(label, controller.text)
+      : _buildTextField(label, controller, (val) {
+          controller.text = val;
+        }, maxLines: maxLines);
 }
