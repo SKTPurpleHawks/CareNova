@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'caregiver_patient_log_create_screen.dart'; // 간병일지 상세 보기 화면 import
 
@@ -69,7 +70,11 @@ class _ProtectorPatientLogListScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("${widget.patientName}의 간병일지")),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        centerTitle: true, // 제목을 가운데 정렬
+        title: Text("${widget.patientName}의 간병일지"),
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _buildCareLogList(),
@@ -84,20 +89,48 @@ class _ProtectorPatientLogListScreenState
     }
 
     return ListView.builder(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       itemCount: _careLogs.length,
       itemBuilder: (context, index) {
         final log = _careLogs[index];
+
         return Card(
+          color: Color(0xFF43C098),
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          elevation: 2,
-          child: ListTile(
-            title: Text("간병일지 ${index + 1}"),
-            subtitle: Text(_formatDate(log['created_at'])), // 날짜 포맷 변경
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+          elevation: 10,
+          shadowColor: Colors.black.withOpacity(0.4),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(100), // ✅ 터치 효과가 카드 모양과 일치
             onTap: () {
-              _viewCareLog(log); // 간병일지 상세 보기
+              _viewCareLog(log); // ✅ 간병일지 상세 보기
             },
+            child: SizedBox(
+              // ✅ 크기 조정 가능
+              width: double.infinity, // ✅ 가로 전체 확장 (부모 컨테이너 기준)
+              height: 80, // ✅ 높이 조정 가능
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 30),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ 아이템 배치
+                  children: [
+                    Text(
+                      "간병일지 ${index + 1}", // ✅ 제목 유지
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      _formatDate(log['created_at']),
+                      style: const TextStyle(fontSize: 14, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         );
       },

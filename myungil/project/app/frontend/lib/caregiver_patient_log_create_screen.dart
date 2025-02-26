@@ -236,8 +236,14 @@ class _CaregiverPatientLogCreateScreenState
               _buildTextField("요청/특이사항", _notesController, maxLines: 3),
               widget.isReadOnly
                   ? ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF43C098),
+                          padding: const EdgeInsets.symmetric(vertical: 14)),
                       onPressed: () => Navigator.pop(context),
-                      child: Text("뒤로 가기"),
+                      child: Text(
+                        "뒤로 가기",
+                        style: TextStyle(color: Colors.white),
+                      ),
                     )
                   : ElevatedButton(
                       onPressed: saveCareLog,

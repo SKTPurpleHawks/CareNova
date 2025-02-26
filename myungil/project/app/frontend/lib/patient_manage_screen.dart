@@ -296,6 +296,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
               const SizedBox(height: 5), // 버튼과 리스트 사이 여백
               SizedBox(
                 width: double.infinity,
+                height: 70,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF43C098),
