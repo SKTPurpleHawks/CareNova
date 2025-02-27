@@ -147,20 +147,16 @@ class PatientDetailScreen extends StatelessWidget {
                       ]),
                     ),
                   const SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.all(1),
-                    child: _buildInfoCard([
-                      // _buildRow("보호자 이름", protectorName),
-                      // SizedBox(height: 10),
-                      // _buildRow("보호자 전화번호", protectorPhone),
-                      // SizedBox(height: 10),
-                      _buildRow("간병 시작일", _formatDate(caregiverStartDate)),
-                      SizedBox(height: 10),
-
-                      _buildRow("간병 종료일", _formatDate(caregiverEndDate)),
-                      const SizedBox(height: 10),
-                    ]),
-                  ),
+                  if (isCaregiver)
+                    Padding(
+                      padding: const EdgeInsets.all(1),
+                      child: _buildInfoCard([
+                        _buildRow("보호자 이름", patient['protector_name']),
+                        SizedBox(height: 10),
+                        _buildRow("보호자 전화번호", patient['protector_phonenumber']),
+                        SizedBox(height: 10),
+                      ]),
+                    ),
                 ],
               ),
             ),
