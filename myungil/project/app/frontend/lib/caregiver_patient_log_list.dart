@@ -36,7 +36,6 @@ class _CaregiverPatientLogListScreenState
     _fetchCareLogs();
   }
 
-  /// 간병일지 리스트를 서버에서 가져오는 함수
   Future<void> _fetchCareLogs() async {
     final url =
         Uri.parse('http://172.23.250.30:8000/dailyrecord/${widget.patientId}');
@@ -65,7 +64,6 @@ class _CaregiverPatientLogListScreenState
     }
   }
 
-  /// 간병일지 삭제 함수 (삭제 후 UI 즉시 반영)
   Future<void> _deleteCareLog(int recordId) async {
     final url = Uri.parse('http://172.23.250.30:8000/dailyrecord/$recordId');
 
@@ -82,13 +80,14 @@ class _CaregiverPatientLogListScreenState
         setState(() {
           _careLogs.removeWhere((item) => item['id'] == recordId);
         });
-
         _showSnackBar("간병일지가 삭제되었습니다.");
+      } else if (response.statusCode == 404) {
+        _showSnackBar("간병일지를 찾을 수 없습니다.");
       } else {
-        _showSnackBar("간병일지 삭제 실패");
+        _showSnackBar("간병일지 삭제 실패: ${response.statusCode}");
       }
     } catch (e) {
-      _showSnackBar("서버에 연결할 수 없습니다.");
+      _showSnackBar("서버에 연결할 수 없습니다: $e");
     }
   }
 
@@ -135,7 +134,6 @@ class _CaregiverPatientLogListScreenState
     );
   }
 
-  /// ✅ 간병일지 리스트 UI
   Widget _buildCareLogList() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -143,8 +141,10 @@ class _CaregiverPatientLogListScreenState
 
     return RefreshIndicator(
       onRefresh: _fetchCareLogs,
+      color: const Color(0xFF43C098),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 여백 추가
+        padding:
+            const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 여백 추가
         child: ListView.builder(
           itemCount: _careLogs.length,
           itemBuilder: (context, index) {
@@ -160,7 +160,8 @@ class _CaregiverPatientLogListScreenState
                   );
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
                     borderRadius: BorderRadius.circular(100), // 버튼형 디자인
@@ -183,7 +184,8 @@ class _CaregiverPatientLogListScreenState
                               shape: BoxShape.circle, // 원형 모양
                             ),
                             padding: const EdgeInsets.all(8),
-                            child: const Icon(Icons.edit, size: 24, color: Color(0xFF43C098)),
+                            child: const Icon(Icons.edit,
+                                size: 24, color: Color(0xFF43C098)),
                           ),
                           const SizedBox(width: 10),
                           Text(
@@ -199,7 +201,8 @@ class _CaregiverPatientLogListScreenState
                         children: [
                           Text(
                             _formatDate(log['created_at']), // 날짜 유지
-                            style: const TextStyle(fontSize: 14, color: Colors.black54),
+                            style: const TextStyle(
+                                fontSize: 14, color: Colors.black54),
                           ),
                           const SizedBox(width: 10),
                           PopupMenuButton<String>(
@@ -290,8 +293,8 @@ class _CaregiverPatientLogListScreenState
             borderRadius: BorderRadius.circular(12),
           ),
           child: SizedBox(
-            width: width, // ✅ 사용자가 지정할 수 있도록 width 설정
-            height: height, // ✅ 높이 조정 가능
+            width: width, 
+            height: height, 
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(
@@ -340,5 +343,4 @@ class _CaregiverPatientLogListScreenState
       ),
     );
   }
-
 }

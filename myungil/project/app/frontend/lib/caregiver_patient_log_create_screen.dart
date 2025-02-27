@@ -83,16 +83,16 @@ class _CaregiverPatientLogCreateScreenState
       _outdoorWalk = log["outdoor_walk"] ?? false;
       _notesController.text = log["notes"] ?? "";
     } else {
-      _location = "병원";
-      _mood = "보통";
-      _sleepQuality = "보통";
-      _breakfastType = "선택해주세요.";
-      _breakfastAmount = "선택해주세요.";
-      _lunchType = "선택해주세요.";
-      _lunchAmount = "선택해주세요.";
-      _dinnerType = "선택해주세요.";
-      _dinnerAmount = "선택해주세요.";
-      _stool = "보통";
+      _location = null;
+      _mood = null;
+      _sleepQuality = null;
+      _breakfastType = null;
+      _breakfastAmount = null;
+      _lunchType = null;
+      _lunchAmount = null;
+      _dinnerType = null;
+      _dinnerAmount = null;
+      _stool = null;
     }
   }
 
@@ -100,8 +100,8 @@ class _CaregiverPatientLogCreateScreenState
     final isEditing = widget.initialLogData != null;
     final url = isEditing
         ? Uri.parse(
-            'http://192.168.232.218:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
-        : Uri.parse('http://192.168.232.218:8000/dailyrecord'); // 새 기록
+            'http://172.23.250.30:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
+        : Uri.parse('http://172.23.250.30:8000/dailyrecord'); // 새 기록
 
     final method = isEditing ? "PUT" : "POST";
 
@@ -393,7 +393,7 @@ class _CaregiverPatientLogCreateScreenState
                         "완식 (100%)",
                         "반식 (50%)",
                         "소식 (25%)",
-                        "거부 (0%)"
+                        "안 먹음 (0%)"
                       ],
                       (value) {
                         if (value != null) {

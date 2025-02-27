@@ -196,7 +196,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
                       _buildChipDetailRow('간병 가능 질환', symptoms),
                       _buildDetailRow('보행 지원', caregiver['canwalk'] ?? "정보 없음"),
                       _buildDetailRow(
-                          '선호 성별', caregiver['preferSex'] ?? "정보 없음"),
+                          '선호 성별', caregiver['prefersex'] ?? "정보 없음"),
                       _buildDetailRow('흡연 여부', caregiver['smoking'] ?? "정보 없음"),
                     ],
                   ),

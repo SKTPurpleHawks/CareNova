@@ -61,27 +61,6 @@ class CaregiverRecommendListScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: NavigationBar(
-        backgroundColor: Colors.white,
-        selectedIndex: 0,
-        onDestinationSelected: (index) {
-          if (index == 1) {
-            Navigator.pushNamed(context, '/guardian_patient_list');
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.search),
-            selectedIcon: Icon(Icons.search, color: Color(0xFF43C098)),
-            label: '간병인 찾기',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.edit),
-            selectedIcon: Icon(Icons.edit, color: Color(0xFF43C098)),
-            label: '내 환자 정보',
-          ),
-        ],
-      ),
     );
   }
 
@@ -159,7 +138,7 @@ class CaregiverRecommendListScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                           color: matchingRate >= 90
                               ? Colors.red
-                              : Colors.teal, // 🔹 90 이상이면 빨간색
+                              : Colors.teal, // 90 이상이면 빨간색
                         ),
                       ),
                       const SizedBox(width: 10),

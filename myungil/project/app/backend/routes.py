@@ -254,7 +254,7 @@ def update_care_request_status(
     db: Session = Depends(get_db),
     current_user: models.CaregiverUserInfo = Depends(get_current_user)
 ):
-    logging.info(f"📥 Care request update received: {status_update.dict()}")  # 로그 추가
+    logging.info(f"Care request update received: {status_update.dict()}")  # 로그 추가
 
     care_request = db.query(models.CareRequest).filter(models.CareRequest.id == request_id).first()
 
@@ -320,6 +320,7 @@ def get_caregiver_patients(
 
             caregiver_id = current_user.id
             caregiver = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == caregiver_id).first()
+            current_protector = db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.id == patient.protector_id).first()
 
             if patient:
                 patients.append({
@@ -337,7 +338,9 @@ def get_caregiver_patients(
                     "caregiver_id": caregiver_id,
                     "caregiver_name": caregiver.name if caregiver else "알 수 없음",
                     "caregiver_phonenumber": caregiver.phonenumber if caregiver else "정보 없음",
-                    "protector_id": patient.protector_id
+                    "protector_id": patient.protector_id,
+                    "protector_phonenumber": current_protector.phonenumber if current_protector else "정보 없음",
+                    "protector_name": current_protector.name if current_protector else "정보 없음",
                 })
 
     elif isinstance(current_user, ProtectorUserInfo):
@@ -491,8 +494,8 @@ def update_patient_info(patient_id: str, patient_update: schemas.PatientUpdate, 
 
 @router.delete("/patient-info/{patient_id}")
 def delete_patient_info(patient_id: str, db: Session = Depends(get_db)):
-    patient_daily_records = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.id == patient_id).all()
-    patient_requests = db.query(models.CareRequest).filter(models.CareRequest.id == patient_id).all()
+    patient_daily_records = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.patient_id == patient_id).all()
+    patient_requests = db.query(models.CareRequest).filter(models.CareRequest.patient_id == patient_id).all()
     patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == patient_id).first()
     
     if not patient:
@@ -869,11 +872,11 @@ def correct_text(input_text):
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are an expert in Korean text correction and Chinese translation."
-                                          "Correct the patient's speech between a Korean patient and a Chinese caregiver for proper spelling and context, and convert informal speech to formal speech."
-                                          "If the last word of the text includes 'Chinese,' provide only the translated text in Chinese."},
-                {"role": "user", "content": f"{input_text}"},
+        messages=[
+                {"role": "system", "content": "너는 한국어 텍스트 교정 및 중국어 통역 전문가야. "
+                                              "한국인 환자와 중국인 간병인 사이 환자의 발화를 맞춤법과 문맥에 맞게 교정하고, 반말을 존댓말로 공손하게 변경해."
+                                              "만약 텍스트에 '중국어'라는 단어가 마지막에 포함되어 있으면 중국어 간체로 교정된 발화만 제공해."},
+                {"role": "user", "content": f"다음 문장을 교정해: {input_text}"},
             ],
             temperature=0.2
         )

@@ -218,7 +218,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 SizedBox(
-                  height: 200,
+                  height: 330,
                   child: _patients.isEmpty
                       ? Center(
                           child: Text(

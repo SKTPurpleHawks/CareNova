@@ -164,6 +164,7 @@ class DailyRecordCreate(DailyRecordBase):
     pass
 
 class DailyRecordResponse(BaseModel):
+    id: int
     caregiver_id: str
     protector_id: Optional[str] = None
     patient_id: str
