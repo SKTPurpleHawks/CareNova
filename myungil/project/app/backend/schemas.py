@@ -136,9 +136,9 @@ class DailyRecordBase(BaseModel):
     caregiver_id: str
     protector_id: Optional[str] = None
     patient_id: str
-    location: str
-    mood: str
-    sleep_quality: str
+    location: Optional[str] = None 
+    mood: Optional[str] = None 
+    sleep_quality: Optional[str] = None
     breakfast_type: Optional[str] = None
     breakfast_amount: Optional[str] = None
     lunch_type: Optional[str] = None
@@ -148,26 +148,28 @@ class DailyRecordBase(BaseModel):
     urine_amount: Optional[str] = None
     urine_color: Optional[str] = None
     urine_smell: Optional[str] = None
-    urine_foam: Optional[bool] = False
+    urine_foam: bool = False  
     stool_amount: Optional[str] = None
     stool_condition: Optional[str] = None
-    position_change: Optional[bool] = False
-    wheelchair_transfer: Optional[bool] = False
-    walking_assistance: Optional[bool] = False
-    outdoor_walk: Optional[bool] = False
+    position_change: bool = False 
+    wheelchair_transfer: bool = False
+    walking_assistance: bool = False
+    outdoor_walk: bool = False
     notes: Optional[str] = None
+
+    class Config:
+        orm_mode = True  
 
 class DailyRecordCreate(DailyRecordBase):
     pass
 
 class DailyRecordResponse(BaseModel):
-    id: int
     caregiver_id: str
     protector_id: Optional[str] = None
-    patient_id: str 
-    location: str
-    mood: str
-    sleep_quality: str
+    patient_id: str
+    location: Optional[str] = None  
+    mood: Optional[str] = None  
+    sleep_quality: Optional[str] = None  
     breakfast_type: Optional[str] = None
     breakfast_amount: Optional[str] = None
     lunch_type: Optional[str] = None
@@ -177,14 +179,15 @@ class DailyRecordResponse(BaseModel):
     urine_amount: Optional[str] = None
     urine_color: Optional[str] = None
     urine_smell: Optional[str] = None
-    urine_foam: Optional[bool] = False
+    urine_foam: bool = False
     stool_amount: Optional[str] = None
     stool_condition: Optional[str] = None
-    position_change: Optional[bool] = False
-    wheelchair_transfer: Optional[bool] = False
-    walking_assistance: Optional[bool] = False
-    outdoor_walk: Optional[bool] = False
+    position_change: bool = False
+    wheelchair_transfer: bool = False
+    walking_assistance: bool = False
+    outdoor_walk: bool = False
     notes: Optional[str] = None
+
     created_at: datetime
 
     class Config:

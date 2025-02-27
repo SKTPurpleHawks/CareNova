@@ -31,7 +31,6 @@ router = APIRouter()
 
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-TYPECAST_API_KEY = os.getenv("TYPECAST_API_KEY")
 
 
 API_URL = "https://typecast.ai/api/speak"
@@ -318,13 +317,11 @@ def get_caregiver_patients(
 
         for request in requests:
             patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == request.patient_id).first()
-            
+
             caregiver_id = current_user.id
             caregiver = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == caregiver_id).first()
-            caregiver_name = caregiver.name if caregiver else "알 수 없음"
 
             if patient:
-
                 patients.append({
                     "id": patient.id,
                     "name": patient.name,
@@ -357,7 +354,6 @@ def get_caregiver_patients(
 
             caregiver_id = care_request.caregiver_id if care_request else None
             caregiver = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.id == caregiver_id).first()
-            caregiver_name = caregiver.name if caregiver else "알 수 없음"
 
             patients.append({
                 "id": patient.id,
@@ -371,13 +367,14 @@ def get_caregiver_patients(
                 "symptoms": patient.symptoms,
                 "canwalk": patient.canwalk,
                 "caregiver_id": caregiver_id,
-                "caregiver_name": caregiver_name,
-                "caregiver_phonenumber": caregiver.phonenumber,
-                "caregiver_startdate": caregiver.startdate,
-                "caregiver_enddate": caregiver.enddate,
+                "caregiver_name": caregiver.name if caregiver else "알 수 없음",
+                "caregiver_phonenumber": caregiver.phonenumber if caregiver else "정보 없음",
+                "caregiver_startdate": caregiver.startdate if caregiver else "정보 없음",
+                "caregiver_enddate": caregiver.enddate if caregiver else "정보 없음",
             })
 
     return patients
+
 
 
 
@@ -873,10 +870,10 @@ def correct_text(input_text):
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
-                {"role": "system", "content": "너는 한국어 텍스트 교정 및 중국어 통역 전문가야. "
-                                              "한국인 환자와 중국인 간병인 사이 환자의 발화를 맞춤법과 문맥에 맞게 교정하고, 반말을 존댓말로 공손하게 변경해."
-                                              "만약 텍스트에 '중국어'라는 단어가 마지막에 포함되어 있으면 중국어로 교정된 발화만 제공해."},
-                {"role": "user", "content": f"다음 문장을 교정해: {input_text}"},
+                {"role": "system", "content": "You are an expert in Korean text correction and Chinese translation."
+                                          "Correct the patient's speech between a Korean patient and a Chinese caregiver for proper spelling and context, and convert informal speech to formal speech."
+                                          "If the last word of the text includes 'Chinese,' provide only the translated text in Chinese."},
+                {"role": "user", "content": f"{input_text}"},
             ],
             temperature=0.2
         )
@@ -888,7 +885,7 @@ def correct_text(input_text):
         return None
 
 
-def request_tts(sentence, actor_id):
+def request_tts(sentence, actor_id, TYPECAST_API_KEY):
     """TTS 요청"""
     try:
         headers = {
@@ -898,7 +895,7 @@ def request_tts(sentence, actor_id):
         data = json.dumps({
             "text": sentence.strip(),
             "lang": "auto",
-            "actor_id": "60ad0841061ee28740ec2e1c",
+            "actor_id": actor_id,
             "xapi_hd": True,
             "model_version": "latest"
         })
@@ -921,7 +918,7 @@ def request_tts(sentence, actor_id):
         return None
 
 
-def wait_for_audio(speak_v2_url):
+def wait_for_audio(speak_v2_url, TYPECAST_API_KEY):
     """TTS 변환이 완료될 때까지 대기 후 다운로드 URL 반환"""
     headers = {"Authorization": f"Bearer {TYPECAST_API_KEY}"}
     for _ in range(10):  # 최대 10초 동안 상태 체크
@@ -963,7 +960,7 @@ def download_audio(audio_url, file_path):
         return None
 
 
-def process_audio_to_tts(input_audio, output_file, actor_voice):
+def process_audio_to_tts(input_audio, output_file, actor_voice, TYPECAST_API_KEY):
     """Whisper → GPT → TTS 순으로 실행"""
     try:
         start_time = time.time()
@@ -981,12 +978,12 @@ def process_audio_to_tts(input_audio, output_file, actor_voice):
             return None
 
         # Typecast TTS (텍스트 → 음성)
-        speak_v2_url = request_tts(corrected_text, actor_voice)
+        speak_v2_url = request_tts(corrected_text, actor_voice, TYPECAST_API_KEY)
         if not speak_v2_url:
             print("❌ TTS 변환 실패")
             return None
 
-        audio_url = wait_for_audio(speak_v2_url)
+        audio_url = wait_for_audio(speak_v2_url, TYPECAST_API_KEY)
         if not audio_url:
             print("❌ 최종 음성 변환 실패")
             return None
@@ -1019,8 +1016,10 @@ async def process_audio(patient_id: str,
     
     
     if patient.sex == '남성':
+        TYPECAST_API_KEY = os.getenv("TYPECAST_API_KEY_MAN")
         actor_voice_code = "5ebea13564afaf00087fc2e7"
     else:
+        TYPECAST_API_KEY = os.getenv("TYPECAST_API_KEY_WOMAN")
         actor_voice_code = "60ad0841061ee28740ec2e1c"
 
     input_audio_path = f"temp_{file.filename}"
@@ -1032,7 +1031,7 @@ async def process_audio(patient_id: str,
     try:
         print(f"📂 입력 파일 저장 완료: {input_audio_path}")
 
-        result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code)
+        result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code, TYPECAST_API_KEY)
 
         if result and os.path.exists(output_audio_path):
             print(f"✅ 변환된 음성 파일 존재: {output_audio_path}")

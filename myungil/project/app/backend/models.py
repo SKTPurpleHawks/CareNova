@@ -167,9 +167,9 @@ class DailyRecordInfo(Base):
     protector_id = Column(String, ForeignKey("protector_user_info.id"), nullable=False)
     patient_id = Column(String, ForeignKey("patient_user_info.id"), nullable=False)
 
-    location = Column(String, nullable=False)
-    mood = Column(String, nullable=False)
-    sleep_quality = Column(String, nullable=False)
+    location = Column(String, nullable=True)
+    mood = Column(String, nullable=True)
+    sleep_quality = Column(String, nullable=True)
     
     # 식사 정보
     breakfast_type = Column(String, nullable=True)

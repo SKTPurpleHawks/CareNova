@@ -218,21 +218,37 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                
+
+                // 환자 리스트
+                // 환자 리스트 표시 부분
+                SizedBox(
+                  height: 200, // 높이 제한 설정
+                  child: _patients.isEmpty
+                      ? Center(
+                          child: Text(
+                            "등록된 환자가 없습니다.\n환자 관리 탭에서 환자를 추가해주세요.",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 16, color: Colors.grey[600]),
+                          ),
+                        )
+                      : 
+                      Container(
                   padding: const EdgeInsets.symmetric(
-                      vertical: 8, horizontal: 1), // 🔹 내부 여백
+                      vertical: 8, horizontal: 1), // 내부 여백
                   margin: const EdgeInsets.symmetric(
-                      vertical: 3, horizontal: 5), // 🔹 바깥 여백
+                      vertical: 3, horizontal: 5), // 바깥 여백
                   decoration: BoxDecoration(
-                    color: Colors.grey[200], // 🔹 회색 배경
-                    borderRadius: BorderRadius.circular(100), // 🔹 둥근 모서리
+                    color: Colors.grey[200], // 회색 배경
+                    borderRadius: BorderRadius.circular(100), // 둥근 모서리
                   ),
                   alignment: Alignment.center,
                   child: Stack(
-                    alignment: Alignment.center, // 🔹 전체적으로 가운데 정렬
+                    alignment: Alignment.center, // 전체적으로 가운데 정렬
                     children: [
                       Align(
-                        alignment: Alignment.center, // 🔹 "간병인 검색하기" 완전 중앙 정렬
+                        alignment: Alignment.center, // "간병인 검색하기" 완전 중앙 정렬
                         child: Text(
                           "간병인 검색하기",
                           style: TextStyle(
@@ -243,7 +259,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
                         ),
                       ),
                       Positioned(
-                        right: 16, // 🔹 오른쪽 끝으로 아이콘 배치
+                        right: 16, // 오른쪽 끝으로 아이콘 배치
                         child: Icon(
                           Icons.search,
                           size: 30,
@@ -261,55 +277,53 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 30),
+                      
+                      ListView.builder(
+                          itemCount: _patients.length,
+                          itemBuilder: (context, index) {
+                            final patient = _patients[index];
+                            final bool isSelected =
+                                _selectedPatientId == patient['id'];
 
-                // 환자 리스트
-                SizedBox(
-                  height: 200, // 높이 제한 설정
-                  child: ListView.builder(
-                    itemCount: _patients.length,
-                    itemBuilder: (context, index) {
-                      final patient = _patients[index];
-                      final bool isSelected =
-                          _selectedPatientId == patient['id'];
-
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: ElevatedButton(
-                          onPressed: () {
-                            setState(() {
-                              _selectedPatientId = patient['id'];
-                              _selectedPatientName = patient['name'];
-                            });
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isSelected
-                                ? const Color(0xFF43C098)
-                                : Colors.white,
-                            foregroundColor:
-                                isSelected ? Colors.white : Colors.black,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(50),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? const Color(0xFF43C098)
-                                    : Colors.grey.shade300,
-                                width: 1.5,
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedPatientId = patient['id'];
+                                    _selectedPatientName = patient['name'];
+                                  });
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isSelected
+                                      ? const Color(0xFF43C098)
+                                      : Colors.white,
+                                  foregroundColor:
+                                      isSelected ? Colors.white : Colors.black,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(50),
+                                    side: BorderSide(
+                                      color: isSelected
+                                          ? const Color(0xFF43C098)
+                                          : Colors.grey.shade300,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  elevation: isSelected ? 4 : 0,
+                                ),
+                                child: Text(
+                                  patient['name'],
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
-                            ),
-                            elevation: isSelected ? 4 : 0,
-                          ),
-                          child: Text(
-                            patient['name'],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ),
 
                 const SizedBox(height: 10),

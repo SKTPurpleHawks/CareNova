@@ -62,7 +62,6 @@ class _CaregiverPatientLogCreateScreenState
 
     if (widget.initialLogData != null) {
       Map<String, dynamic> log = widget.initialLogData!;
-
       _location = log["location"];
       _mood = log["mood"];
       _sleepQuality = log["sleep_quality"];
@@ -84,17 +83,16 @@ class _CaregiverPatientLogCreateScreenState
       _outdoorWalk = log["outdoor_walk"] ?? false;
       _notesController.text = log["notes"] ?? "";
     } else {
-      _location = null;
-      _mood = null;
-      _sleepQuality = null;
-      _breakfastType = null;
-      _breakfastAmount = null;
-      _lunchType = null;
-      _lunchAmount = null;
-      _dinnerType = null;
-      _dinnerAmount = null;
-
-      _stool = null;
+      _location = "병원";
+      _mood = "보통";
+      _sleepQuality = "보통";
+      _breakfastType = "선택해주세요.";
+      _breakfastAmount = "선택해주세요.";
+      _lunchType = "선택해주세요.";
+      _lunchAmount = "선택해주세요.";
+      _dinnerType = "선택해주세요.";
+      _dinnerAmount = "선택해주세요.";
+      _stool = "보통";
     }
   }
 
@@ -102,8 +100,8 @@ class _CaregiverPatientLogCreateScreenState
     final isEditing = widget.initialLogData != null;
     final url = isEditing
         ? Uri.parse(
-            'http://172.23.250.30:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
-        : Uri.parse('http://172.23.250.30:8000/dailyrecord'); // 새 기록
+            'http://192.168.232.218:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
+        : Uri.parse('http://192.168.232.218:8000/dailyrecord'); // 새 기록
 
     final method = isEditing ? "PUT" : "POST";
 
@@ -130,7 +128,7 @@ class _CaregiverPatientLogCreateScreenState
       };
 
   String _requestBody() {
-    final Map<String, dynamic> body = {
+    return jsonEncode({
       "caregiver_id": widget.caregiverId,
       "protector_id": widget.protectorId,
       "patient_id": widget.patientId,
@@ -143,27 +141,18 @@ class _CaregiverPatientLogCreateScreenState
       "lunch_amount": _lunchAmount,
       "dinner_type": _dinnerType,
       "dinner_amount": _dinnerAmount,
-      "urine_amount": _urineAmountController.text.isNotEmpty
-          ? _urineAmountController.text
-          : null,
+      "urine_amount": _urineAmountController.text,
       "urine_color": _urineColor,
       "urine_smell": _urineSmell,
       "urine_foam": _urineFoam,
-      "stool_amount": _stoolTimesController.text.isNotEmpty
-          ? _stoolTimesController.text
-          : null,
+      "stool_amount": _stoolTimesController.text,
       "stool_condition": _stool,
       "position_change": _positionChange,
       "wheelchair_transfer": _wheelchairTransfer,
       "walking_assistance": _walkingAssistance,
       "outdoor_walk": _outdoorWalk,
-      "notes": _notesController.text.isNotEmpty ? _notesController.text : null,
-    };
-
-    // null 값을 가진 키 제거
-    body.removeWhere((key, value) => value == null);
-
-    return jsonEncode(body);
+      "notes": _notesController.text,
+    });
   }
 
   @override
@@ -282,13 +271,26 @@ class _CaregiverPatientLogCreateScreenState
     );
   }
 
-  Widget _buildField(String label, String? value, List<String> items) {
+  Widget _buildField(String label, String? selectedValue, List<String> items) {
     return widget.isReadOnly
-        ? _buildReadOnlyTextField(label, value ?? "데이터 없음")
-        : _buildDropdown(label, value, items, (val) {
+        ? _buildReadOnlyTextField(label, selectedValue ?? "데이터 없음")
+        : _buildDropdown(label, selectedValue, items, (val) {
             if (val != null) {
               setState(() {
-                value = val; // 변경된 값 적용
+                // 선택한 값이 어떤 상태 변수인지 확인하고 업데이트
+                if (label == "장소") {
+                  _location = val;
+                } else if (label == "기분") {
+                  _mood = val;
+                } else if (label == "수면 상태") {
+                  _sleepQuality = val;
+                } else if (label == "소변 색") {
+                  _urineColor = val;
+                } else if (label == "소변 냄새") {
+                  _urineSmell = val;
+                } else if (label == "대변 상태") {
+                  _stool = val;
+                }
               });
             }
           });
