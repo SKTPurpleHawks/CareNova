@@ -107,7 +107,7 @@ class PatientDetailScreen extends StatelessWidget {
                     SizedBox(height: 10),
                     _buildRow("보행 가능 여부", patient['canwalk'] ?? "정보 없음"),
                   ]),
-                  const SizedBox(height: 0),
+                  const SizedBox(height: 10),
                   if (!isCaregiver && hasCaregiver)
                     Padding(
                       padding: const EdgeInsets.all(0),
