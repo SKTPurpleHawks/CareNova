@@ -190,8 +190,9 @@ class PatientDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PatientRecordScreen(
-                          patientId: patient['id'] ?? ""), // patientId 전달
+                      builder: (context) => 
+                    PatientRecordScreen(patientId: patient['id'] ?? ""), // 수현 ver 음성 AI
+                    // RecorderScreen(), // 지영 ver 음성 AI
                     ),
                   );
                 },
