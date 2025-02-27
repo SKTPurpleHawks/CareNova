@@ -494,18 +494,33 @@ def update_patient_info(patient_id: str, patient_update: schemas.PatientUpdate, 
 
 @router.delete("/patient-info/{patient_id}")
 def delete_patient_info(patient_id: str, db: Session = Depends(get_db)):
+
     patient_daily_records = db.query(models.DailyRecordInfo).filter(models.DailyRecordInfo.patient_id == patient_id).all()
     patient_requests = db.query(models.CareRequest).filter(models.CareRequest.patient_id == patient_id).all()
     patient = db.query(models.PatientUserInfo).filter(models.PatientUserInfo.id == patient_id).first()
-    
+
+
     if not patient:
         raise HTTPException(status_code=404, detail="환자를 찾을 수 없습니다.")
 
-    db.delete(patient_daily_records)
-    db.delete(patient_requests)
+    if not patient_daily_records:
+        pass
+    else:
+        for record in patient_daily_records:
+            db.delete(record)
+            
+    if not patient_requests:
+        pass
+    else:
+        for request in patient_requests:
+            db.delete(request)
+
+    
     db.delete(patient)
-    db.commit()
+    db.commit()  # 변경 사항 저장
+
     return {"message": "환자 정보가 삭제되었습니다."}
+
 
 
 
@@ -823,8 +838,9 @@ def predict_matching_score(
     # 결과 생성
     result_df = merged_df[['caregiver_id', 'preferstar', 'star_0', 'star_1', 'star_2']].copy()
 
-    result_df['star'] = result_df.apply(lambda row: row['star_0'] if row['preferstar'] == 0 else (row['star_1'] if row['preferstar'] == 1 else row['star_2']), axis=1)
-
+    result_df['star'] = result_df.apply(lambda row: (row['star_0'] + row['star_1'] + row['star_2'])/3, axis=1)
+    
+    
     result_df["hard_matching_rate"] = merged_df.apply(calculate_matching_rate1, axis=1)
     result_df['tab_matching_rate'] = matching_rate
 
@@ -838,7 +854,6 @@ def predict_matching_score(
     print(caregiver_data.head(10))
     sorted_result = caregiver_data.sort_values(by=['matching_rate', 'star'], ascending=[False, False])
     sorted_result.rename(columns={'star_0': 'sincerity', 'star_1': 'communication', 'star_2': 'hygiene'}, inplace=True)
-    sorted_result.drop('star', axis = 1, inplace = True)
     # 결과 반환
     result = sorted_result.drop_duplicates()
     
@@ -1034,7 +1049,8 @@ async def process_audio(patient_id: str,
     try:
         print(f"📂 입력 파일 저장 완료: {input_audio_path}")
 
-        result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code, TYPECAST_API_KEY)
+        # result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code, TYPECAST_API_KEY)
+        result = process_audio_to_tts(input_audio_path, output_audio_path, "60ad0841061ee28740ec2e1c", os.getenv("TYPECAST_API_KEY_WOMAN"))
 
         if result and os.path.exists(output_audio_path):
             print(f"✅ 변환된 음성 파일 존재: {output_audio_path}")

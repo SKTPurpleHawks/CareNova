@@ -8,15 +8,12 @@ import 'package:flutter_sound/flutter_sound.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class PatientRecordScreen extends StatefulWidget {
-  
   final String patientId;
 
-
-  const PatientRecordScreen({
-    required this.patientId,
-    super.key});
+  const PatientRecordScreen({required this.patientId, super.key});
 
   @override
   State<PatientRecordScreen> createState() => _PatientRecordScreenState();
@@ -28,17 +25,20 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
   bool _isRecording = false;
   bool _isPlaying = false;
   String? _filePath;
+  String? _processedAudioPath;
   List<String> _messages = [];
   List<BarDefinition> _bars = [];
   Timer? _timer;
   int _remainingTime = 30;
+
+  double _currentDecibel = -50.0;
 
   @override
   void initState() {
     super.initState();
     _initRecorder();
     _initPlayer();
-    _generateInitialWaveform();
+    _generateInitialWaveform(); // 초기 웨이브폼 생성
   }
 
   Future<void> _initRecorder() async {
@@ -56,7 +56,6 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
 
     Directory tempDir = await getTemporaryDirectory();
     String path = '${tempDir.path}/recording.wav';
-    print(path);
 
     await _recorder.startRecorder(
       toFile: path,
@@ -64,6 +63,14 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
       sampleRate: 16000,
       numChannels: 1,
     );
+
+    _recorder.setSubscriptionDuration(const Duration(milliseconds: 100));
+    _recorder.onProgress?.listen((RecordingDisposition d) {
+      setState(() {
+        _currentDecibel = d.decibels ?? -50.0;
+        _updateWaveform(_currentDecibel); // ✅ 실시간 웨이브 업데이트
+      });
+    });
 
     setState(() {
       _isRecording = true;
@@ -82,6 +89,24 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
     });
   }
 
+  /// 웨이브폼을 업데이트하는 함수 (데시벨 값 기반)
+  void _updateWaveform(double decibel) {
+    double base = ((decibel + 60) / 60).clamp(0.1, 1.0);
+    final time = DateTime.now().millisecondsSinceEpoch;
+
+    setState(() {
+      _bars = List.generate(18, (index) {
+        double phase = index / 18 * 2 * pi;
+        double variation = 0.2 * sin(2 * pi * (time % 1000) / 1000 + phase);
+        double newHeight = (base + variation).clamp(0.1, 1.0);
+        return BarDefinition(
+          heightFactor: newHeight,
+          color: Colors.green.shade700.withOpacity(0.8),
+        );
+      });
+    });
+  }
+
   Future<void> _stopRecording() async {
     if (!_isRecording) return;
 
@@ -90,7 +115,7 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
 
     setState(() {
       _isRecording = false;
-      _generateInitialWaveform();
+      _generateInitialWaveform(); // 녹음 종료 후 기본 웨이브폼 설정
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -100,13 +125,25 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
     if (_filePath != null) {
       String? processedFilePath = await _uploadAudio(_filePath!);
       if (processedFilePath != null) {
-        await _playProcessedAudio(processedFilePath);
+        setState(() {
+          _processedAudioPath = processedFilePath;
+        });
+
+        _playProcessedAudio(); // 자동 음성 재생
+
+        String? convertedText = await _convertSpeechToText(processedFilePath);
+        if (convertedText != null) {
+          setState(() {
+            _messages.insert(0, convertedText);
+          });
+        }
       }
     }
   }
 
   Future<String?> _uploadAudio(String filePath) async {
-    var uri = Uri.parse("http://172.23.250.30:8000/process_audio/${widget.patientId}");
+    var uri = Uri.parse(
+        "http://172.23.250.30:8000/process_audio/${widget.patientId}");
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', filePath));
 
@@ -119,39 +156,52 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
 
       await file.writeAsBytes(await response.stream.toBytes());
 
-      // ✅ 다운로드된 파일 존재 여부 확인
       if (!file.existsSync()) {
-        debugPrint("❌ 서버 응답이 있었지만 파일이 저장되지 않음");
         return null;
       }
 
-      debugPrint("✅ 변환된 음성 다운로드 완료: $path");
-
       return path;
     } else {
-      debugPrint("❌ 업로드 실패: ${response.reasonPhrase}");
       return null;
     }
   }
 
-  Future<void> _playProcessedAudio(String filePath) async {
-    if (_isPlaying) {
-      await _player.stopPlayer();
-      setState(() {
-        _isPlaying = false;
-      });
-    }
+  Future<String?> _convertSpeechToText(String filePath) async {
+    var apiUrl = "https://api.openai.com/v1/audio/transcriptions";
+    String apiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
 
-    // 🔍 파일이 존재하는지 확인
-    File audioFile = File(filePath);
+    var request = http.MultipartRequest('POST', Uri.parse(apiUrl))
+      ..headers['Authorization'] = 'Bearer $apiKey'
+      ..fields['model'] = 'whisper-1'
+      ..files.add(await http.MultipartFile.fromPath('file', filePath));
+
+    try {
+      var response = await request.send();
+      if (response.statusCode == 200) {
+        String responseBody = await response.stream.bytesToString();
+        Map<String, dynamic> decodedResponse = jsonDecode(responseBody);
+        return decodedResponse['text'] ?? "변환된 텍스트가 없습니다.";
+      } else {
+        debugPrint("❌ Whisper API 요청 실패: ${response.reasonPhrase}");
+        return "음성 변환에 실패했습니다.";
+      }
+    } catch (e) {
+      debugPrint("❌ Whisper API 오류: $e");
+      return "음성 변환 오류 발생";
+    }
+  }
+
+  Future<void> _playProcessedAudio() async {
+    if (_isPlaying || _processedAudioPath == null) return;
+
+    File audioFile = File(_processedAudioPath!);
     if (!audioFile.existsSync()) {
-      debugPrint("❌ 변환된 음성 파일이 존재하지 않음: $filePath");
       return;
     }
 
     try {
       await _player.startPlayer(
-        fromURI: filePath,
+        fromURI: _processedAudioPath!,
         codec: Codec.pcm16WAV,
         sampleRate: 16000,
         numChannels: 1,
@@ -165,13 +215,10 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
       setState(() {
         _isPlaying = true;
       });
-
-      debugPrint("▶ 음성 재생 시작: $filePath");
-    } catch (e) {
-      debugPrint("❌ 재생 오류: $e");
-    }
+    } catch (e) {}
   }
 
+  /// 기본 웨이브폼을 생성하는 함수
   void _generateInitialWaveform() {
     setState(() {
       _bars = List.generate(18, (index) {
@@ -193,11 +240,10 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double waveWidth = screenWidth * 0.9;
+    double waveWidth = MediaQuery.of(context).size.width * 0.9;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('환자 녹음 및 변환')),
+      appBar: AppBar(title: const Text('대화하기기')),
       body: Column(
         children: [
           Expanded(
@@ -205,69 +251,42 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
               reverse: true,
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                return Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF43C098),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        _messages[index],
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
+                return Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    margin:
+                        const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Color(0xFF43C098),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _messages[index],
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 );
               },
             ),
           ),
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
+          SizedBox(
+            width: waveWidth,
+            height: 100,
+            child: LiveAudioWave(
+              bars: _bars,
               width: waveWidth,
               height: 100,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(
-                    child: LiveAudioWave(
-                      bars: _bars,
-                      width: waveWidth,
-                      height: 100,
-                      spacing: 4,
-                    ),
-                  ),
-                ],
-              ),
+              spacing: 4,
             ),
           ),
-          const SizedBox(height: 30),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 30),
-            child: ElevatedButton(
-              onPressed: _isRecording ? _stopRecording : _startRecording,
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    _isRecording ? Colors.grey : const Color(0xFF43C098),
-                shape: const CircleBorder(),
-                padding: const EdgeInsets.all(28),
-                elevation: 8,
-              ),
-              child: const Icon(
-                Icons.mic,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
+          FloatingActionButton.large(
+                        onPressed: _isRecording ? _stopRecording : _startRecording,
+            backgroundColor:
+                _isRecording ? Colors.grey : const Color(0xFF43C098),
+            child: const Icon(Icons.mic, size: 50, color: Colors.white),
           ),
+          const SizedBox(height: 20),
         ],
       ),
     );

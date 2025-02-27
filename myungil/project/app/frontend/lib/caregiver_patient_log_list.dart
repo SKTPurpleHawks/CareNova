@@ -55,7 +55,6 @@ class _CaregiverPatientLogListScreenState
           _isLoading = false;
         });
       } else {
-        _showSnackBar('간병일지 데이터를 불러오는 데 실패했습니다.');
         setState(() => _isLoading = false);
       }
     } catch (e) {
@@ -80,7 +79,7 @@ class _CaregiverPatientLogListScreenState
         setState(() {
           _careLogs.removeWhere((item) => item['id'] == recordId);
         });
-        _showSnackBar("간병일지가 삭제되었습니다.");
+        _fetchCareLogs();
       } else if (response.statusCode == 404) {
         _showSnackBar("간병일지를 찾을 수 없습니다.");
       } else {

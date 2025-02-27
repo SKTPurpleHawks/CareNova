@@ -81,8 +81,8 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
     });
 
     try {
-      await _fetchProtectorPatients();  // 보호자의 환자 목록 가져오기
-      await _fetchCaregiverPatients();  // 간병인의 환자 목록 가져오기
+      await _fetchProtectorPatients(); // 보호자의 환자 목록 가져오기
+      await _fetchCaregiverPatients(); // 간병인의 환자 목록 가져오기
     } catch (e) {
       _showSnackBar('데이터를 불러오는 중 오류 발생: $e');
     }
@@ -91,7 +91,6 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
       _loading = false;
     });
   }
-
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
@@ -110,7 +109,6 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,6 +120,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
           ),
         ),
         centerTitle: true,
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -133,7 +132,8 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: RefreshIndicator( // 추가된 부분
+        child: RefreshIndicator(
+          // 추가된 부분
           onRefresh: _refreshPatients, // 리프레시 함수 연결
           color: const Color(0xFF43C098),
           child: SingleChildScrollView(
@@ -155,7 +155,8 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                           bool hasCaregiver = _caregiverpatients.any(
                               (caregiverPatient) =>
                                   caregiverPatient['id'] == patientId &&
-                                  caregiverPatient.containsKey('caregiver_id') &&
+                                  caregiverPatient
+                                      .containsKey('caregiver_id') &&
                                   caregiverPatient['caregiver_id'] != null &&
                                   caregiverPatient['caregiver_id']
                                       .toString()
@@ -199,7 +200,8 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
                                                 caregiverPatient.containsKey(
                                                     'caregiver_phonenumber'),
                                             orElse: () => {
-                                                  'caregiver_phonenumber': "정보 없음"
+                                                  'caregiver_phonenumber':
+                                                      "정보 없음"
                                                 })['caregiver_phonenumber'] ??
                                         "정보 없음")
                                     .toString(),
@@ -351,6 +353,42 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NavigationBar(
+            backgroundColor: Colors.white,
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+
+              if (index == 0) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        ProtectorUserHomeScreen(token: widget.token),
+                  ),
+                );
+              }
+            },
+            destinations: const [
+              NavigationDestination(
+                icon: Icon(Icons.search),
+                selectedIcon: Icon(Icons.search, color: Color(0xFF43C098)),
+                label: '간병인 찾기',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.edit),
+                selectedIcon: Icon(Icons.edit, color: Color(0xFF43C098)),
+                label: '내 환자 정보',
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

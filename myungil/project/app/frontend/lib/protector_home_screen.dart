@@ -61,8 +61,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
             _protectorId = patientsData.first['protector_id'].toString();
           }
         });
-      } else {
-      }
+      } else {}
     } catch (e) {
       _showSnackBar('서버에 연결할 수 없습니다.');
     }
@@ -136,7 +135,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
             'canwalk': item['canwalk'],
             'prefersex': item['prefersex'],
             'smoking': item['smoking'],
-            'rating': _calculateAverageRating(item),
+            'rating': item['star'],
             'matchingRate': item['matching_rate'].toDouble(),
           };
         }).toList();
@@ -162,12 +161,6 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
     }
   }
 
-  double _calculateAverageRating(Map<String, dynamic> caregiver) {
-    double total = (caregiver['sincerity'] ?? 0) +
-        (caregiver['communication'] ?? 0) +
-        (caregiver['hygiene'] ?? 0);
-    return total / 3;
-  }
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -180,6 +173,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Image.asset(
@@ -197,173 +191,177 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 100),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 6,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                  height: 330,
-                  child: _patients.isEmpty
-                      ? Center(
-                          child: Text(
-                            "등록된 환자가 없습니다.\n환자 관리 탭에서 환자를 추가해주세요.",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 16, color: Colors.grey[600]),
-                          ),
-                        )
-                      : Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8, horizontal: 1),
-                              margin: const EdgeInsets.symmetric(
-                                  vertical: 3, horizontal: 5),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              alignment: Alignment.center,
-                              child: Stack(
+      body: SingleChildScrollView(
+        // 스크롤 가능하도록 추가
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 6,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 330,
+                    child: _patients.isEmpty
+                        ? Center(
+                            child: Text(
+                              "등록된 환자가 없습니다.\n환자 관리 탭에서 환자를 추가해주세요.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                  fontSize: 16, color: Colors.grey[600]),
+                            ),
+                          )
+                        : Column(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 1),
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 3, horizontal: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[200],
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
                                 alignment: Alignment.center,
-                                children: [
-                                  Align(
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      "간병인 검색하기",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        "간병인 검색하기",
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.black,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Positioned(
-                                    right: 16,
-                                    child: Icon(
-                                      Icons.search,
-                                      size: 30,
-                                      color: Colors.black,
-                                      weight: 3,
+                                    Positioned(
+                                      right: 16,
+                                      child: Icon(
+                                        Icons.search,
+                                        size: 30,
+                                        color: Colors.black,
+                                        weight: 3,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 30),
-                            const Text(
-                              "< 환자 선택 >",
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w500),
-                            ),
-                            const SizedBox(height: 30),
-                            Expanded(
-                              child: ListView.builder(
-                                itemCount: _patients.length,
-                                itemBuilder: (context, index) {
-                                  final patient = _patients[index];
-                                  final bool isSelected =
-                                      _selectedPatientId == patient['id'];
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          _selectedPatientId = patient['id'];
-                                          _selectedPatientName =
-                                              patient['name'];
-                                        });
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: isSelected
-                                            ? const Color(0xFF43C098)
-                                            : Colors.white,
-                                        foregroundColor: isSelected
-                                            ? Colors.white
-                                            : Colors.black,
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 16),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(50),
-                                          side: BorderSide(
-                                            color: isSelected
-                                                ? const Color(0xFF43C098)
-                                                : Colors.grey.shade300,
-                                            width: 1.5,
+                              const SizedBox(height: 30),
+                              const Text(
+                                "< 환자 선택 >",
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              const SizedBox(height: 30),
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: _patients.length,
+                                  itemBuilder: (context, index) {
+                                    final patient = _patients[index];
+                                    final bool isSelected =
+                                        _selectedPatientId == patient['id'];
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 10),
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            _selectedPatientId = patient['id'];
+                                            _selectedPatientName =
+                                                patient['name'];
+                                          });
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: isSelected
+                                              ? const Color(0xFF43C098)
+                                              : Colors.white,
+                                          foregroundColor: isSelected
+                                              ? Colors.white
+                                              : Colors.black,
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 16),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                            side: BorderSide(
+                                              color: isSelected
+                                                  ? const Color(0xFF43C098)
+                                                  : Colors.grey.shade300,
+                                              width: 1.5,
+                                            ),
+                                          ),
+                                          elevation: isSelected ? 4 : 0,
+                                        ),
+                                        child: Text(
+                                          patient['name'],
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        elevation: isSelected ? 4 : 0,
                                       ),
-                                      child: Text(
-                                        patient['name'],
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
+                                    );
+                                  },
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // 검색 버튼
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed:
+                          _selectedPatientId == null ? null : _searchCaregivers,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF43C098),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // 검색 버튼
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed:
-                        _selectedPatientId == null ? null : _searchCaregivers,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF43C098),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
+                        children: [
+                          const Text(
+                            "검색하기",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          const SizedBox(width: 8), // 텍스트와 아이콘 사이 간격 조정
+                          const Icon(
+                            Icons.search,
+                            color: Colors.white, // 아이콘 색상 변경
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center, // 가운데 정렬
-                      children: [
-                        const Text(
-                          "검색하기",
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(width: 8), // 텍스트와 아이콘 사이 간격 조정
-                        const Icon(
-                          Icons.search,
-                          color: Colors.white, // 아이콘 색상 변경
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,

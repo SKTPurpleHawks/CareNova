@@ -125,6 +125,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
     return Scaffold(
       backgroundColor: Colors.grey[100], // 배경색 설정
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Image.asset(

@@ -27,7 +27,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   String _smoking = '비흡연';
   DateTime? _startDate;
   DateTime? _endDate;
-  List<String> _selectedRegions = [];
+  String? _selectedRegion = null;
   String _spot = '병원';
   List<String> _selectedSymptoms = [];
   int? _preferStar;
@@ -104,7 +104,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
           'smoking': _smoking,
           'startdate': _startDate?.toIso8601String().split('T')[0] ?? '',
           'enddate': _endDate?.toIso8601String().split('T')[0] ?? '',
-          'region': _selectedRegions.join(','),
+          'region': _selectedRegion,
           'spot': _spot,
           'preferstar': _preferStar,
         }),
@@ -214,8 +214,16 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               _buildDropdownWithLabel("간병 받을 장소", _spot, ['병원', '집', '둘 다'],
                   (value) => setState(() => _spot = value)),
               SizedBox(height: 10),
-              _buildMultiSelectWithLabel(
-                  "간병 가능 지역", _regions, _selectedRegions),
+              _buildSingleSelectWithLabel(
+                "간병 받을 지역",
+                _regions,
+                _selectedRegion,
+                (value) {
+                  setState(() {
+                    _selectedRegion = value; // 선택된 값 업데이트
+                  });
+                },
+              ),
               SizedBox(height: 10),
               _buildMultiSelectWithLabel(
                   "환자 보유 질환", _symptoms, _selectedSymptoms),
@@ -637,6 +645,51 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
               onChanged: (String? newValue) {
                 if (newValue != null) onChanged(newValue);
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSingleSelectWithLabel(String label, List<String> allItems,
+      String? selectedItem, void Function(String) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+          SizedBox(height: 10),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: selectedItem, // 현재 선택된 값
+              hint: Text('선택하세요', style: TextStyle(color: Colors.grey)),
+              decoration: InputDecoration(
+                border: InputBorder.none, // 드롭다운 테두리 제거
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+              dropdownColor: Colors.white,
+              items: allItems.map((String item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item, style: TextStyle(fontSize: 16)),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  onChanged(newValue);
+                }
+              },
+              isExpanded: true,
             ),
           ),
         ],
