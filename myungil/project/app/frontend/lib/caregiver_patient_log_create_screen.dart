@@ -130,7 +130,7 @@ class _CaregiverPatientLogCreateScreenState
       };
 
   String _requestBody() {
-    return jsonEncode({
+    final Map<String, dynamic> body = {
       "caregiver_id": widget.caregiverId,
       "protector_id": widget.protectorId,
       "patient_id": widget.patientId,
@@ -143,18 +143,27 @@ class _CaregiverPatientLogCreateScreenState
       "lunch_amount": _lunchAmount,
       "dinner_type": _dinnerType,
       "dinner_amount": _dinnerAmount,
-      "urine_amount": _urineAmountController.text,
+      "urine_amount": _urineAmountController.text.isNotEmpty
+          ? _urineAmountController.text
+          : null,
       "urine_color": _urineColor,
       "urine_smell": _urineSmell,
       "urine_foam": _urineFoam,
-      "stool_amount": _stoolTimesController.text,
+      "stool_amount": _stoolTimesController.text.isNotEmpty
+          ? _stoolTimesController.text
+          : null,
       "stool_condition": _stool,
       "position_change": _positionChange,
       "wheelchair_transfer": _wheelchairTransfer,
       "walking_assistance": _walkingAssistance,
       "outdoor_walk": _outdoorWalk,
-      "notes": _notesController.text,
-    });
+      "notes": _notesController.text.isNotEmpty ? _notesController.text : null,
+    };
+
+    // null 값을 가진 키 제거
+    body.removeWhere((key, value) => value == null);
+
+    return jsonEncode(body);
   }
 
   @override
@@ -224,7 +233,7 @@ class _CaregiverPatientLogCreateScreenState
               _buildCheckbox("거품 있음", _urineFoam, (val) => _urineFoam = val),
               _sectionTitle("대변 정보"),
               _buildFieldTEXT(
-                  "소변 횟수", _urineAmountController, widget.isReadOnly),
+                  "대변 횟수", _stoolTimesController, widget.isReadOnly),
               _buildField("대변 상태", _stool, ["설사", "보통", "변비"]),
               _sectionTitle("이동 및 활동"),
               _buildCheckbox(
@@ -483,7 +492,7 @@ Widget _buildTextField(
     padding: const EdgeInsets.only(bottom: 12.0),
     child: TextFormField(
       controller: controller,
-      onChanged: onChanged,
+      maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey),
