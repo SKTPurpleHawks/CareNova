@@ -191,8 +191,8 @@ class PatientDetailScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => 
-                    PatientRecordScreen(patientId: patient['id'] ?? ""), // 수현 ver 음성 AI
-                    // RecorderScreen(), // 지영 ver 음성 AI
+                    // PatientRecordScreen(patientId: patient['id'] ?? ""), // 수현 ver 음성 AI
+                    RecorderScreen(), // 지영 ver 음성 AI
                     ),
                   );
                 },

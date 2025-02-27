@@ -104,15 +104,15 @@ class _CaregiverPatientLogListScreenState
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        centerTitle: true, // ✅ 제목 중앙 정렬
+        centerTitle: true, // 제목 중앙 정렬
         title: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0), // ✅ 여백 추가
+          padding: const EdgeInsets.symmetric(horizontal: 16.0), // 여백 추가
           child: Text(
             "${widget.patientName}의 간병일지",
             style: GoogleFonts.notoSansKr(
-              fontSize: 22, // ✅ 가독성을 위해 살짝 키움
+              fontSize: 22, // 가독성을 위해 살짝 키움
               fontWeight: FontWeight.bold,
-              letterSpacing: 0.5, // ✅ 자간 추가로 가독성 향상
+              letterSpacing: 0.5, // 자간 추가로 가독성 향상
               color: Colors.black,
             ),
           ),
@@ -141,107 +141,106 @@ class _CaregiverPatientLogListScreenState
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Padding(
-      padding:
-          const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 여백 추가
-      child: ListView.builder(
-        itemCount: _careLogs.length,
-        itemBuilder: (context, index) {
-          final log = _careLogs[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12.0), // 리스트 아이템 간 여백 추가
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/caregiver_patient_log_detail',
-                  arguments: log, // ✅ 선택한 간병일지 데이터 전달
-                );
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(100), // ✅ 버튼형 디자인
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1), // ✅ 연한 그림자 효과
-                      blurRadius: 5,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          decoration: const BoxDecoration(
-                            color: Colors.white, // ✅ 아이콘 배경 흰색
-                            shape: BoxShape.circle, // ✅ 원형 모양
-                          ),
-                          padding: const EdgeInsets.all(8),
-                          child: const Icon(Icons.edit,
-                              size: 24, color: Color(0xFF43C098)),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          "간병일지 ${index + 1}", // ✅ 제목 유지
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          _formatDate(log['created_at']), // ✅ 날짜 유지
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.black54),
-                        ),
-                        const SizedBox(width: 10),
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == "edit") {
-                              _editCareLog(log);
-                            } else if (value == "delete") {
-                              _deleteCareLog(log['id']);
-                            }
-                          },
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          color: Colors.white,
-                          elevation: 8,
-                          itemBuilder: (BuildContext context) => [
-                            PopupMenuItem(
-                              value: "edit",
-                              child: Text("수정",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500)),
+    return RefreshIndicator(
+      onRefresh: _fetchCareLogs,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 여백 추가
+        child: ListView.builder(
+          itemCount: _careLogs.length,
+          itemBuilder: (context, index) {
+            final log = _careLogs[index];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0), // 리스트 아이템 간 여백 추가
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/caregiver_patient_log_detail',
+                    arguments: log, // 선택한 간병일지 데이터 전달
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(100), // 버튼형 디자인
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1), // 연한 그림자 효과
+                        blurRadius: 5,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            decoration: const BoxDecoration(
+                              color: Colors.white, // 아이콘 배경 흰색
+                              shape: BoxShape.circle, // 원형 모양
                             ),
-                            PopupMenuItem(
-                              value: "delete",
-                              child: Text("삭제",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500)),
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(Icons.edit, size: 24, color: Color(0xFF43C098)),
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            "간병일지 ${index + 1}", // 제목 유지
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
                             ),
-                          ],
-                        )
-                      ],
-                    ),
-                  ],
+                          ),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          Text(
+                            _formatDate(log['created_at']), // 날짜 유지
+                            style: const TextStyle(fontSize: 14, color: Colors.black54),
+                          ),
+                          const SizedBox(width: 10),
+                          PopupMenuButton<String>(
+                            onSelected: (value) {
+                              if (value == "edit") {
+                                _editCareLog(log);
+                              } else if (value == "delete") {
+                                _deleteCareLog(log['id']);
+                              }
+                            },
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            color: Colors.white,
+                            elevation: 8,
+                            itemBuilder: (BuildContext context) => [
+                              PopupMenuItem(
+                                value: "edit",
+                                child: Text("수정",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500)),
+                              ),
+                              PopupMenuItem(
+                                value: "delete",
+                                child: Text("삭제",
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500)),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }
@@ -341,4 +340,5 @@ class _CaregiverPatientLogListScreenState
       ),
     );
   }
+
 }

@@ -258,11 +258,12 @@ class _RecorderScreenState extends State<RecorderScreen> {
       List<String> invalidShortTexts = [
         "MBC 뉴스 이덕영입니다.",
         "기상캐스터 배혜지",
-        "MBC 뉴스 김재경입니다"
+        "MBC 뉴스 김재경입니다",
+        "시청해 주셔서 감사합니다."
       ];
       if (invalidShortTexts.contains(transcribedText)) {
-        debugPrint("❌ 너무 짧은 음성 입력됨: $transcribedText");
-        return "너무 짧은 음성이 입력되었습니다.";
+        debugPrint("❌ 뉴스 오류: $transcribedText");
+        return "다시 시도해주세요.";
       }
       debugPrint("🎤 Whisper 변환 텍스트: $transcribedText");
       return transcribedText;
@@ -299,10 +300,8 @@ class _RecorderScreenState extends State<RecorderScreen> {
             {
               "role": "system",
               "content":
-                  "아래 텍스트는 발음이 부정확한 사람의 음성에서 변환된 결과로, 오타, 잘못 인식된 단어, 이름, 부자연스러운 표현들이 포함될 수 있어. " +
-                      "'중국어' 단어가 마지막에 포함되어 있으면 중국어로 번역해서 그 문장만 출력해줘. " +
-                      "어떠한 부가 설명도 추가하지 말고 오직 문장만 출력해야 해. " +
-                      "보정이지, 너가 없는 말을 지어내면 안돼. 문장기호도 최대한 빼 줘"
+                  "The following text is the result of transcribing speech from a person with inaccurate pronunciation and may contain typos, misinterpreted words, names, and unnatural expressions. Do not add any extra explanation; output only the sentence.  It is a correction, so do not make up words that weren't there. Also, remove as many punctuation marks as possible." +
+                  "If the word '중국어' is included at the end, translate the sentence into Chinese and output only that sentence at that time. "
             },
             {"role": "user", "content": text}
           ],
@@ -540,7 +539,7 @@ class _RecorderScreenState extends State<RecorderScreen> {
 
           const SizedBox(height: 20),
 
-          // 🎵 웨이브 바 (너비 조정)
+          // 웨이브 바
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
@@ -565,7 +564,7 @@ class _RecorderScreenState extends State<RecorderScreen> {
 
           const SizedBox(height: 30),
 
-          // 🎤 녹음 버튼
+          // 녹음 버튼
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: ElevatedButton(
