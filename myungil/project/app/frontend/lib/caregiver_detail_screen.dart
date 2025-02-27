@@ -90,8 +90,8 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
+          'assets/images/logo_ver2.png',
+          height: 35,
           fit: BoxFit.contain,
         ),
         iconTheme: const IconThemeData(color: Colors.black),

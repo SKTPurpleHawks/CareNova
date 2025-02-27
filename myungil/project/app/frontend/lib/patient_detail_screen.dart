@@ -35,20 +35,6 @@ class PatientDetailScreen extends StatelessWidget {
     this.protectorId,
   }) : super(key: key);
 
-  //   const PatientDetailScreen({
-  //   Key? key,
-  //   required this.patient,
-  //   required this.token,
-  //   required this.isProtector,
-  //   required this.hasCaregiver,
-  //   required this.caregiverName,
-  //   required this.caregiverId,
-  //   required this.caregiverPhone,
-  //   required this.caregiverStartDate,
-  //   required this.caregiverEndDate,
-  //   this.protectorId,
-  // }) : super(key: key);
-
   String _formatDate(String dateString) {
     if (dateString == "정보 없음" || dateString.isEmpty) return "정보 없음";
     try {
@@ -61,6 +47,22 @@ class PatientDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<String> symptoms = [];
+    if (patient['symptoms'] != null) {
+      if (patient['symptoms'] is String) {
+        symptoms = (patient['symptoms'] as String)
+            .split(",")
+            .map((item) => item.trim())
+            .where((item) => item.isNotEmpty)
+            .toList();
+      } else if (patient['symptoms'] is List) {
+        symptoms = (patient['symptoms'] as List)
+            .map((item) => item.toString().trim())
+            .where((item) => item.isNotEmpty)
+            .toList();
+      }
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -103,7 +105,8 @@ class PatientDetailScreen extends StatelessWidget {
                     SizedBox(height: 10),
                     _buildRow("간병 장소", patient['spot'] ?? "정보 없음"),
                     SizedBox(height: 10),
-                    _buildRow("증상", patient['symptoms'] ?? "정보 없음"),
+                    _buildChipDetailRow(
+                        "증상", symptoms.isNotEmpty ? symptoms : ["정보 없음"]),
                     SizedBox(height: 10),
                     _buildRow("보행 가능 여부", patient['canwalk'] ?? "정보 없음"),
                   ]),
@@ -288,4 +291,37 @@ class PatientDetailScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget _buildChipDetailRow(String title, List<String> items) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      SizedBox(height: 0),
+      Text(
+        title,
+        style: GoogleFonts.notoSansKr(
+            fontWeight: FontWeight.w500, fontSize: 18, color: Colors.black87),
+      ),
+      SizedBox(height: 8),
+      Align(
+        alignment: Alignment.centerLeft, // 🔹 Chip들을 왼쪽 정렬
+        child: Wrap(
+          alignment: WrapAlignment.start,
+          spacing: 6,
+          runSpacing: 6,
+          children: items.map((item) {
+            return Chip(
+              label: Text(
+                item,
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 18, fontWeight: FontWeight.w300),
+              ),
+              backgroundColor: Colors.grey.shade200,
+            );
+          }).toList(),
+        ),
+      ),
+    ],
+  );
 }
