@@ -189,12 +189,16 @@ class _RecorderScreenState extends State<RecorderScreen> {
     // ✅ STT 변환 실행 (녹음 종료 후 자동 실행)
     if (_filePath != null) {
       String rawText = await _convertSpeechToTextWithWhisper(_filePath!);
-      String refinedText = await _refineTextWithGPT(rawText); // ✅ GPT로 보정된 텍스트
+      if (_isInvalidShortText(rawText)) {
+        debugPrint("🚫 뉴스 관련 음성이 감지되어 실행 중단: $rawText");
+        return;
+      }
+      String refinedText = await _refineTextWithGPT(rawText); // GPT로 보정된 텍스트
 
       setState(() {
-        _messages.insert(0, refinedText); // 📩 채팅 형식으로 UI에 표시
+        _messages.insert(0, refinedText); // 채팅 형식으로 UI에 표시
       });
-      _playTTS(refinedText); // ✅ TTS 실행
+      _playTTS(refinedText); // TTS 실행
       debugPrint("📢 최종 변환 텍스트: $refinedText");
     }
   }
@@ -233,7 +237,7 @@ class _RecorderScreenState extends State<RecorderScreen> {
       debugPrint("📡 Whisper API 요청 전송 중...");
       var response = await request.send();
 
-      // ✅ 응답이 정상적으로 왔는지 확인
+      // 응답이 정상적으로 왔는지 확인
       if (response.statusCode != 200) {
         debugPrint("❌ Whisper API 요청 실패: ${response.reasonPhrase}");
         return "입력된 내용이 없습니다.";
@@ -244,33 +248,50 @@ class _RecorderScreenState extends State<RecorderScreen> {
       debugPrint(
           "📝 Whisper API 응답(${whStopwatch.elapsedMilliseconds}ms): $responseBody");
 
-      // ✅ JSON 파싱 오류 방지 및 UTF-8 처리
+      // JSON 파싱 오류 방지 및 UTF-8 처리
       Map<String, dynamic> decodedResponse = jsonDecode(responseBody);
 
-      // ✅ 변환된 텍스트 추출
+      // 변환된 텍스트 추출
       String transcribedText = decodedResponse['text']?.trim() ?? "";
 
-      // ✅ 변환된 텍스트가 비어있는 경우 처리
+      // 변환된 텍스트가 비어있는 경우 처리
       if (transcribedText.isEmpty) {
         debugPrint("❌ 변환된 텍스트 없음");
         return "입력된 내용이 없습니다.";
       }
-      List<String> invalidShortTexts = [
-        "MBC 뉴스 이덕영입니다.",
-        "기상캐스터 배혜지",
-        "MBC 뉴스 김재경입니다",
-        "시청해 주셔서 감사합니다."
-      ];
-      if (invalidShortTexts.contains(transcribedText)) {
-        debugPrint("❌ 뉴스 오류: $transcribedText");
-        return "다시 시도해주세요.";
-      }
-      debugPrint("🎤 Whisper 변환 텍스트: $transcribedText");
-      return transcribedText;
-    } catch (e) {
-      debugPrint("❌ Whisper API 오류: $e");
-      return "입력된 내용이 없습니다.";
+
+      if (_isInvalidShortText(transcribedText)) {
+      debugPrint("❌ 뉴스 오류 감지: $transcribedText");
+
+      Future.microtask(() {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("잘못된 음성이 감지되었습니다"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      });
+
+      return transcribedText; // 감지된 뉴스 문장을 그대로 반환 (GPT/TTS 실행 안 함)
     }
+
+    debugPrint("🎤 Whisper 변환 텍스트: $transcribedText");
+    return transcribedText;
+  } catch (e) {
+    debugPrint("❌ Whisper API 오류: $e");
+    return "입력된 내용이 없습니다.";
+  }
+}
+
+/// ✅ 특정 뉴스 문장이 감지되었는지 확인하는 함수
+bool _isInvalidShortText(String text) {
+  List<String> invalidShortTexts = [
+    "MBC 뉴스 이덕영입니다.",
+    "기상캐스터 배혜지",
+    "MBC 뉴스 김재경입니다",
+    "시청해 주셔서 감사합니다."
+  ];
+  return invalidShortTexts.contains(text);
   }
 
   Future<String> _refineTextWithGPT(String text) async {
