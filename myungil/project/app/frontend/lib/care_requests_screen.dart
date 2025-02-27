@@ -82,11 +82,16 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("간병 요청 목록")),
+      appBar: AppBar(
+        title: const Text("간병 요청 목록"),
+        centerTitle: true,
+      ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : _requests.isEmpty
-              ? Center(child: Text("대기 중인 요청이 없습니다."))
+              ? Center(
+                  child:
+                      Text("대기 중인 요청이 없습니다.", style: TextStyle(fontSize: 18)))
               : ListView.builder(
                   itemCount: _requests.length,
                   itemBuilder: (context, index) {
@@ -97,32 +102,74 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                         request['protector_name'] ?? "알 수 없는 보호자";
 
                     return Card(
-                      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      child: ListTile(
-                        title: Text("$protectorName 님의 요청이 도착하였습니다."),
-                        trailing: request['status'] == "pending"
-                            ? Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  TextButton(
-                                    onPressed: () =>
-                                        respondToRequest(request['id'], true),
-                                    child: Text("수락",
-                                        style: TextStyle(color: Colors.green)),
+                      color: Colors.grey[200],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20), // 🔹 둥근 모서리 조정
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 12, horizontal: 16),
+                      elevation: 5,
+                      shadowColor: Colors.black.withOpacity(0.2),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(height: 10),
+                            // 🔹 요청 도착 메시지
+                            Text(
+                              "$protectorName 님의 요청이 도착하였습니다.",
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 12),
+                            const Divider(
+                                thickness: 1,
+                                color: Colors.black26), // 🔹 구분선 추가
+                            const SizedBox(height: 8),
+
+                            // 🔹 수락 | 거절 버튼 (가운데 정렬)
+                            request['status'] == "pending"
+                                ? Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () => respondToRequest(
+                                            request['id'], true),
+                                        child: const Text("수락",
+                                            style: TextStyle(
+                                                color: Colors.green,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600)),
+                                      ),
+                                      const VerticalDivider(
+                                          width: 1,
+                                          color:
+                                              Colors.black26), // 🔹 버튼 사이 구분선
+                                      TextButton(
+                                        onPressed: () => respondToRequest(
+                                            request['id'], false),
+                                        child: const Text("거절",
+                                            style: TextStyle(
+                                                color: Colors.red,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600)),
+                                      ),
+                                    ],
+                                  )
+                                : Text(
+                                    request['status'] == "accepted"
+                                        ? "✅ 수락되었습니다."
+                                        : "❌ 거절되었습니다.",
+                                    style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                  TextButton(
-                                    onPressed: () =>
-                                        respondToRequest(request['id'], false),
-                                    child: Text("거절",
-                                        style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
-                              )
-                            : Text(
-                                request['status'] == "accepted"
-                                    ? "✅ 수락됨"
-                                    : "❌ 거절됨",
-                              ),
+                          ],
+                        ),
                       ),
                     );
                   },

@@ -146,6 +146,7 @@ class PatientDetailScreen extends StatelessWidget {
                         ),
                       ]),
                     ),
+                  const SizedBox(height: 20),
                   Padding(
                     padding: const EdgeInsets.all(1),
                     child: _buildInfoCard([
@@ -190,9 +191,9 @@ class PatientDetailScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => 
-                    // PatientRecordScreen(patientId: patient['id'] ?? ""), // 수현 ver 음성 AI
-                    RecorderScreen(), // 지영 ver 음성 AI
+                      builder: (context) =>
+                          // PatientRecordScreen(patientId: patient['id'] ?? ""), // 수현 ver 음성 AI
+                          RecorderScreen(), // 지영 ver 음성 AI
                     ),
                   );
                 },

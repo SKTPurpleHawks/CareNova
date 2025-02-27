@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'protector_home_screen.dart'; // 보호자 홈 화면 import
-import 'patient_detail_screen.dart'; // 환자 상세 화면 import
+import 'protector_home_screen.dart';
+import 'patient_detail_screen.dart';
 
 class ReviewScreen extends StatefulWidget {
   final String token;
@@ -29,21 +30,14 @@ class _ReviewScreenState extends State<ReviewScreen> {
   double responseAccuracy = 0;
   TextEditingController reviewController = TextEditingController();
 
-  /// 별점 업데이트 함수 (드래그하여 변경 가능)
-  void updateRating(Function(double) updateFunc, double value) {
-    setState(() {
-      updateFunc(value);
-    });
-  }
+  double get sincerityRating => (diaryWriting + workAttitude) / 2;
+  double get hygieneRating => (patientHygiene + personalHygiene) / 2;
+  double get communicationRating =>
+      (understandingRequests + responseAccuracy) / 2;
+  double get totalRating =>
+      (sincerityRating + hygieneRating + communicationRating) / 3;
 
-  /// 리뷰 제출 함수
   Future<void> submitReview() async {
-    // 평균 점수 계산
-    double sincerity = (diaryWriting + workAttitude) / 2;
-    double hygiene = (patientHygiene + personalHygiene) / 2;
-    double communication = (understandingRequests + responseAccuracy) / 2;
-    double totalScore = (sincerity + hygiene + communication) / 3;
-
     final url = Uri.parse('http://172.23.250.30:8000/reviews');
 
     final response = await http.post(
@@ -55,10 +49,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
       body: jsonEncode({
         'caregiver_id': widget.caregiverId,
         'protector_id': widget.protectorId,
-        'sincerity': sincerity,
-        'hygiene': hygiene,
-        'communication': communication,
-        'total_score': totalScore,
+        'sincerity': sincerityRating,
+        'hygiene': hygieneRating,
+        'communication': communicationRating,
+        'total_score': totalRating,
         'review_content': reviewController.text,
       }),
     );
@@ -68,13 +62,12 @@ class _ReviewScreenState extends State<ReviewScreen> {
         SnackBar(content: Text('리뷰가 저장되었습니다.')),
       );
 
-      // 보호자 홈 화면으로 이동
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
           builder: (context) => ProtectorUserHomeScreen(token: widget.token),
         ),
-        (route) => false, // 이전 화면을 모두 제거
+        (route) => false,
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -84,36 +77,31 @@ class _ReviewScreenState extends State<ReviewScreen> {
   }
 
   Widget buildStarRating(
-      String label, double currentRating, Function(double) onRatingUpdate) {
+      String label, double rating, Function(double) onUpdate) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
+        Text(label, style: GoogleFonts.notoSansKr(fontSize: 16)),
         GestureDetector(
           onHorizontalDragUpdate: (details) {
-            // 슬라이드 거리 기반으로 별점 조정 (0~5 사이)
             double dx = details.localPosition.dx;
             double newRating = (dx / 40).clamp(0, 5); // 40px 당 1점
-            updateRating(onRatingUpdate, newRating);
+            setState(() => onUpdate(newRating));
           },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(5, (index) {
               double starValue = index + 1.0;
               bool isHalfFilled =
-                  currentRating >= starValue - 0.5 && currentRating < starValue;
+                  rating >= starValue - 0.5 && rating < starValue;
               return GestureDetector(
-                onTap: () => updateRating(
-                    onRatingUpdate, isHalfFilled ? starValue - 0.5 : starValue),
+                onTap: () => setState(
+                    () => onUpdate(isHalfFilled ? starValue - 0.5 : starValue)),
                 child: Icon(
                   isHalfFilled
                       ? Icons.star_half
-                      : (currentRating >= starValue
-                          ? Icons.star
-                          : Icons.star_border),
-                  color: Colors.amber,
+                      : (rating >= starValue ? Icons.star : Icons.star_border),
+                  color: Color(0xFF43C098),
                   size: 40,
                 ),
               );
@@ -125,58 +113,161 @@ class _ReviewScreenState extends State<ReviewScreen> {
     );
   }
 
+  Widget buildCategoryBox(
+      String title, List<Map<String, dynamic>> items, double averageRating) {
+    return Card(
+      color: Colors.white,
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('$title 평점: ${averageRating.toStringAsFixed(1)}',
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 18, fontWeight: FontWeight.bold)),
+            Divider(),
+            ...items.map((item) => buildStarRating(
+                item['label'], item['rating'], item['updateFunc'])),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("간병인 평가하기")),
+      backgroundColor: Colors.grey[100],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+        title: Text("간병인 리뷰 작성",
+            style: GoogleFonts.notoSansKr(color: Colors.black)),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.symmetric(horizontal: 24),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            buildStarRating("간병일지 작성", diaryWriting,
-                (rating) => setState(() => diaryWriting = rating)),
-            buildStarRating("근무 태도", workAttitude,
-                (rating) => setState(() => workAttitude = rating)),
-            buildStarRating("환자 위생 관리", patientHygiene,
-                (rating) => setState(() => patientHygiene = rating)),
-            buildStarRating("개인 위생 관리", personalHygiene,
-                (rating) => setState(() => personalHygiene = rating)),
-            buildStarRating("요청 이해도", understandingRequests,
-                (rating) => setState(() => understandingRequests = rating)),
-            buildStarRating("반응 정확도", responseAccuracy,
-                (rating) => setState(() => responseAccuracy = rating)),
-
             SizedBox(height: 10),
-
-            // 리뷰 입력 필드
+            buildCategoryBox(
+                '성실도',
+                [
+                  {
+                    'label': '간병일지 작성',
+                    'rating': diaryWriting,
+                    'updateFunc': (val) => diaryWriting = val
+                  },
+                  {
+                    'label': '근무 태도',
+                    'rating': workAttitude,
+                    'updateFunc': (val) => workAttitude = val
+                  },
+                ],
+                sincerityRating),
+            buildCategoryBox(
+                '위생',
+                [
+                  {
+                    'label': '환자 위생 관리',
+                    'rating': patientHygiene,
+                    'updateFunc': (val) => patientHygiene = val
+                  },
+                  {
+                    'label': '개인 위생 관리',
+                    'rating': personalHygiene,
+                    'updateFunc': (val) => personalHygiene = val
+                  },
+                ],
+                hygieneRating),
+            buildCategoryBox(
+                '의사소통',
+                [
+                  {
+                    'label': '요청 이해도',
+                    'rating': understandingRequests,
+                    'updateFunc': (val) => understandingRequests = val
+                  },
+                  {
+                    'label': '반응 정확도',
+                    'rating': responseAccuracy,
+                    'updateFunc': (val) => responseAccuracy = val
+                  },
+                ],
+                communicationRating),
+            SizedBox(height: 10),
+            Text("상세 리뷰 작성",
+                style: GoogleFonts.notoSansKr(
+                    fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 5),
+            Card(
+              color: Colors.white,
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Center(
+                  child: Text('전체 별점: ${totalRating.toStringAsFixed(1)}',
+                      style: GoogleFonts.notoSansKr(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.teal)),
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
             TextField(
               controller: reviewController,
               decoration: InputDecoration(
-                labelText: "리뷰 작성",
-                border: OutlineInputBorder(),
+                hintText: '상세 리뷰를 작성해주세요.',
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
               ),
-              maxLines: 3,
+              maxLines: 5,
             ),
-
-            SizedBox(height: 20),
-
-            // 버튼 그룹 (확인 / 취소)
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: submitReview,
-                  child: Text("확인"),
-                ),
-                TextButton(
-                  onPressed: () {
-                    // 이전 화면으로 돌아가기
-                    Navigator.pop(context);
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.grey),
-                  child: Text("취소"),
-                ),
-              ],
+            SizedBox(height: 80),
+          ],
+        ),
+      ),
+      bottomSheet: Container(
+        color: Colors.white,
+        padding: EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 250, 94, 47),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              ),
+              child: Text("취소", style: TextStyle(color: Colors.white)),
+            ),
+            ElevatedButton(
+              onPressed: submitReview,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF43C098),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+              ),
+              child: Text("확인", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),

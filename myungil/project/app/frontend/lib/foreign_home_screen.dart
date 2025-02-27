@@ -128,8 +128,8 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
+          'assets/images/logo_ver2.png',
+          height: 35,
           fit: BoxFit.contain,
         ),
         centerTitle: true,

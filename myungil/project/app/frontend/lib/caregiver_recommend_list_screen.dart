@@ -28,8 +28,8 @@ class CaregiverRecommendListScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
+          'assets/images/logo_ver2.png',
+          height: 35,
           fit: BoxFit.contain,
         ),
         iconTheme: const IconThemeData(color: Colors.black),
@@ -152,11 +152,16 @@ class CaregiverRecommendListScreen extends StatelessWidget {
                           style: TextStyle(
                               fontSize: 14, fontWeight: FontWeight.w400)),
                       const SizedBox(width: 4),
-                      Text('${matchingRate.toStringAsFixed(2)}%',
-                          style: const TextStyle(
-                              fontSize: 22,
-                              color: Colors.teal,
-                              fontWeight: FontWeight.bold)),
+                      Text(
+                        '${matchingRate.toStringAsFixed(2)}%',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: matchingRate >= 90
+                              ? Colors.red
+                              : Colors.teal, // 🔹 90 이상이면 빨간색
+                        ),
+                      ),
                       const SizedBox(width: 10),
                     ],
                   ),

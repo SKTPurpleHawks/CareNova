@@ -105,6 +105,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
             fontWeight: FontWeight.w400,
           ),
         ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),

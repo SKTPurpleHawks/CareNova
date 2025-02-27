@@ -101,22 +101,21 @@ class _ProtectorPatientLogListScreenState
           elevation: 10,
           shadowColor: Colors.black.withOpacity(0.4),
           child: InkWell(
-            borderRadius: BorderRadius.circular(100), // ✅ 터치 효과가 카드 모양과 일치
+            borderRadius: BorderRadius.circular(100),
             onTap: () {
-              _viewCareLog(log); // ✅ 간병일지 상세 보기
+              _viewCareLog(log);
             },
             child: SizedBox(
-              // ✅ 크기 조정 가능
-              width: double.infinity, // ✅ 가로 전체 확장 (부모 컨테이너 기준)
-              height: 80, // ✅ 높이 조정 가능
+              width: double.infinity,
+              height: 80,
               child: Padding(
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 30),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ 아이템 배치
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "간병일지 ${index + 1}", // ✅ 제목 유지
+                      "간병일지 ${index + 1}",
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

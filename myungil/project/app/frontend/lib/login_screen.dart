@@ -19,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false; // 로그인 버튼 로딩 상태
   bool _isCancelled = false;
 
-
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -58,8 +57,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    ProtectorUserHomeScreen(token: token)),
+                builder: (context) => ProtectorUserHomeScreen(token: token)),
           );
         }
       } else if (response.statusCode == 404) {
@@ -75,9 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } on TimeoutException catch (_) {
       if (!_isCancelled) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text(
-                  '서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.')),
+          SnackBar(content: Text('서버 응답이 지연되고 있습니다. 잠시 후 다시 시도해 주세요.')),
         );
       }
     } catch (error) {
@@ -95,7 +91,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final Color primaryColor = Color(0xFF43C098); // 고급스러운 색상 유지
@@ -112,8 +107,8 @@ class _LoginScreenState extends State<LoginScreen> {
         //   onPressed: () => Navigator.pop(context),
         // ),
         title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
+          'assets/images/logo_ver2.png',
+          height: 35,
           fit: BoxFit.contain,
         ),
         iconTheme: const IconThemeData(color: Colors.black),
@@ -123,7 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 140),
+            const SizedBox(height: 80),
 
             // 로그인 제목
             Text(
@@ -136,7 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 90),
 
             // 이메일 입력 필드
             _buildInputField(

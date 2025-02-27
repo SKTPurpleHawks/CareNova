@@ -83,8 +83,8 @@ class _ForeignManagePatientScreenState
         backgroundColor: Colors.white,
         elevation: 0,
         title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
+          'assets/images/logo_ver2.png',
+          height: 35,
           fit: BoxFit.contain,
         ),
         centerTitle: true,
@@ -192,7 +192,7 @@ class _ForeignManagePatientScreenState
               ),
               padding: EdgeInsets.all(5),
               child: Icon(
-                Icons.person_outline,
+                Icons.person,
                 size: 45,
                 color: Color(0xFF43C098),
               ),

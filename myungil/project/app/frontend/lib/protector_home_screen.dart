@@ -184,8 +184,8 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: Image.asset(
-          'assets/images/textlogo.png',
-          height: 25,
+          'assets/images/logo_ver2.png',
+          height: 35,
           fit: BoxFit.contain,
         ),
         centerTitle: true,
@@ -200,13 +200,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 120),
-          const Text(
-            "간병인 검색",
-            style: TextStyle(
-                fontSize: 22, fontWeight: FontWeight.w600, color: Colors.black),
-          ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 100),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.all(16),
@@ -224,8 +218,46 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8, horizontal: 1), // 🔹 내부 여백
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 3, horizontal: 5), // 🔹 바깥 여백
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200], // 🔹 회색 배경
+                    borderRadius: BorderRadius.circular(100), // 🔹 둥근 모서리
+                  ),
+                  alignment: Alignment.center,
+                  child: Stack(
+                    alignment: Alignment.center, // 🔹 전체적으로 가운데 정렬
+                    children: [
+                      Align(
+                        alignment: Alignment.center, // 🔹 "간병인 검색하기" 완전 중앙 정렬
+                        child: Text(
+                          "간병인 검색하기",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: 16, // 🔹 오른쪽 끝으로 아이콘 배치
+                        child: Icon(
+                          Icons.search,
+                          size: 30,
+                          color: Colors.black,
+                          weight: 3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 30),
                 const Text(
-                  "< 불러올 환자 선택 >",
+                  "< 환자 선택 >",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 const SizedBox(height: 30),
