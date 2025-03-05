@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+file_name : care_requests_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자가 보낸 요청을 반응할 수 있는 구인관리 화면
+              보호자가 보낸 간병 요청을 수락/거부를 통해 대응 할 수 있는 화면이다.
+-----------------------------------------------------------------------------------------------------------
+*/
+
 class CareRequestsScreen extends StatefulWidget {
   final String token;
 
@@ -24,7 +39,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
   Future<void> fetchCareRequests() async {
     try {
       final response = await http.get(
-        Uri.parse('http://172.23.250.30:8000/care-request'),
+        Uri.parse('http://192.168.0.10:8000/care-request'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json; charset=utf-8',
@@ -32,7 +47,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
       );
 
       if (response.statusCode == 200) {
-        // ✅ UTF-8 변환 없이 jsonDecode 직접 사용
+        // UTF-8 변환 없이 jsonDecode 직접 사용
         final decodedBody = response.bodyBytes.isNotEmpty
             ? jsonDecode(utf8.decode(response.bodyBytes))
             : [];
@@ -41,9 +56,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
           _requests = decodedBody;
           isLoading = false;
         });
-      } else {
-        _showSnackBar('간병 요청을 불러오지 못했습니다.');
-      }
+      } else {}
     } catch (e) {
       _showSnackBar('서버 연결 중 오류가 발생했습니다.');
     }
@@ -52,7 +65,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
   Future<void> respondToRequest(int requestId, bool accept) async {
     try {
       final response = await http.put(
-        Uri.parse('http://172.23.250.30:8000/care-request/$requestId'),
+        Uri.parse('http://192.168.0.10:8000/care-request/$requestId'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',
@@ -97,7 +110,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                   itemBuilder: (context, index) {
                     final request = _requests[index];
 
-                    // ✅ protector_name 값이 없거나 null이면 기본값 설정
+                    // protector_name 값이 없거나 null이면 기본값 설정
                     String protectorName =
                         request['protector_name'] ?? "알 수 없는 보호자";
 
@@ -117,7 +130,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             SizedBox(height: 10),
-                            // 🔹 요청 도착 메시지
+                            // 요청 도착 메시지
                             Text(
                               "$protectorName 님의 요청이 도착하였습니다.",
                               style: const TextStyle(
@@ -127,10 +140,10 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                             const SizedBox(height: 12),
                             const Divider(
                                 thickness: 1,
-                                color: Colors.black26), // 🔹 구분선 추가
+                                color: Colors.black26), // 구분선 추가
                             const SizedBox(height: 8),
 
-                            // 🔹 수락 | 거절 버튼 (가운데 정렬)
+                            // 수락 | 거절 버튼 (가운데 정렬)
                             request['status'] == "pending"
                                 ? Row(
                                     mainAxisAlignment:
@@ -148,7 +161,7 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                                       const VerticalDivider(
                                           width: 1,
                                           color:
-                                              Colors.black26), // 🔹 버튼 사이 구분선
+                                              Colors.black26), // 버튼 사이 구분선
                                       TextButton(
                                         onPressed: () => respondToRequest(
                                             request['id'], false),
@@ -162,8 +175,8 @@ class _CareRequestsScreenState extends State<CareRequestsScreen> {
                                   )
                                 : Text(
                                     request['status'] == "accepted"
-                                        ? "✅ 수락되었습니다."
-                                        : "❌ 거절되었습니다.",
+                                        ? "수락되었습니다."
+                                        : "거절되었습니다.",
                                     style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold),

@@ -4,6 +4,21 @@ import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 
+
+/*
+-------------------------------------------------------------------------
+file_name : protector_user_signup_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자의 회원가입 화면 
+              앱에서 입력받은 데이터를 백엔드 서버로 전달해 데이터베이스에 저장
+-------------------------------------------------------------------------
+*/
+
 class ProtectorUserSignupScreen extends StatefulWidget {
   @override
   _ProtectorUserSignupScreenState createState() =>
@@ -33,7 +48,7 @@ class _ProtectorUserSignupScreenState extends State<ProtectorUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://172.23.250.30:8000/signup/protector'),
+        Uri.parse('http://192.168.0.10:8000/signup/protector'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': emailController.text,

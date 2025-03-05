@@ -4,20 +4,35 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
-class ForeignEditProfileScreen extends StatefulWidget {
+/*
+-----------------------------------------------------------------------------------------------------------
+file_name : caregiver_edit_profile_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인의 회원 정보를 수정하는 화면
+              작성한 내용을 DB에서 가져와 값을 세팅하고, 수정된 내용을 반영하여 DB에 다시 저장한다.
+-----------------------------------------------------------------------------------------------------------
+*/
+
+
+class CaregiverEditProfileScreen extends StatefulWidget {
   final String token;
   final Map<String, dynamic> userData;
 
-  const ForeignEditProfileScreen(
+  const CaregiverEditProfileScreen(
       {Key? key, required this.token, required this.userData})
       : super(key: key);
 
   @override
-  _ForeignEditProfileScreenState createState() =>
-      _ForeignEditProfileScreenState();
+  _CaregiverEditProfileScreenState createState() =>
+      _CaregiverEditProfileScreenState();
 }
 
-class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
+class _CaregiverEditProfileScreenState extends State<CaregiverEditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _phoneNumberController;
@@ -135,7 +150,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
         return;
       }
 
-      final url = Uri.parse('http://172.23.250.30:8000/user-info');
+      final url = Uri.parse('http://192.168.0.10:8000/user-info');
       Map<String, dynamic> data = {
         'email': widget.userData['email'],
         'name': _nameController.text,
@@ -425,7 +440,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
             }
           },
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -530,7 +545,7 @@ class _ForeignEditProfileScreenState extends State<ForeignEditProfileScreen> {
             }
           },
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );

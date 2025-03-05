@@ -4,6 +4,21 @@ import 'package:http/http.dart' as http;
 import 'caregiver_patient_log_create_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
+/*
+-------------------------------------------------------------------------------------
+file_name : caregiver_patient_log_list.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인이 확인하는 간병일지 리스트 화면
+              간병인이 간병일지를 관리하는 화면으로 작성, 수정, 삭제기능 활용 가능
+-------------------------------------------------------------------------------------
+*/
+
 class CaregiverPatientLogListScreen extends StatefulWidget {
   final String patientId;
   final String patientName;
@@ -38,7 +53,7 @@ class _CaregiverPatientLogListScreenState
 
   Future<void> _fetchCareLogs() async {
     final url =
-        Uri.parse('http://172.23.250.30:8000/dailyrecord/${widget.patientId}');
+        Uri.parse('http://192.168.0.10:8000/dailyrecord/${widget.patientId}');
 
     try {
       final response = await http.get(
@@ -64,7 +79,7 @@ class _CaregiverPatientLogListScreenState
   }
 
   Future<void> _deleteCareLog(int recordId) async {
-    final url = Uri.parse('http://172.23.250.30:8000/dailyrecord/$recordId');
+    final url = Uri.parse('http://192.168.0.10:8000/dailyrecord/$recordId');
 
     try {
       final response = await http.delete(

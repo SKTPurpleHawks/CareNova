@@ -2,21 +2,37 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'patient_detail_screen.dart';
-import 'foreign_home_screen.dart';
+import 'caregiver_home_screen.dart';
 
-class ForeignManagePatientScreen extends StatefulWidget {
+
+
+/*
+----------------------------------------------------------------------
+file_name : caregiver_manage_patient_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인이 환자와 연결되었을 때 확인 가능한 환자 리스트 화면
+----------------------------------------------------------------------
+*/
+
+
+class CaregiverManagePatientScreen extends StatefulWidget {
   final String token;
 
-  const ForeignManagePatientScreen({Key? key, required this.token})
+  const CaregiverManagePatientScreen({Key? key, required this.token})
       : super(key: key);
 
   @override
-  _ForeignManagePatientScreenState createState() =>
-      _ForeignManagePatientScreenState();
+  _CaregiverManagePatientScreenState createState() =>
+      _CaregiverManagePatientScreenState();
 }
 
-class _ForeignManagePatientScreenState
-    extends State<ForeignManagePatientScreen> {
+class _CaregiverManagePatientScreenState
+    extends State<CaregiverManagePatientScreen> {
   List<dynamic> _patients = [];
   int _selectedIndex = 1;
 
@@ -28,7 +44,7 @@ class _ForeignManagePatientScreenState
 
   /// 환자 정보 불러오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://172.23.250.30:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.0.10:8000/caregiver/patients');
 
     try {
       final response = await http.get(
@@ -69,7 +85,7 @@ class _ForeignManagePatientScreenState
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => ForeignHomeScreen(token: widget.token),
+          builder: (context) => CaregiverHomeScreen(token: widget.token),
         ),
       );
     }
@@ -78,8 +94,9 @@ class _ForeignManagePatientScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // 🔹 배경색 추가
+      backgroundColor: Colors.white, // 배경색 추가
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         title: Image.asset(
@@ -142,7 +159,7 @@ class _ForeignManagePatientScreenState
     );
   }
 
-  /// 🔹 새로운 UI 적용된 환자 카드
+  /// 새로운 UI 적용된 환자 카드
   Widget _buildPatientCard(
     BuildContext context,
     String patientName,

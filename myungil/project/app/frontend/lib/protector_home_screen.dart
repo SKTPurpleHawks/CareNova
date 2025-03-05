@@ -3,7 +3,24 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'caregiver_recommend_list_screen.dart';
 import 'patient_manage_screen.dart';
-import 'patient_add_screen.dart'; // 파일 존재 여부 확인 후 추가
+import 'patient_add_screen.dart'; 
+
+
+/*
+-----------------------------------------------------------------------------------------------------
+file_name : protector_home_screen.dart
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일, 이수현
+ ● AI : 이수현
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자가 로그인했을 때 접속되는 화면
+              환자가 등록된 경우 간병인 추천 기능 활용 가능
+              '검색하기' 버튼 클릭시 선택된 환자 정보를 가지고 백엔드 서버에서 추천 AI 모델인 Tabnet 수행
+-----------------------------------------------------------------------------------------------------
+*/
 
 class ProtectorUserHomeScreen extends StatefulWidget {
   final String token;
@@ -37,7 +54,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
 
   /// 보호자가 등록한 환자 리스트 가져오기
   Future<void> fetchPatients() async {
-    final url = Uri.parse('http://172.23.250.30:8000/patients');
+    final url = Uri.parse('http://192.168.0.10:8000/patients');
 
     try {
       final response = await http.get(
@@ -107,7 +124,7 @@ class _ProtectorUserHomeScreenState extends State<ProtectorUserHomeScreen> {
     );
 
     final url = Uri.parse(
-        "http://172.23.250.30:8000/predict/$_protectorId/$_selectedPatientId");
+        "http://192.168.0.10:8000/predict/$_protectorId/$_selectedPatientId");
 
     try {
       final response = await http.post(

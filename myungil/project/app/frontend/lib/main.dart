@@ -3,6 +3,20 @@ import 'login_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+
+/*
+------------------------------------------------------------------------------------------------------
+file_name : main.dart
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 어플 실행시 첫 화면 지정 및 스타일 테마 설정 화면
+------------------------------------------------------------------------------------------------------
+*/
+
+
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   try {

@@ -2,20 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'foreign_edit_profile_screen.dart';
-import 'foreign_manage_patient_screen.dart';
+import 'caregiver_edit_profile_screen.dart';
+import 'caregiver_manage_patient_screen.dart';
 import 'care_requests_screen.dart';
 
-class ForeignHomeScreen extends StatefulWidget {
+
+/*
+-----------------------------------------------------------------------------------------------------------
+file_name : caregiver_home_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인 로그인시 첫 화면으로 간단한 프로필과 구인 정보 노출 기능, 구인 요청 관리 기능을 활용하는 화면
+-----------------------------------------------------------------------------------------------------------
+*/
+
+class CaregiverHomeScreen extends StatefulWidget {
   final String token;
 
-  const ForeignHomeScreen({Key? key, required this.token}) : super(key: key);
+  const CaregiverHomeScreen({Key? key, required this.token}) : super(key: key);
 
   @override
-  _ForeignHomeScreenState createState() => _ForeignHomeScreenState();
+  _CaregiverHomeScreenState createState() => _CaregiverHomeScreenState();
 }
 
-class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
+class _CaregiverHomeScreenState extends State<CaregiverHomeScreen> {
   String email = '';
   String name = '';
   String phonenumber = '';
@@ -44,7 +58,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 사용자 정보 불러오기
   Future<void> fetchUserInfo() async {
-    final url = Uri.parse('http://172.23.250.30:8000/user-info');
+    final url = Uri.parse('http://192.168.0.10:8000/user-info');
 
     try {
       final response = await http.get(
@@ -90,7 +104,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
   /// 구인 정보 업데이트
   Future<void> _updateJobInfo(bool value) async {
-    final url = Uri.parse('http://172.23.250.30:8000/update-job-info');
+    final url = Uri.parse('http://192.168.0.10:8000/update-job-info');
 
     try {
       final response = await http.put(
@@ -199,7 +213,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                           // ),
                           child: Row(
                             mainAxisAlignment:
-                                MainAxisAlignment.center, // 👉 중앙 정렬
+                                MainAxisAlignment.center, // 중앙 정렬
                             children: [
                               Text(
                                 "나이: $age",
@@ -209,7 +223,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                                   color: Colors.black87,
                                 ),
                               ),
-                              const SizedBox(width: 20), // 👉 나이와 성별 사이 간격 조정
+                              const SizedBox(width: 20), // 나이와 성별 사이 간격 조정
                               Text(
                                 "성별: $sex",
                                 style: GoogleFonts.notoSansKr(
@@ -230,7 +244,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
                             await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => ForeignEditProfileScreen(
+                                builder: (context) => CaregiverEditProfileScreen(
                                   token: widget.token,
                                   userData: {
                                     'email': email,
@@ -297,7 +311,6 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
 
                   const SizedBox(height: 30),
 
-// 기존의 GestureDetector 위젯을 다음 코드로 대체합니다.
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
@@ -401,7 +414,7 @@ class _ForeignHomeScreenState extends State<ForeignHomeScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) =>
-                    ForeignManagePatientScreen(token: widget.token),
+                    CaregiverManagePatientScreen(token: widget.token),
               ),
             );
           }

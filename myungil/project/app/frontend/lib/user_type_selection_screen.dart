@@ -1,7 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'foreign_user_signup_screen.dart';
+import 'caregiver_user_signup_screen.dart';
 import 'protector_user_signup_screen.dart';
+
+/*
+-----------------------------------------------------------
+file_name : user_type_selection_screen.dart                       
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 회원가입 전 보호자/간병인 회원가입 유형 선택 화면
+-----------------------------------------------------------
+*/
 
 class UserTypeSelectionScreen extends StatefulWidget {
   @override
@@ -43,8 +55,8 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen> {
             // "간병 일감을 찾고 있어요" 카드
             _buildSelectionCard(
               text: '간병 일감을 찾고 있어요',
-              selected: _selectedOption == 'foreign',
-              onTap: () => setState(() => _selectedOption = 'foreign'),
+              selected: _selectedOption == 'caregiver',
+              onTap: () => setState(() => _selectedOption = 'caregiver'),
               primaryColor: primaryColor,
               secondaryColor: secondaryColor,
               borderColor: borderColor,
@@ -99,12 +111,12 @@ class _UserTypeSelectionScreenState extends State<UserTypeSelectionScreen> {
                   child: ElevatedButton(
                     onPressed: _selectedOption.isNotEmpty
                         ? () {
-                            if (_selectedOption == 'foreign') {
+                            if (_selectedOption == 'caregiver') {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) =>
-                                        ForeignUserSignupScreen()),
+                                        CaregiverUserSignupScreen()),
                               );
                             } else {
                               Navigator.push(

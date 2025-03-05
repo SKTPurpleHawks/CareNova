@@ -4,6 +4,22 @@ import 'dart:convert';
 import 'patient_manage_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
+
+/*
+---------------------------------------------------------------
+file_name : patient_add_screen.dart
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 환자를 등록하기 위해 환자 정보를 입력하는 화면
+              입력된 정보는 백엔드 서버로 전달되어 DB에 저장됨
+---------------------------------------------------------------
+*/
+
 class PatientAddScreen extends StatefulWidget {
   final String token;
 
@@ -86,7 +102,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
   Future<void> _addPatient() async {
     if (_formKey.currentState!.validate()) {
       final response = await http.post(
-        Uri.parse('http://172.23.250.30:8000/add_patient'),
+        Uri.parse('http://192.168.232.218:8000/add_patient'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json',
@@ -180,7 +196,7 @@ class _PatientAddScreenState extends State<PatientAddScreen> {
                 setState(() {
                   _birthday = date;
                   _age = _calculateAge(date ?? DateTime.now());
-                  _ageController.text = _age.toString(); // 🔹 나이 필드 자동 업데이트
+                  _ageController.text = _age.toString(); // 나이 필드 자동 업데이트
                 });
               }),
               SizedBox(height: 10),

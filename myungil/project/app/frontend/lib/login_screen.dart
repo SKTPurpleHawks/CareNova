@@ -4,8 +4,23 @@ import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
 import 'user_type_selection_screen.dart';
 import 'package:app/protector_home_screen.dart';
-import 'package:app/foreign_home_screen.dart';
+import 'package:app/caregiver_home_screen.dart';
 import 'dart:async';
+
+/*
+---------------------------------------------------------------------------
+file_name : login_screen.dart
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 로그인 화면
+              입력된 정보를 backend에서 확인하여 계정에 따라 다른 화면 노출
+---------------------------------------------------------------------------
+*/
+
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -25,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _isCancelled = false; // 취소 플래그 초기화
     });
 
-    final String baseUrl = "http://172.23.250.30:8000";
+    final String baseUrl = "http://192.168.0.10:8000";
     final String url = "$baseUrl/login";
 
     try {
@@ -47,11 +62,11 @@ class _LoginScreenState extends State<LoginScreen> {
         final userType = responseData['user_type'];
 
         // 사용자 유형에 따라 다른 화면으로 이동
-        if (userType == 'foreign') {
+        if (userType == 'caregiver') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-                builder: (context) => ForeignHomeScreen(token: token)),
+                builder: (context) => CaregiverHomeScreen(token: token)),
           );
         } else if (userType == 'protector') {
           Navigator.pushReplacement(

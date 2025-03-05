@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
+/*
+-----------------------------------------------------------------------------------------------------------
+file_name : caregiver_detail_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자가 받은 간병인 추천리스트에서 간병인의 상세정보를 확인하는 화면
+              보호자가 간병인의 여러가지 상세 정보를 확인하고 간병을 맡기고 싶은 경우 간병 요청을 보낼 수 있는 화면이다.
+-----------------------------------------------------------------------------------------------------------
+*/
+
 class CaregiverDetailScreen extends StatefulWidget {
   final Map<String, dynamic> caregiver;
   final String token;
@@ -21,9 +36,9 @@ class CaregiverDetailScreen extends StatefulWidget {
 }
 
 class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
-  /// ✅ 간병 신청 API 호출
+  /// 간병 신청 API 호출
   Future<void> _sendCareRequest(BuildContext context) async {
-    final url = Uri.parse("http://172.23.250.30:8000/care-request");
+    final url = Uri.parse("http://192.168.0.10:8000/care-request");
     final response = await http.post(
       url,
       headers: {
@@ -38,9 +53,9 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
     );
 
     if (response.statusCode == 200) {
-      _showSnackBar("✅ 간병 신청이 성공적으로 전송되었습니다.");
+      _showSnackBar("간병 신청이 성공적으로 전송되었습니다.");
     } else {
-      _showSnackBar("❌ 간병 신청에 실패했습니다.");
+      _showSnackBar("간병 신청에 실패했습니다.");
     }
   }
 
@@ -58,7 +73,7 @@ class _CaregiverDetailScreenState extends State<CaregiverDetailScreen> {
     final String caregiverSex = caregiver['sex'] ?? "정보 없음";
     final String caregiverSpot = caregiver['spot'] ?? "정보 없음";
 
-    /// ✅ 문자열로 저장된 데이터를 리스트로 변환
+    /// 문자열로 저장된 데이터를 리스트로 변환
     List<String> regions = (caregiver['region'] is String)
         ? (caregiver['region'] as String)
             .split(",")

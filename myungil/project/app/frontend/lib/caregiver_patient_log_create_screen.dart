@@ -3,6 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_fonts/google_fonts.dart';
 
+
+
+/*
+-----------------------------------------------------------------------------------------------------------------------------
+file_name : caregiver_patient_log_create_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인과 보호자의 로그인 정보에 따라 간병일지를 작성/확인하는 화면
+              1. 간병인 로그인
+                1) 간병일지 작성 : 초기 간병일지 작성이 가능하며, 정보를 모두 입력하지 않아도 저장이 가능하다.
+                2) 간병일지 수정 : 이전에 작성한 간병일지 정보를 가져와서 수정하고, 기입하지 않은 항목을 추가로 기입하여 저장 가능하다.
+              2. 보호자 로그인
+                간병일지 작성 및 수정이 불가능하고 입력하는 화면 UI를 토대로 읽기모드를 통해 내용을 확인만 가능하다.
+-----------------------------------------------------------------------------------------------------------------------------
+*/
+
 class CaregiverPatientLogCreateScreen extends StatefulWidget {
   final String patientName;
   final String caregiverId;
@@ -100,8 +120,8 @@ class _CaregiverPatientLogCreateScreenState
     final isEditing = widget.initialLogData != null;
     final url = isEditing
         ? Uri.parse(
-            'http://172.23.250.30:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
-        : Uri.parse('http://172.23.250.30:8000/dailyrecord'); // 새 기록
+            'http://192.168.0.10:8000/dailyrecord/${widget.initialLogData!["id"]}') // 수정
+        : Uri.parse('http://192.168.0.10:8000/dailyrecord'); // 새 기록
 
     final method = isEditing ? "PUT" : "POST";
 
@@ -366,7 +386,7 @@ class _CaregiverPatientLogCreateScreenState
             Expanded(
               child: widget.isReadOnly
                   ? _buildDisabledTextField(
-                      "$meal 식사", type ?? "데이터 없음") // ✅ 읽기 모드: 텍스트 필드 사용
+                      "$meal 식사", type ?? "데이터 없음") // 읽기 모드: 텍스트 필드 사용
                   : _buildDropdown(
                       "$meal 식사",
                       type,
@@ -384,7 +404,7 @@ class _CaregiverPatientLogCreateScreenState
             Expanded(
               child: widget.isReadOnly
                   ? _buildDisabledTextField(
-                      "$meal 식사량", amount ?? "데이터 없음") // ✅ 읽기 모드: 텍스트 필드 사용
+                      "$meal 식사량", amount ?? "데이터 없음") // 읽기 모드: 텍스트 필드 사용
                   : _buildDropdown(
                       "$meal 식사량",
                       amount,
@@ -574,7 +594,7 @@ Widget _buildReadOnlyTextField2(String label, String value) {
 }
 
 Widget _buildFieldTEXT(String label, TextEditingController controller,
-    bool isReadOnly, // 🔹 isReadOnly를 매개변수로 추가
+    bool isReadOnly, // isReadOnly를 매개변수로 추가
     {int maxLines = 1}) {
   return isReadOnly
       ? _buildReadOnlyTextField2(label, controller.text)

@@ -8,6 +8,23 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
+
+
+/*
+----------------------------------------------------------------------------
+file_name : patient_manage_screen.dart
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자가 환자 정보를 관리하는 화면
+              환자를 추가하거나 환자 리스트를 관리하는 화면
+              환자 정보를 등록하면 해당 보호자의 환자리스트를 DB에서 불러와 출력
+----------------------------------------------------------------------------
+*/
+
 class PatientManageScreen extends StatefulWidget {
   final String token;
 
@@ -31,7 +48,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   }
 
   Future<void> _fetchCaregiverPatients() async {
-    final url = Uri.parse('http://172.23.250.30:8000/caregiver/patients');
+    final url = Uri.parse('http://192.168.0.10:8000/caregiver/patients');
     try {
       final response = await http.get(
         url,
@@ -56,7 +73,7 @@ class _PatientManageScreenState extends State<PatientManageScreen> {
   Future<void> _fetchProtectorPatients() async {
     try {
       final response = await http.get(
-        Uri.parse('http://172.23.250.30:8000/patients'),
+        Uri.parse('http://192.168.0.10:8000/patients'),
         headers: {
           'Authorization': 'Bearer ${widget.token}',
           'Content-Type': 'application/json; charset=UTF-8',

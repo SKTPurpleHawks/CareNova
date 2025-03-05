@@ -2,7 +2,23 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'caregiver_patient_log_create_screen.dart'; // 간병일지 상세 보기 화면 import
+import 'caregiver_patient_log_create_screen.dart';
+
+
+/*
+---------------------------------------------------------------
+file_name : protector_patient_log_list.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자가 확인하는 간병일지 화면
+              간병인이 작성한 간병일지를 불러와서 읽기모드로 제공
+              해당 화면에서는 데이터 수정 불가
+---------------------------------------------------------------
+*/
 
 class ProtectorPatientLogListScreen extends StatefulWidget {
   final String patientId;
@@ -35,7 +51,7 @@ class _ProtectorPatientLogListScreenState
   /// 간병일지 리스트를 서버에서 가져오는 함수
   Future<void> _fetchCareLogs() async {
     final url =
-        Uri.parse('http://172.23.250.30:8000/dailyrecord/${widget.patientId}');
+        Uri.parse('http://192.168.0.10:8000/dailyrecord/${widget.patientId}');
 
     try {
       final response = await http.get(

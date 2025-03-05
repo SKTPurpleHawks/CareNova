@@ -4,6 +4,23 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
+
+
+/*
+-----------------------------------------------------------------------------
+file_name : patient_edit_profile_screen.dart
+
+Developer
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 환자의 정보를 수정하는 화면
+              이미 작성된 환자 정보를 DB에서 불러와 수정할 수 있도록 하는 화면
+-----------------------------------------------------------------------------
+*/
+
+
 class PatientEditProfileScreen extends StatefulWidget {
   final String token;
   final Map<String, dynamic> patientData;
@@ -153,7 +170,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
       final url = Uri.parse(
-          'http://172.23.250.30:8000/patient-info/${widget.patientData['id']}');
+          'http://192.168.0.10:8000/patient-info/${widget.patientData['id']}');
       Map<String, dynamic> data = {
         "birthday": _birthday?.toIso8601String().split('T')[0] ?? '',
         "startdate": _startDate?.toIso8601String().split('T')[0] ?? '',
@@ -198,7 +215,7 @@ class _PatientEditProfileScreenState extends State<PatientEditProfileScreen> {
   /// 환자 정보 삭제 함수
   Future<void> _deletePatient() async {
     final url = Uri.parse(
-        'http://172.23.250.30:8000/patient-info/${widget.patientData['id']}');
+        'http://192.168.0.10:8000/patient-info/${widget.patientData['id']}');
 
     try {
       final response = await http.delete(

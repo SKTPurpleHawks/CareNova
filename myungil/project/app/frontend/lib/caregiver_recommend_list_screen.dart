@@ -1,6 +1,22 @@
 import 'package:flutter/material.dart';
 import 'caregiver_detail_screen.dart';
 
+
+/*
+---------------------------------------------------------------------------------------------------------------
+file_name : caregiver_recommend_list_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일, 이수현
+ ● AI : 이수현
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인 추천 AI 모델인 Tabnet을 통해 나온 결과를 바탕으로 환자에 가장 적합한 간병인 리스트 추출 화면
+---------------------------------------------------------------------------------------------------------------
+*/
+
+
 class CaregiverRecommendListScreen extends StatelessWidget {
   final String protectorId;
   final String patientId;

@@ -5,6 +5,21 @@ import 'dart:convert';
 import 'protector_home_screen.dart';
 import 'patient_detail_screen.dart';
 
+
+/*
+------------------------------------------------------------------
+file_name : review_edit_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 보호자가 간병인을 평가하는 별점 및 리뷰 작성 화면
+              리뷰 작성 항목을 백엔드 서버로 전달 후 데이터베이스에 저장
+------------------------------------------------------------------
+*/
+
 class ReviewScreen extends StatefulWidget {
   final String token;
   final String caregiverId;
@@ -38,7 +53,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
       (sincerityRating + hygieneRating + communicationRating) / 3;
 
   Future<void> submitReview() async {
-    final url = Uri.parse('http://172.23.250.30:8000/reviews');
+    final url = Uri.parse('http://192.168.0.10:8000/reviews');
 
     final response = await http.post(
       url,

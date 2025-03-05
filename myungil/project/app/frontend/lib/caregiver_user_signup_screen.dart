@@ -4,15 +4,30 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login_screen.dart';
 
-class ForeignUserSignupScreen extends StatefulWidget {
-  const ForeignUserSignupScreen({super.key});
+
+/*
+-------------------------------------------------------------------------
+file_name : caregiver_user_signup_screen.dart                       
+
+Developer                                                         
+ ● Frontend : 최명일, 서민석
+ ● backend : 최명일
+ ● UI/UX : 서민석                                                     
+                                                                  
+description : 간병인의 회원가입 화면 
+              앱에서 입력받은 데이터를 백엔드 서버로 전달해 데이터베이스에 저장
+-------------------------------------------------------------------------
+*/
+
+class CaregiverUserSignupScreen extends StatefulWidget {
+  const CaregiverUserSignupScreen({super.key});
 
   @override
-  State<ForeignUserSignupScreen> createState() =>
-      _ForeignUserSignupScreenState();
+  State<CaregiverUserSignupScreen> createState() =>
+      _CaregiverUserSignupScreenState();
 }
 
-class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
+class _CaregiverUserSignupScreenState extends State<CaregiverUserSignupScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -91,7 +106,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
       }
 
       final response = await http.post(
-        Uri.parse('http://172.23.250.30:8000/signup/foreign'),
+        Uri.parse('http://192.168.0.10:8000/signup/caregiver'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'email': _emailController.text,
@@ -473,7 +488,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
               .toList(),
           onChanged: onChanged,
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -503,7 +518,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             }
           },
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -534,7 +549,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             }
           },
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -564,7 +579,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
             }
           },
           isExpanded: true,
-          dropdownColor: Colors.white, // ✅ 펼쳤을 때 배경을 하얀색으로 설정
+          dropdownColor: Colors.white, // 펼쳤을 때 배경을 하얀색으로 설정
         ),
       ),
     );
@@ -630,7 +645,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
               border: Border.all(color: Colors.grey.shade300), // 테두리 추가
             ),
             child: SizedBox(
-              height: 55, // 높이 조정 ✅
+              height: 55, // 높이 조정
               child: DropdownButtonFormField<String>(
                 value: value,
                 decoration: InputDecoration(
@@ -641,7 +656,7 @@ class _ForeignUserSignupScreenState extends State<ForeignUserSignupScreen> {
                   filled: true,
                   fillColor: Colors.white, // 배경색 설정
                   contentPadding: EdgeInsets.symmetric(
-                      horizontal: 15, vertical: 15), // ✅ 높이 증가
+                      horizontal: 15, vertical: 15), // 높이 증가
                 ),
                 dropdownColor: Colors.white,
                 // 펼쳤을 때 배경 흰색 유지

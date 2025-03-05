@@ -10,14 +10,17 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /*
--------------------------------------------------------
-file_name : recorder_xreen.dart
+---------------------------------------------------------------------------------------------
+file_name : recorder_screen.dart
 
-description : 간병인이 
+Developer
+ ● Frontend : 나지영, 서민석
+ ● AI : 나지영
+ ● UI : 나지영
 
-
-
--------------------------------------------------------
+description : 간병인과 환자 간 음성 대화를 STT -> GPT -> TTS 과정을 거쳐 음성 보정 및 번역 기능 구현
+              Flutter 내 API 호출로 기능 구현
+---------------------------------------------------------------------------------------------
 */
 
 class RecorderScreen extends StatefulWidget {
@@ -159,7 +162,7 @@ class _RecorderScreenState extends State<RecorderScreen> {
 
     debugPrint("녹음된 파일 저장 위치: $path");
 
-    // ⏳ 30초 타이머 시작
+    // 30초 타이머 시작
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _remainingTime--;
@@ -175,7 +178,7 @@ class _RecorderScreenState extends State<RecorderScreen> {
     if (!_isRecording) return; // 중복 실행 방지
 
     await _recorder.stopRecorder();
-    _timer?.cancel(); // ⏳ 타이머 정지
+    _timer?.cancel(); // 타이머 정지
 
     setState(() {
       _isRecording = false;
@@ -186,11 +189,11 @@ class _RecorderScreenState extends State<RecorderScreen> {
       SnackBar(content: Text('녹음 완료')),
     );
 
-    // ✅ STT 변환 실행 (녹음 종료 후 자동 실행)
+    // STT 변환 실행 (녹음 종료 후 자동 실행)
     if (_filePath != null) {
       String rawText = await _convertSpeechToTextWithWhisper(_filePath!);
       if (_isInvalidShortText(rawText)) {
-        debugPrint("🚫 뉴스 관련 음성이 감지되어 실행 중단: $rawText");
+        debugPrint("뉴스 관련 음성이 감지되어 실행 중단: $rawText");
         return;
       }
       String refinedText = await _refineTextWithGPT(rawText); // GPT로 보정된 텍스트
@@ -199,7 +202,7 @@ class _RecorderScreenState extends State<RecorderScreen> {
         _messages.insert(0, refinedText); // 채팅 형식으로 UI에 표시
       });
       _playTTS(refinedText); // TTS 실행
-      debugPrint("📢 최종 변환 텍스트: $refinedText");
+      debugPrint("최종 변환 텍스트: $refinedText");
     }
   }
 
@@ -208,21 +211,21 @@ class _RecorderScreenState extends State<RecorderScreen> {
     final whStopwatch = Stopwatch()..start();
 
     if (apiKey.isEmpty) {
-      debugPrint("❌ OpenAI API Key가 설정되지 않았습니다.");
+      debugPrint("OpenAI API Key가 설정되지 않았습니다.");
       return "입력된 내용이 없습니다.";
     }
 
     try {
       File audioFile = File(filePath);
 
-      // ✅ 녹음된 파일이 존재하는지 확인
+      // 녹음된 파일이 존재하는지 확인
       if (!await audioFile.exists()) {
-        debugPrint("❌ 녹음된 파일이 존재하지 않습니다: $filePath");
+        debugPrint("녹음된 파일이 존재하지 않습니다: $filePath");
         return "입력된 내용이 없습니다.";
       }
 
       int fileSize = await audioFile.length();
-      debugPrint("🎤 녹음된 파일 크기: $fileSize bytes");
+      debugPrint("녹음된 파일 크기: $fileSize bytes");
 
       var request = http.MultipartRequest(
         'POST',
@@ -234,19 +237,19 @@ class _RecorderScreenState extends State<RecorderScreen> {
       request.fields['language'] = 'ko';
       request.files.add(await http.MultipartFile.fromPath('file', filePath));
 
-      debugPrint("📡 Whisper API 요청 전송 중...");
+      debugPrint("Whisper API 요청 전송 중...");
       var response = await request.send();
 
       // 응답이 정상적으로 왔는지 확인
       if (response.statusCode != 200) {
-        debugPrint("❌ Whisper API 요청 실패: ${response.reasonPhrase}");
+        debugPrint("Whisper API 요청 실패: ${response.reasonPhrase}");
         return "입력된 내용이 없습니다.";
       }
 
       String responseBody = await response.stream.bytesToString();
       whStopwatch.stop();
       debugPrint(
-          "📝 Whisper API 응답(${whStopwatch.elapsedMilliseconds}ms): $responseBody");
+          "Whisper API 응답(${whStopwatch.elapsedMilliseconds}ms): $responseBody");
 
       // JSON 파싱 오류 방지 및 UTF-8 처리
       Map<String, dynamic> decodedResponse = jsonDecode(responseBody);
@@ -256,12 +259,12 @@ class _RecorderScreenState extends State<RecorderScreen> {
 
       // 변환된 텍스트가 비어있는 경우 처리
       if (transcribedText.isEmpty) {
-        debugPrint("❌ 변환된 텍스트 없음");
+        debugPrint("변환된 텍스트 없음");
         return "입력된 내용이 없습니다.";
       }
 
       if (_isInvalidShortText(transcribedText)) {
-      debugPrint("❌ 뉴스 오류 감지: $transcribedText");
+      debugPrint("뉴스 오류 감지: $transcribedText");
 
       Future.microtask(() {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -275,15 +278,15 @@ class _RecorderScreenState extends State<RecorderScreen> {
       return transcribedText; // 감지된 뉴스 문장을 그대로 반환 (GPT/TTS 실행 안 함)
     }
 
-    debugPrint("🎤 Whisper 변환 텍스트: $transcribedText");
+    debugPrint("Whisper 변환 텍스트: $transcribedText");
     return transcribedText;
   } catch (e) {
-    debugPrint("❌ Whisper API 오류: $e");
+    debugPrint("Whisper API 오류: $e");
     return "입력된 내용이 없습니다.";
   }
 }
 
-/// ✅ 특정 뉴스 문장이 감지되었는지 확인하는 함수
+/// 특정 뉴스 문장이 감지되었는지 확인하는 함수
 bool _isInvalidShortText(String text) {
   List<String> invalidShortTexts = [
     "MBC 뉴스 이덕영입니다.",
@@ -299,7 +302,7 @@ bool _isInvalidShortText(String text) {
     final gptStopwatch = Stopwatch()..start();
 
     if (apiKey.isEmpty) {
-      debugPrint("❌ OpenAI API Key가 설정되지 않았습니다.");
+      debugPrint("OpenAI API Key가 설정되지 않았습니다.");
       return text;
     }
 
@@ -330,15 +333,15 @@ bool _isInvalidShortText(String text) {
         })),
       );
 
-      // ✅ UTF-8 디코딩 적용 (bodyBytes 사용)
+      // UTF-8 디코딩 적용 (bodyBytes 사용)
       String responseBody = utf8.decode(response.bodyBytes);
       gptStopwatch.stop();
       debugPrint("📝 GPT API 응답(${gptStopwatch.elapsedMilliseconds}ms)");
 
-      // ✅ JSON 데이터 파싱 (타입 오류 방지)
+      // JSON 데이터 파싱 (타입 오류 방지)
       Map<String, dynamic> decodedResponse = jsonDecode(responseBody);
 
-      // ✅ 변환된 텍스트 가져오기
+      // 변환된 텍스트 가져오기
       if (decodedResponse.containsKey('choices') &&
           decodedResponse['choices'].isNotEmpty) {
         String refinedText =
@@ -348,24 +351,24 @@ bool _isInvalidShortText(String text) {
         return "GPT 응답이 올바르지 않습니다.";
       }
     } catch (e) {
-      debugPrint("❌ GPT 요청 오류: $e");
+      debugPrint("GPT 요청 오류: $e");
       return text;
     }
   }
 
   Future<void> _playTTS(String text) async {
     String apiKey = dotenv.env['TYPECAST_API_KEY'] ?? '';
-    String apiUrl = "https://typecast.ai/api/speak"; // ✅ Typecast API 엔드포인트 적용
-    String actorId = "60ad0841061ee28740ec2e1c"; // ✅ 최신 Typecast Voice ID 확인 필요
+    String apiUrl = "https://typecast.ai/api/speak"; // Typecast API 엔드포인트 적용
+    String actorId = "60ad0841061ee28740ec2e1c"; // 최신 Typecast Voice ID 확인 필요
     final ttsStopwatch = Stopwatch()..start();
 
     if (apiKey.isEmpty) {
-      debugPrint("❌ Typecast API Key가 설정되지 않았습니다.");
+      debugPrint("Typecast API Key가 설정되지 않았습니다.");
       return;
     }
 
     if (text.trim().isEmpty) {
-      debugPrint("❌ TTS 요청이 중단됨: 변환된 텍스트가 없음.");
+      debugPrint("TTS 요청이 중단됨: 변환된 텍스트가 없음.");
       return;
     }
 
@@ -383,7 +386,7 @@ bool _isInvalidShortText(String text) {
         "xapi_audio_format": "wav" // 추가
       };
 
-      debugPrint("📤 TTS 요청 데이터: ${jsonEncode(requestBody)}"); // JSON 데이터 출력
+      debugPrint("TTS 요청 데이터: ${jsonEncode(requestBody)}"); // JSON 데이터 출력
 
       var response = await http.post(
         Uri.parse(apiUrl),
@@ -396,32 +399,32 @@ bool _isInvalidShortText(String text) {
 
       if (response.statusCode == 200) {
         var responseJson = jsonDecode(utf8.decode(response.bodyBytes));
-        debugPrint("📝 TTS API 응답: $responseJson");
+        debugPrint("TTS API 응답: $responseJson");
 
         if (responseJson.containsKey("result") &&
             responseJson["result"].containsKey("speak_v2_url")) {
           String speakUrl = responseJson["result"]["speak_v2_url"];
           ttsStopwatch.stop();
           debugPrint(
-              "✅ TTS 생성 성공(${ttsStopwatch.elapsedMilliseconds}ms): $speakUrl");
+              "TTS 생성 성공(${ttsStopwatch.elapsedMilliseconds}ms): $speakUrl");
 
-          // 📢 **오디오 다운로드 URL 가져오기**
+          // **오디오 다운로드 URL 가져오기**
           String? audioUrl = await _waitForAudio(speakUrl);
           if (audioUrl != null) {
             _downloadAndPlayTTS(audioUrl);
           } else {
-            debugPrint("❌ TTS 음성 파일 URL을 가져오지 못했습니다.");
+            debugPrint("TTS 음성 파일 URL을 가져오지 못했습니다.");
           }
         } else {
-          debugPrint("❌ TTS 응답에서 speak_v2_url이 누락됨.");
+          debugPrint("TTS 응답에서 speak_v2_url이 누락됨.");
         }
       } else {
         debugPrint(
-            "❌ TTS 요청 실패: ${response.statusCode} - ${response.reasonPhrase}");
-        debugPrint("❌ 응답 본문: ${response.body}"); // ✅ 응답 본문 출력
+            "TTS 요청 실패: ${response.statusCode} - ${response.reasonPhrase}");
+        debugPrint("응답 본문: ${response.body}"); // 응답 본문 출력
       }
     } catch (e) {
-      debugPrint("❌ Typecast API 오류: $e");
+      debugPrint("Typecast API 오류: $e");
     }
   }
 
@@ -429,7 +432,7 @@ bool _isInvalidShortText(String text) {
     String apiKey = dotenv.env['TYPECAST_API_KEY'] ?? '';
 
     if (apiKey.isEmpty) {
-      debugPrint("❌ Typecast API Key가 설정되지 않았습니다.");
+      debugPrint("Typecast API Key가 설정되지 않았습니다.");
       return null;
     }
 
@@ -448,19 +451,19 @@ bool _isInvalidShortText(String text) {
           if (status == "done") {
             return responseJson["result"]["audio_download_url"];
           } else if (status == "progress") {
-            debugPrint("⏳ 음성 생성 중... (1초 후 재시도)");
+            debugPrint("음성 생성 중... (1초 후 재시도)");
             await Future.delayed(Duration(seconds: 1));
           } else {
-            debugPrint("❌ Unexpected status: $status");
+            debugPrint("Unexpected status: $status");
             return null;
           }
         } else {
-          debugPrint("❌ 음성 생성 상태 확인 실패: ${response.reasonPhrase}");
+          debugPrint(" 음성 생성 상태 확인 실패: ${response.reasonPhrase}");
           return null;
         }
       }
     } catch (e) {
-      debugPrint("❌ 음성 생성 대기 중 오류 발생: $e");
+      debugPrint("음성 생성 대기 중 오류 발생: $e");
     }
     return null;
   }
@@ -474,14 +477,14 @@ bool _isInvalidShortText(String text) {
       if (response.statusCode == 200) {
         File file = File(filePath);
         await file.writeAsBytes(response.bodyBytes);
-        debugPrint("✅ 음성 파일 다운로드 완료: $filePath");
+        debugPrint("음성 파일 다운로드 완료: $filePath");
 
-        await _player.startPlayer(fromURI: filePath); // ✅ 즉시 재생
+        await _player.startPlayer(fromURI: filePath); // 즉시 재생
       } else {
-        debugPrint("❌ TTS 파일 다운로드 실패 (응답 코드: ${response.statusCode})");
+        debugPrint("TTS 파일 다운로드 실패 (응답 코드: ${response.statusCode})");
       }
     } catch (e) {
-      debugPrint("❌ TTS 파일 다운로드 중 오류 발생: $e");
+      debugPrint("TTS 파일 다운로드 중 오류 발생: $e");
     }
   }
 

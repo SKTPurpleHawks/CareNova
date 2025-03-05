@@ -10,6 +10,24 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+
+/*
+-----------------------------------------------------------------------------------------------------------------
+file_name : patient_record_screen.dart
+
+Developer
+ ● Frontend : 최명일
+ ● backend : 최명일, 이수현
+ ● AI : 이수현
+ ● UI : 최명일
+
+description : 간병인과 환자 간 음성 대화를 STT -> GPT -> TTS 과정을 거쳐 음성 보정 및 번역 기능 구현
+              음성파일을 Backend 서버로 전달 후 backend에서 API 호출을 통한 기능능 구현
+              Fine-Tuning을 통한 정확한 음성 보정 기능 구현
+              Backend에서 보정된 음성을 Flutter내에서 Whisper API를 호출하여 STT가능을 통해 채팅 형태의 텍스트 반환
+-----------------------------------------------------------------------------------------------------------------
+*/
+
 class PatientRecordScreen extends StatefulWidget {
   final String patientId;
 
@@ -68,7 +86,7 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
     _recorder.onProgress?.listen((RecordingDisposition d) {
       setState(() {
         _currentDecibel = d.decibels ?? -50.0;
-        _updateWaveform(_currentDecibel); // ✅ 실시간 웨이브 업데이트
+        _updateWaveform(_currentDecibel); // 실시간 웨이브 업데이트
       });
     });
 
@@ -141,9 +159,10 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
     }
   }
 
+  // 녹음된 음성을 백엔드 서버에서 STT -> GPT -> TTS 작업 수행
   Future<String?> _uploadAudio(String filePath) async {
     var uri = Uri.parse(
-        "http://172.23.250.30:8000/process_audio/${widget.patientId}");
+        "http://192.168.0.10:8000/process_audio/${widget.patientId}");
     var request = http.MultipartRequest('POST', uri)
       ..files.add(await http.MultipartFile.fromPath('file', filePath));
 
@@ -166,6 +185,7 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
     }
   }
 
+  // 채팅 생성을 위한 위스퍼 API 활용
   Future<String?> _convertSpeechToText(String filePath) async {
     var apiUrl = "https://api.openai.com/v1/audio/transcriptions";
     String apiKey = dotenv.env['OPENAI_API_KEY'] ?? '';
@@ -182,11 +202,11 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
         Map<String, dynamic> decodedResponse = jsonDecode(responseBody);
         return decodedResponse['text'] ?? "변환된 텍스트가 없습니다.";
       } else {
-        debugPrint("❌ Whisper API 요청 실패: ${response.reasonPhrase}");
+        debugPrint("Whisper API 요청 실패: ${response.reasonPhrase}");
         return "음성 변환에 실패했습니다.";
       }
     } catch (e) {
-      debugPrint("❌ Whisper API 오류: $e");
+      debugPrint("Whisper API 오류: $e");
       return "음성 변환 오류 발생";
     }
   }
@@ -243,7 +263,7 @@ class _PatientRecordScreenState extends State<PatientRecordScreen> {
     double waveWidth = MediaQuery.of(context).size.width * 0.9;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('대화하기기')),
+      appBar: AppBar(title: const Text('대화하기')),
       body: Column(
         children: [
           Expanded(
