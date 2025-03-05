@@ -8,9 +8,9 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def create_foreign_user(db: Session, user: schemas.ForeignUserCreate):
+def create_caregiver_user(db: Session, user: schemas.CaregiverUserCreate):
 
-    new_id = models.CaregiverUserInfo.foreign_generate_custom_id(db)
+    new_id = models.CaregiverUserInfo.caregiver_generate_custom_id(db)
 
     db_user = models.CaregiverUserInfo(
         id=new_id, 
@@ -91,10 +91,10 @@ def get_user_by_email(db: Session, email: str):
     logger.info(f" [SEARCH USER] Searching for email: {email}")
 
     # 외국인 사용자 테이블에서 검색
-    foreign_user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.email == email).first()
-    if foreign_user:
-        logger.info(f" [USER FOUND] Foreign user found: {email}")
-        return foreign_user
+    caregiver_user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.email == email).first()
+    if caregiver_user:
+        logger.info(f" [USER FOUND] caregiver user found: {email}")
+        return caregiver_user
 
     # 보호자 사용자 테이블에서 검색
     protector_user = db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.email == email).first()

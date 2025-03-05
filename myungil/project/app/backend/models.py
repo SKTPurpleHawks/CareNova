@@ -33,7 +33,7 @@ class CaregiverUserInfo(Base):
     daily_records = relationship("DailyRecordInfo", back_populates="caregiver")
 
     @classmethod
-    def foreign_generate_custom_id(cls, db: Session):
+    def caregiver_generate_custom_id(cls, db: Session):
         # ID에서 숫자만 추출하여 가장 큰 숫자를 가져오기
         last_number = db.query(func.max(func.cast(func.substr(CaregiverUserInfo.id, 3), Integer))).scalar()
 

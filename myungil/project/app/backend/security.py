@@ -49,7 +49,7 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         if email is None or user_type is None:
             raise credentials_exception
         
-        if user_type == "foreign":
+        if user_type == "caregiver":
             user = db.query(models.CaregiverUserInfo).filter(models.CaregiverUserInfo.email == email).first()
         else:
             user = db.query(models.ProtectorUserInfo).filter(models.ProtectorUserInfo.email == email).first()

@@ -41,10 +41,10 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-@router.post("/signup/foreign")
-def signup_foreign(user: schemas.ForeignUserCreate, db: Session = Depends(get_db)):
-    db_user = crud.create_foreign_user(db, user)
-    return {"message": "Foreign user created successfully"}
+@router.post("/signup/caregiver")
+def signup_caregiver(user: schemas.CaregiverUserCreate, db: Session = Depends(get_db)):
+    db_user = crud.create_caregiver_user(db, user)
+    return {"message": "Carevier user created successfully"}
 
 @router.post("/signup/protector")
 def signup_protector(user: schemas.ProtectorUserCreate, db: Session = Depends(get_db)):
@@ -53,23 +53,23 @@ def signup_protector(user: schemas.ProtectorUserCreate, db: Session = Depends(ge
 
 @router.post("/login")
 def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
-    logger.info(f"📌 [LOGIN ATTEMPT] Email: {user.email}")
+    logger.info(f"[LOGIN ATTEMPT] Email: {user.email}")
 
     # 이메일로 사용자 조회
     db_user = crud.get_user_by_email(db, user.email)
 
     if not db_user:
-        logger.warning(f"❌ [LOGIN FAILED] User not found: {user.email}")
+        logger.warning(f"[LOGIN FAILED] User not found: {user.email}")
         raise HTTPException(status_code=400, detail="Incorrect email or password")
 
     # 비밀번호 검증
     if not verify_password(user.password, db_user.password):
-        logger.warning(f"❌ [LOGIN FAILED] Incorrect password for user: {user.email}")
+        logger.warning(f"[LOGIN FAILED] Incorrect password for user: {user.email}")
         raise HTTPException(status_code=400, detail="Incorrect email or password")
 
     # 사용자 유형 확인
-    user_type = "foreign" if isinstance(db_user, models.CaregiverUserInfo) else "protector"
-    logger.info(f"✅ [LOGIN SUCCESS] User: {user.email}, Type: {user_type}")
+    user_type = "caregiver" if isinstance(db_user, models.CaregiverUserInfo) else "protector"
+    logger.info(f"[LOGIN SUCCESS] User: {user.email}, Type: {user_type}")
 
     # JWT 액세스 토큰 생성
     access_token = create_access_token(
@@ -875,10 +875,10 @@ def transcribe_audio(file_path):
                 temperature=0.2
             )
         transcript = response.text.strip()
-        print(f"🎤 Whisper 변환 완료: {transcript}")
+        print(f"Whisper 변환 완료: {transcript}")
         return transcript
     except Exception as e:
-        print(f"❌ Whisper 변환 오류: {str(e)}")
+        print(f"Whisper 변환 오류: {str(e)}")
         return None
 
 
@@ -896,10 +896,10 @@ def correct_text(input_text):
             temperature=0.2
         )
         corrected_text = response.choices[0].message.content.strip()
-        print(f"📝 GPT 교정 완료: {corrected_text}")
+        print(f"GPT 교정 완료: {corrected_text}")
         return corrected_text
     except Exception as e:
-        print(f"❌ GPT 변환 오류: {str(e)}")
+        print(f"GPT 변환 오류: {str(e)}")
         return None
 
 
@@ -926,13 +926,13 @@ def request_tts(sentence, actor_id, TYPECAST_API_KEY):
                 print(f"🔊 TTS 변환 URL 획득: {speak_v2_url}")
                 return speak_v2_url
             else:
-                print("❌ TTS 변환 URL 없음")
+                print("TTS 변환 URL 없음")
                 return None
         else:
-            print(f"❌ TTS 요청 실패: {response.status_code}, {response.text}")
+            print(f"TTS 요청 실패: {response.status_code}, {response.text}")
             return None
     except Exception as e:
-        print(f"❌ TTS 요청 오류: {str(e)}")
+        print(f"TTS 요청 오류: {str(e)}")
         return None
 
 
@@ -946,10 +946,10 @@ def wait_for_audio(speak_v2_url, TYPECAST_API_KEY):
             status = response_json["result"].get("status", "")
             if status == "done":
                 audio_url = response_json["result"].get("audio_download_url")
-                print(f"🎵 음성 다운로드 URL: {audio_url}")
+                print(f"음성 다운로드 URL: {audio_url}")
                 return audio_url
         time.sleep(1)
-    print("❌ 음성 생성 시간 초과")
+    print("음성 생성 시간 초과")
     return None
 
 
@@ -960,7 +960,7 @@ def download_audio(audio_url, file_path):
             print("❌ 다운로드 오류: audio_url이 None 또는 비어 있음")
             return None
 
-        print(f"📥 다운로드 시작: {audio_url}")
+        print(f"다운로드 시작: {audio_url}")
 
         response = requests.get(audio_url, stream=True)
         if response.status_code == 200:
@@ -968,13 +968,13 @@ def download_audio(audio_url, file_path):
             with open(file_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
-            print(f"✅ 다운로드 완료: {file_path}")
+            print(f"다운로드 완료: {file_path}")
             return file_path
         else:
-            print(f"❌ 다운로드 실패: {response.status_code}, {response.text}")
+            print(f"다운로드 실패: {response.status_code}, {response.text}")
             return None
     except Exception as e:
-        print(f"❌ 다운로드 오류: {str(e)}")
+        print(f"다운로드 오류: {str(e)}")
         return None
 
 
@@ -986,24 +986,24 @@ def process_audio_to_tts(input_audio, output_file, actor_voice, TYPECAST_API_KEY
         # Whisper (음성 → 텍스트)
         transcript = transcribe_audio(input_audio)
         if transcript is None:
-            print("❌ Whisper 변환 실패")
+            print("Whisper 변환 실패")
             return None
 
         # GPT (텍스트 교정)
         corrected_text = correct_text(transcript)
         if corrected_text is None:
-            print("❌ GPT 교정 실패")
+            print("GPT 교정 실패")
             return None
 
         # Typecast TTS (텍스트 → 음성)
         speak_v2_url = request_tts(corrected_text, actor_voice, TYPECAST_API_KEY)
         if not speak_v2_url:
-            print("❌ TTS 변환 실패")
+            print("TTS 변환 실패")
             return None
 
         audio_url = wait_for_audio(speak_v2_url, TYPECAST_API_KEY)
         if not audio_url:
-            print("❌ 최종 음성 변환 실패")
+            print("최종 음성 변환 실패")
             return None
 
         print(f"🎵 음성 다운로드 URL 획득: {audio_url}")
@@ -1011,14 +1011,14 @@ def process_audio_to_tts(input_audio, output_file, actor_voice, TYPECAST_API_KEY
         # 음성 다운로드 후 파일 저장
         downloaded_file = download_audio(audio_url, output_file)
         if not downloaded_file:
-            print("❌ 음성 다운로드 실패")
+            print("음성 다운로드 실패")
             return None
 
-        print(f"✅ 전체 변환 완료 (총 소요 시간: {time.time() - start_time:.2f}s)")
+        print(f"전체 변환 완료 (총 소요 시간: {time.time() - start_time:.2f}s)")
         return downloaded_file
 
     except Exception as e:
-        print(f"❌ 전체 변환 중 오류 발생: {str(e)}")
+        print(f"전체 변환 중 오류 발생: {str(e)}")
         return None
 
 @router.post("/process_audio/{patient_id}")
@@ -1041,24 +1041,20 @@ async def process_audio(patient_id: str,
         actor_voice_code = "60ad0841061ee28740ec2e1c"
 
     input_audio_path = f"temp_{file.filename}"
-    output_audio_path = "./audio/output_audio.wav"
+    output_audio_path = "output_audio.wav"
 
     with open(input_audio_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
     try:
-        print(f"📂 입력 파일 저장 완료: {input_audio_path}")
 
-        # result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code, TYPECAST_API_KEY)
-        result = process_audio_to_tts(input_audio_path, output_audio_path, "60ad0841061ee28740ec2e1c", os.getenv("TYPECAST_API_KEY_WOMAN"))
+        result = process_audio_to_tts(input_audio_path, output_audio_path, actor_voice_code, TYPECAST_API_KEY)
+        
 
         if result and os.path.exists(output_audio_path):
-            print(f"✅ 변환된 음성 파일 존재: {output_audio_path}")
             return FileResponse(output_audio_path, media_type="audio/wav", filename="processed_audio.wav")
         else:
-            print(f"❌ 변환된 음성 파일이 존재하지 않음: {output_audio_path}")
             return JSONResponse(content={"error": "변환된 음성이 없습니다."}, status_code=500)
 
     except Exception as e:
-        print(f"⚠️ 음성 처리 중 오류 발생: {str(e)}")
         return JSONResponse(content={"error": f"음성 처리 중 오류 발생: {str(e)}"}, status_code=500)

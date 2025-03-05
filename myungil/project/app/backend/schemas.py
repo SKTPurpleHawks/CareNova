@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
-class ForeignUserCreate(BaseModel):
+class CaregiverUserCreate(BaseModel):
     email: str
     password: str
     name: str

@@ -1,5 +1,6 @@
 **/.venv
 **/.env
 **/.idea
-**/requirements.txt
 **/venvs
+**/temp_recording.wav
+**/output_audio.wav
