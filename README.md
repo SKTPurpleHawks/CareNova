@@ -57,7 +57,7 @@
 ### Tech Stack
 
 
-  <center><table>
+  <div align="center"><table>
     <tr>
       <th scope="col">Language</td>
       <th scope="col">FrameWork</td>
@@ -67,30 +67,30 @@
       <th scope="col">API</td>
     </tr>
     <tr>
-      <td><center><img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/VisualStudioCode-007ACC?style=flat-square%logo=visualstudiocode&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white"/></center></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/VisualStudioCode-007ACC?style=flat-square%logo=visualstudiocode&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white"/></div></td>
     </tr>
     <tr>
-      <td><center><img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/></center></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/></div></td>
       <td></td>
-      <td><center><img src="https://img.shields.io/badge/Windows-80B3FF?style=flat-square&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/Typecast-FF9E0F?style=flat-square&logoColor=white"/></center></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Windows-80B3FF?style=flat-square&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Typecast-FF9E0F?style=flat-square&logoColor=white"/></div></td>
     </tr>
     <tr>
       <td></td>
-      <td><center><img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"/></center></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"/></div></td>
       <td></td>
-      <td><center><img src="https://img.shields.io/badge/Android-34A853?style=flat-square&logo=android&logoColor=white"/></center></td>
-      <td><center><img src="https://img.shields.io/badge/Anaconda-44A833?style=flat-square&logo=anaconda&logoColor=white"/></center></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Android-34A853?style=flat-square&logo=android&logoColor=white"/></div></td>
+      <td><div align="center"><img src="https://img.shields.io/badge/Anaconda-44A833?style=flat-square&logo=anaconda&logoColor=white"/></div></td>
       <td></td>
     </tr>
-  </table></center>
+  </table></div>
 
 <br><br>
 <hr>
