@@ -56,8 +56,9 @@
 
 ### Tech Stack
 
+
 |Language|FrameWork|DataBase|Environment|Tool|API|
-|------|---|---||||
+|------|---|---|---|---|---|
 |<img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white"/>|<img src="https://img.shields.io/badge/Flutter-02569B?style=flat-square&logo=flutter&logoColor=white"/>|<img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white"/>|<img src="https://img.shields.io/badge/Linux-FCC624?style=flat-square&logo=linux&logoColor=white"/>|<img src="https://img.shields.io/badge/VisualStudioCode-007ACC?style=flat-square%logo=visualstudiocode&logoColor=white"/>|<img src="https://img.shields.io/badge/OpenAI-412991?style=flat-square&logo=openai&logoColor=white"/>|
 |<img src="https://img.shields.io/badge/Dart-0175C2?style=flat-square&logo=dart&logoColor=white"/>|<img src="https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white"/>||<img src="https://img.shields.io/badge/Windows-80B3FF?style=flat-square&logoColor=white"/>|<img src="https://img.shields.io/badge/Figma-F24E1E?style=flat-square&logo=figma&logoColor=white"/>|<img src="https://img.shields.io/badge/Typecast-FF9E0F?style=flat-square&logoColor=white"/>|
 ||<img src="https://img.shields.io/badge/Pytorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white"/>||<img src="https://img.shields.io/badge/Android-34A853?style=flat-square&logo=android&logoColor=white"/>|<img src="https://img.shields.io/badge/Anaconda-44A833?style=flat-square&logo=anaconda&logoColor=white"/>||
