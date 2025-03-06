@@ -41,7 +41,12 @@
 ### 프로젝트 화면 구성
 
 🎥 [데모 영상 보기](https://youtube.com/shorts/PdvuZav0i1c?si=1UorK1YRxyU0t-dK)
-[![Demo Video](https://github.com/user-attachments/assets/e469df41-f1fc-4c1d-959e-1e8ae28c8bd4)](https://youtube.com/shorts/PdvuZav0i1c?si=1UorK1YRxyU0t-dK)
+<p align="center">
+  <a href="https://youtube.com/shorts/PdvuZav0i1c?si=1UorK1YRxyU0t-dK">
+    <img src="https://github.com/user-attachments/assets/e469df41-f1fc-4c1d-959e-1e8ae28c8bd4" alt="Demo Video" width="400">
+  </a>
+</p>
+
 
 
 
