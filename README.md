@@ -11,7 +11,7 @@
 <hr>
 <br><br>
 
-### 주요 기능
+## 주요 기능
 
 🤖 딥러닝 기반 매칭 시스템
 * 사용자의 특성과 요구를 분석하여 최적의 매칭을 제공합니다.
@@ -30,7 +30,7 @@
 <br><br>
 
 
-### 프로젝트 아키텍쳐
+## 프로젝트 아키텍쳐
 
 <div align="center"><img src = "https://github.com/user-attachments/assets/84a50219-b7d2-4f76-8117-6a6212e13e86"></div>
 
@@ -38,7 +38,7 @@
 <hr>
 <br><br>
 
-### 프로젝트 화면 구성
+## 프로젝트 화면 구성
 
 🎥 [데모 영상 보기](https://youtube.com/shorts/PdvuZav0i1c?si=1UorK1YRxyU0t-dK)
 <p align="center">
@@ -53,8 +53,7 @@
 <br><br>
 
 
-
-### Tech Stack
+## Tech Stack
 
 
   <div align="center"><table>
@@ -97,7 +96,7 @@
 <br><br>
 
 
-### 참고 링크  
+## 참고 링크  
 
 📌 **프로젝트 관련 문서**
 <br>
