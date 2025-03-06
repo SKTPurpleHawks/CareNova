@@ -1,2 +1,0 @@
-C:/Users/028/git/OptimusPrime/myungil/project/app/frontend/android/app/.cxx/Debug/g2s4d2x3/x86_64/CMakeFiles/edit_cache.dir
-C:/Users/028/git/OptimusPrime/myungil/project/app/frontend/android/app/.cxx/Debug/g2s4d2x3/x86_64/CMakeFiles/rebuild_cache.dir
